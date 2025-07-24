@@ -1,0 +1,479 @@
+/* Reset base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  font-family: 'Arial', sans-serif;
+  width: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+/* -------- NAVBAR -------- */
+.navbar {
+  background-color: #152E60;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 150px 0 150px;
+}
+
+.logo {
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.navdivision {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+}
+
+.navUnderline{
+  width: 87%;
+  border-bottom: 1px solid #d9d9d9;
+  margin-left: 205px;
+}
+
+.navLinks {
+  display: flex;
+  gap: 16px;
+  list-style: none;
+  margin-left: 200px;
+}
+
+.navLinks li a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  border: 1.5px solid #ffffff;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.navLinks li a:hover {
+  background-color: #ffffff;
+  color: #152E60;
+}
+
+.navButtons {
+  display: flex;
+  align-items: center;
+}
+
+.navSeparator {
+  width: 1px;
+  height: 30px;
+  background-color: #d9d9d9;
+  margin: 0 6px;
+}
+
+.loginLink,
+.contactbutton {
+  border: 1.5px solid #ffffff;
+  padding: 10px 16px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.loginLink:hover,
+.contactbutton:hover {
+  background-color: #ffffff;
+  color: #152E60;
+}
+
+/* -------- HEADER -------- */
+.header {
+  background-color: #152E60;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 200px 150px 150px 150px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.headerLeft {
+  max-width: 50%;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 16px;
+  margin-right: 300px;
+}
+
+.subtitle {
+  color: #dcdcdc;
+  font-size: 16px;
+  margin-bottom: 32px;
+  line-height: 1.6;
+  margin-right: 200px;
+}
+
+.headerButtons {
+  display: flex;
+  gap: 16px;
+}
+
+.readmore,
+.loginOutline {
+  background-color: transparent;
+  border: 2px solid white;
+  color: white;
+  font-weight: bold;
+  border-radius: 24px;
+  padding: 12px 24px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.readmore:hover,
+.loginOutline:hover {
+  background-color: #ffffff;
+  color: #152E60;
+
+}
+
+/* -------- SECTION GERAL -------- */
+.section {
+  width: 100%;
+  padding: 80px 150px;
+  text-align: center;
+  background-color: #1F1F1F;
+  color: white;
+}
+
+.section h2 {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+.section p {
+  font-size: 16px;
+  line-height: 1.7;
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+/* -------- SOBRE / EQUIPE -------- */
+.equipe {
+  background-color: #152E60;
+  padding: 150px 150px;
+}
+.equipe H2{
+  color: #ffffff;
+  font-size: 28px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.team {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 32px;
+  margin-top: 32px;
+   
+}
+
+.member {
+  width: 180px;
+  text-align: center;
+}
+
+.member img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #ccc;
+}
+
+.name {
+  font-weight: 800;
+  font-size: 16px;
+  margin-top: 12px;
+}
+
+.role {
+  font-size: 14px;
+  color: #e0e0e0;
+}
+
+/* -------- O QUE OFERECE -------- */
+#oferece {
+  background-color: #1F1F1F;
+}
+
+.features {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-top: 40px;
+}
+
+.feature {
+  width: 180px;
+  text-align: center;
+}
+
+.icon {
+  font-size: 48px;
+  color: #f8df4b;
+  margin-bottom: 12px;
+}
+
+.feature h3 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.feature p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* -------- CONTATO -------- */
+#contato {
+  background-color: #1F1F1F;
+}
+
+.contactForm {
+  background-color: #152E60;
+  max-width: 640px;
+  margin: 40px auto 0;
+  padding: 60px 50px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contactForm input,
+.contactForm textarea {
+  padding: 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  resize: none;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #ffffff;
+}
+
+.contactForm button {
+  padding: 14px;
+  border-radius: 8px;
+  background-color: #f8df4b;
+  color: #000000;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* -------- FOOTER -------- */
+.footer {
+  background-color: #152E60;
+  color: white;
+  padding: 40px 150px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.footerContainer {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 32px;
+}
+
+.footerColumn {
+  flex: 1;
+  min-width: 180px;
+}
+
+.footerColumn h4 {
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.footerColumn a {
+  margin: 4px 0;
+  text-decoration: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footerInput {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.footerInput input {
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.footerBottom {
+  text-align: center;
+  padding-top: 24px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* -------- RESPONSIVIDADE -------- */
+
+/* Tablets (≤1024px) */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 24px;
+  }
+
+  .navdivision {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .navLinks {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+
+  .navButtons {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 40px 24px;
+  }
+
+  .headerLeft {
+    max-width: 100%;
+  }
+
+  .headerImage {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .headerImage img {
+    width: 240px;
+  }
+
+  .features {
+    justify-content: center;
+  }
+
+  .footerContainer {
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+/* Celulares (≤768px) */
+@media (max-width: 768px) {
+  .logo {
+    font-size: 24px;
+  }
+
+  .navLinks {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .navLinks li a {
+    font-size: 13px;
+    padding: 5px 14px;
+  }
+
+  .loginLink,
+  .registerButton {
+    font-size: 13px;
+    padding: 6px 14px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .readmore,
+  .loginOutline {
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+
+  .section {
+    padding: 60px 24px;
+  }
+
+  .team {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .features {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contactForm {
+    padding: 24px;
+  }
+
+  .footer {
+    padding: 24px;
+  }
+
+  .footerInput {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .footerInput input {
+    width: 100%;
+  }
+}

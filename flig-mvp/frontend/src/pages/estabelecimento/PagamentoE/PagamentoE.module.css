@@ -1,0 +1,184 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #121212;
+  color: #fff;
+}
+
+.header {
+  height: 60px;
+  background-color: #203864;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #f1c40f;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.helpIcon {
+  font-size: 20px;
+  text-decoration: none;
+  color: #fff;
+}
+
+.userIconWrapper {
+  position: relative;
+}
+
+.userIcon {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.userPopup {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  background-color: #2e2e2e;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+}
+
+.main {
+  margin-top: 70px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pageTitle {
+  font-size: 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f1c40f;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #f1c40f;
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.sectionBox {
+  background-color: #2e2e2e;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionBox h3 {
+  color: #f1c40f;
+  margin-bottom: 10px;
+}
+
+input,
+select {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background-color: #1c1c1c;
+  color: #fff;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cardLine {
+  display: flex;
+  gap: 10px;
+}
+
+.cardLine input[type="text"],
+.cardLine input[type="email"],
+.cardLine input[type="password"] {
+  flex: 1;
+}
+
+/* Impede que checkboxes sejam esticados */
+.cardLine input[type="checkbox"] {
+  flex: 0;
+  width: auto;
+}
+
+/* Estilos dos checkboxes */
+.checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: white;
+}
+
+.checkboxes label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkboxes input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #00bfff; /* cor personalizada opcional */
+}
+
+.confirmBtn {
+  background-color: #f1c40f;
+  border: none;
+  padding: 12px;
+  font-weight: bold;
+  color: #000;
+  border-radius: 6px;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.confirmBtn:hover {
+  background-color: #e1b800;
+}
