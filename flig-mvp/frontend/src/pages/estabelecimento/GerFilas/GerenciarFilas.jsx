@@ -43,10 +43,10 @@ function GerenciarFilas() {
         <div className={styles.headerRight}>
           <Link to="/faq" className={styles.helpIcon}>❓</Link>
           <div className={styles.userIconWrapper}>
-            <button className={styles.userIcon}>👤</button>
+            <button className={styles.userIcon} onClick={() => navigate('/estabelecimento/perfil')}>👤</button>
             <div className={styles.userPopup}>
-              <p>👤 <u>Perfil</u></p>
-              <p>⚙️ <u>Configurações</u></p>
+              <p onClick={() => navigate('/estabelecimento/perfil')}>👤 <u>Perfil</u></p>
+              <p onClick={() => navigate('/estabelecimento/configuracoes')}>⚙️ <u>Configurações</u></p>
               <p>🔓 <u>Sair</u></p>
             </div>
           </div>
@@ -58,10 +58,10 @@ function GerenciarFilas() {
         {/* SIDEBAR */}
         <aside className={styles.sidebar}>
           <nav className={styles.menu}>
-            <Link to="/home" className={styles.homeActive}>🏠 Home</Link>
-            <Link to="/dashboard" className={styles.dashboardActive}>📊 Dashboard</Link>
-            <Link to="/gerenciar-filas" className={styles.gerActive}>👥 Gerenciar Filas</Link>
-            <Link to="/planos" className={styles.planosActive}>💳 Planos</Link>
+            <Link to="/estabelecimento/home" className={styles.homeActive}>🏠 Home</Link>
+            <Link to="/estabelecimento/dashboard" className={styles.dashboardActive}>📊 Dashboard</Link>
+            <Link to="/estabelecimento/gerenciar-filas" className={styles.gerActive}>👥 Gerenciar Filas</Link>
+            <Link to="/estabelecimento/planos" className={styles.planosActive}>💳 Planos</Link>
           </nav>
         </aside>
 
@@ -92,7 +92,7 @@ function GerenciarFilas() {
                     <button>Pausar</button>
                     <button>Chamada</button>
                     <button>Encerrar</button>
-                    <button onClick={() => navigate('/gerenciar-filas/fila')}>{'>'}</button>
+                    <button onClick={() => navigate(`/estabelecimento/gerenciar-filas/${fila.nome}`)}>{'>'}</button>
                   </td>
                 </tr>
               ))}
