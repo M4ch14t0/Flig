@@ -1,4 +1,4 @@
-/* Container principal */
+/* Container principal da página */
 .userhome-container {
   height: 100vh;
   display: flex;
@@ -6,7 +6,7 @@
   font-family: sans-serif;
 }
 
-/* Topo */
+/* Header - Topo da página */
 .userhome-header {
   background-color: #0A2A5D;
   color: white;
@@ -29,13 +29,13 @@
   font-size: 1.25rem;
 }
 
-/* Corpo */
+/* Corpo principal */
 .userhome-body {
   display: flex;
   flex: 1;
 }
 
-/* Barra lateral */
+/* Sidebar - Menu lateral */
 .userhome-sidebar {
   background-color: #0A2A5D;
   width: 200px;

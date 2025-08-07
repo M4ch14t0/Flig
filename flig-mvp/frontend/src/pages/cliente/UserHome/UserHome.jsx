@@ -1,4 +1,4 @@
-// UserHome.jsx
+// UserHome.jsx - Página inicial do cliente
 import { useNavigate } from "react-router-dom";
 import styles from './UserHome.module.css';
 import { Home, MapPin, List, HelpCircle, User, Settings } from "lucide-react";
@@ -8,7 +8,7 @@ export default function UserHome() {
 
   return (
     <div className={styles["userhome-container"]}>
-      {/* Topo */}
+      {/* Header - Topo da página */}
       <header className={styles["userhome-header"]}>
         <img src="/logo-flig.svg" alt="Flig logo" className={styles["userhome-logo"]} />
         <div className={styles["userhome-icons"]}>
@@ -18,13 +18,19 @@ export default function UserHome() {
         </div>
       </header>
 
-      {/* Corpo */}
+      {/* Corpo principal */}
       <div className={styles["userhome-body"]}>
-        {/* Sidebar */}
+        {/* Sidebar - Menu lateral */}
         <aside className={styles["userhome-sidebar"]}>
-          <button className={styles["userhome-nav-btn"]} onClick={() => navigate("/cliente/home") }><Home size={16} /> Home</button>
-          <button className={styles["userhome-nav-btn"]} onClick={() => navigate("/cliente/estabelecimentos") }><MapPin size={16} /> Estabelecimentos</button>
-          <button className={styles["userhome-nav-btn"]} onClick={() => navigate("/cliente/minhas-filas") }><List size={16} /> Minhas Filas</button>
+          <button className={styles["userhome-nav-btn"]} onClick={() => navigate("/cliente/home") }>
+            <Home size={16} /> Home
+          </button>
+          <button className={styles["userhome-nav-btn"]} onClick={() => navigate("/cliente/estabelecimentos") }>
+            <MapPin size={16} /> Estabelecimentos
+          </button>
+          <button className={styles["userhome-nav-btn"]} onClick={() => navigate("/cliente/minhas-filas") }>
+            <List size={16} /> Minhas Filas
+          </button>
         </aside>
 
         {/* Conteúdo principal */}

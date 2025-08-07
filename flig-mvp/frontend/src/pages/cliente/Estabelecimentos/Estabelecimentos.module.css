@@ -104,30 +104,33 @@ html, body {
   color: white;
   text-decoration: none;
   font-weight: bold;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
 }
 
 .homeActive,
 .estabActive,
 .filasActive {
-  padding: 8px;
-  border-radius: 4px;
+  background-color: #d9d9d97e;
 }
 
 .homeActive:hover,
 .estabActive:hover,
 .filasActive:hover {
   background-color: #d9d9d97e;
-  padding: 8px;
-  border-radius: 4px;
+}
+
+.menu a:hover {
+  background-color: #d9d9d97e;
 }
 
 /* MAIN */
 .main {
   flex: 1;
-  padding: 24px;
+  padding: 32px;
   overflow-y: auto;
-  box-sizing: border-box;
-  background-color: #242424;
+  background-color: #f4f4f4;
 }
 
 .pageTitle {
@@ -154,7 +157,6 @@ html, body {
   background-color: transparent;
   color: #ffffff;
 }
-
 
 .filtersIconWrapper {
   position: relative;

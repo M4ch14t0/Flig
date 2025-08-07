@@ -1,4 +1,4 @@
-/* Container principal */
+/* Container principal da página */
 .esthome-container {
   height: 100vh;
   display: flex;
@@ -6,7 +6,7 @@
   font-family: sans-serif;
 }
 
-/* Topo */
+/* Header - Topo da página */
 .esthome-header {
   background-color: #0A2A5D;
   color: white;
@@ -29,13 +29,13 @@
   font-size: 1.25rem;
 }
 
-/* Corpo */
+/* Corpo principal */
 .esthome-body {
   display: flex;
   flex: 1;
 }
 
-/* Barra lateral */
+/* Sidebar - Menu lateral */
 .esthome-sidebar {
   background-color: #0A2A5D;
   width: 200px;
