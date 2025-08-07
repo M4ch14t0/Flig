@@ -1,12 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./Webpage.module.css";
 
 function Webpage() {
+  const navigate = useNavigate();
   return (
     <div className={styles.welcome}>
       {/* NAVBAR */}
       <nav className={styles.navbar}>
-        <div className={styles.logo}>
+        <div className={styles.logo} onClick={() => navigate("/")} style={{cursor: 'pointer'}}>
           <span className={styles.highlight}>F</span>lig
         </div>
 
@@ -30,7 +31,7 @@ function Webpage() {
           </ul>
 
           <div className={styles.navButtons}>
-            <Link to="/login" className={styles.loginLink}>
+            <Link to="/escolha-login" className={styles.loginLink}>
               Login
             </Link>
             <div className={styles.navSeparator}></div>
@@ -56,7 +57,7 @@ function Webpage() {
           </p>
           <div className={styles.headerButtons}>
             <button className={styles.readmore}>Leia Mais</button>
-            <Link to="/login" className={styles.loginOutline}>
+            <Link to="/escolha-login" className={styles.loginOutline}>
               Login
               <span>  →</span>
             </Link>
@@ -213,7 +214,7 @@ function Webpage() {
         </div>
 
         <div className={styles.footerBottom}>
-          Copyright© {new Date().getFullYear()} Flig Soluções de agilidade.
+          &copy; {new Date().getFullYear()} Flig Soluções de agilidade.
           Todos os Direitos Reservados
         </div>
       </footer>

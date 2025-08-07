@@ -47,10 +47,10 @@ function PagamentoEstab() {
         <div className={styles.headerRight}>
           <Link to="/faq" className={styles.helpIcon}>❓</Link>
           <div className={styles.userIconWrapper}>
-            <button className={styles.userIcon}>👤</button>
+            <button className={styles.userIcon} onClick={() => navigate('/estabelecimento/perfil')}>👤</button>
             <div className={styles.userPopup}>
-              <p>👤 <u>Perfil</u></p>
-              <p>⚙️ <u>Configurações</u></p>
+              <p onClick={() => navigate('/estabelecimento/perfil')}>👤 <u>Perfil</u></p>
+              <p onClick={() => navigate('/estabelecimento/configuracoes')}>⚙️ <u>Configurações</u></p>
               <p>🔓 <u>Sair</u></p>
             </div>
           </div>
@@ -59,7 +59,7 @@ function PagamentoEstab() {
 
       <main className={styles.main}>
         <h2 className={styles.pageTitle}>
-          <button className={styles.backBtn} onClick={() => navigate('/planos')}>←</button>
+          <button className={styles.backBtn} onClick={() => navigate('/estabelecimento/planos')}>←</button>
           Pagamento:
         </h2>
 

@@ -1,7 +1,9 @@
+// Estabelecimentos.jsx - Lista de estabelecimentos para clientes
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './Estabelecimentos.module.css';
 
+// Dados mockados para demonstração
 const estabelecimentosMock = Array.from({ length: 50 }, (_, i) => ({
   id: i + 1,
   nome: `Estabelecimento ${String.fromCharCode(65 + (i % 26))}${i + 1}`,
@@ -20,8 +22,10 @@ function Estabelecimentos() {
 
   const navigate = useNavigate();
 
+  // Função para aplicar filtros
   const handleFiltro = (tipo) => setFiltro(tipo);
 
+  // Filtra estabelecimentos baseado na pesquisa e filtros
   const filtrados = estabelecimentosMock.filter((est) => {
     const nomeMatch = est.nome.toLowerCase().includes(pesquisa.toLowerCase());
     const filtroMatch = filtro ? est.nota >= filtro : true;
@@ -30,15 +34,18 @@ function Estabelecimentos() {
 
   const totalPaginas = Math.ceil(filtrados.length / itemsPorPagina);
 
+  // Pega apenas os resultados da página atual
   const resultadosPagina = filtrados.slice(
     (paginaAtual - 1) * itemsPorPagina,
     paginaAtual * itemsPorPagina
   );
 
+  // Navega para detalhes do estabelecimento
   const handleClickEstab = (estabelecimento) => {
    navigate(`/cliente/estabelecimentos/${estabelecimento.id}`, { state: { estabelecimento } });
   };
 
+  // Muda de página
   const mudarPagina = (num) => {
     if (num < 1 || num > totalPaginas) return;
     setPaginaAtual(num);
@@ -46,7 +53,7 @@ function Estabelecimentos() {
 
   return (
     <div className={styles.wrapper}>
-      {/* HEADER */}
+      {/* Header - Topo da página */}
       <header className={styles.header}>
         <div className={styles.logo}>Flig</div>
         <div className={styles.headerRight}>
@@ -62,9 +69,9 @@ function Estabelecimentos() {
         </div>
       </header>
 
-      {/* CONTEÚDO PRINCIPAL */}
+      {/* Conteúdo principal */}
       <div className={styles.content}>
-        {/* SIDEBAR */}
+        {/* Sidebar - Menu lateral */}
         <aside className={styles.sidebar}>
           <nav className={styles.menu}>
             <Link to="/home" className={styles.homeActive}>🏠 Home</Link>
@@ -73,10 +80,11 @@ function Estabelecimentos() {
           </nav>
         </aside>
 
-        {/* MAIN */}
+        {/* Área principal */}
         <main className={styles.main}>
           <h2 className={styles.pageTitle}>Estabelecimentos</h2>
 
+          {/* Barra de busca e filtros */}
           <div className={styles.searchFilterWrapper}>
             <input
               type="text"
@@ -119,7 +127,7 @@ function Estabelecimentos() {
             )}
           </div>
 
-          {/* RESULTADOS */}
+          {/* Grid de estabelecimentos */}
           <div className={styles.grid}>
             {resultadosPagina.length === 0 ? (
               <p>Nenhum estabelecimento encontrado.</p>
@@ -149,7 +157,7 @@ function Estabelecimentos() {
             )}
           </div>
 
-          {/* PAGINAÇÃO */}
+          {/* Paginação */}
           <div className={styles.pagination}>
             <button
               disabled={paginaAtual === 1}

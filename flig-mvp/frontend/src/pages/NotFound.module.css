@@ -1,0 +1,13 @@
+.wrapper {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+.link {
+  color: #152E60;
+  font-weight: 600;
+  text-decoration: underline;
+} 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './MinhasFilas.module.css';
 
 const filasMock = [
@@ -20,6 +20,7 @@ const filasMock = [
 ];
 
 function MinhasFilas() {
+  const navigate = useNavigate();
   return (
     <div className={styles.wrapper}>
       {/* HEADER */}
@@ -28,10 +29,10 @@ function MinhasFilas() {
         <div className={styles.headerRight}>
           <Link to="/faq" className={styles.helpIcon}>❓</Link>
           <div className={styles.userIconWrapper}>
-            <button className={styles.userIcon}>👤</button>
+            <button className={styles.userIcon} onClick={() => navigate('/cliente/perfil')}>👤</button>
             <div className={styles.userPopup}>
-              <p>👤 <u>Perfil</u></p>
-              <p>⚙️ <u>Configurações</u></p>
+              <p onClick={() => navigate('/cliente/perfil')}>👤 <u>Perfil</u></p>
+              <p onClick={() => navigate('/cliente/configuracoes')}>⚙️ <u>Configurações</u></p>
               <p>🔓 <u>Sair</u></p>
             </div>
           </div>
@@ -43,9 +44,9 @@ function MinhasFilas() {
         {/* SIDEBAR */}
         <aside className={styles.sidebar}>
             <nav className={styles.menu}>
-                <Link to="/home" className={styles.homeActive}>🏠 Home</Link>
-                <Link to="/estabelecimentos" className={styles.estabActive}>📍 Estabelecimentos</Link>
-                <Link to="/minhasfilas" className={styles.filasActive}>👥 Minhas Filas</Link>
+                <Link to="/cliente/home" className={styles.homeActive}>🏠 Home</Link>
+                <Link to="/cliente/estabelecimentos" className={styles.estabActive}>📍 Estabelecimentos</Link>
+                <Link to="/cliente/minhas-filas" className={styles.filasActive}>👥 Minhas Filas</Link>
             </nav>
         </aside>
 

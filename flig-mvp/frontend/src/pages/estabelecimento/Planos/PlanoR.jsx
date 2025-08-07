@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Home, List, ArrowLeft } from "lucide-react";
-import "./Plano.css";
-import "./PlanoR.css";
+import styles from './Plano.module.css';
+import stylesR from './PlanoR.module.css';
 
 export default function PlanoR() {
   const navigate = useNavigate();

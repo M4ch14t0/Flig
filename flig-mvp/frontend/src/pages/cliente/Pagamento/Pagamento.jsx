@@ -1,101 +1,95 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import styles from './Pagamento.module.css';
+import { FiHome, FiMapPin, FiUsers, FiCreditCard } from 'react-icons/fi';
+import Layout from '../../../components/Layout';
+
+const sidebarLinks = [
+  { to: '/cliente/home', label: 'Home', icon: <FiHome /> },
+  { to: '/cliente/estabelecimentos', label: 'Estabelecimentos', icon: <FiMapPin /> },
+  { to: '/cliente/minhas-filas', label: 'Minhas Filas', icon: <FiUsers /> },
+  { to: '/cliente/pagamento', label: 'Pagamento', icon: <FiCreditCard />, active: true },
+];
+
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+function validateCPF(cpf) {
+  return /^\d{11}$/.test(cpf.replace(/\D/g, ""));
+}
 
 function Pagamento() {
   const [form, setForm] = useState({
     nome: '',
-    nomeSocial: '',
     email: '',
-    telefone: '',
     cpf: '',
-    formaPagamento: 'Cartão de Crédito',
-    nomeCartao: '',
-    numeroCartao: '',
-    validade: '',
-    cvv: ''
+    valor: '10,00',
+    status: 'pendente',
   });
+  const [pagou, setPagou] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
+  };
+
+  function validate() {
+    const newErrors = {};
+    if (!form.nome) newErrors.nome = "Nome obrigatório";
+    if (!form.email) newErrors.email = "E-mail obrigatório";
+    else if (!validateEmail(form.email)) newErrors.email = "E-mail inválido";
+    if (!form.cpf) newErrors.cpf = "CPF obrigatório";
+    else if (!validateCPF(form.cpf)) newErrors.cpf = "CPF inválido (apenas números)";
+    return newErrors;
+  }
+
+  const handlePagar = (e) => {
+    e.preventDefault();
+    const validation = validate();
+    setErrors(validation);
+    if (Object.keys(validation).length > 0) return;
+    setSubmitting(true);
+    setTimeout(() => {
+      setForm((prev) => ({ ...prev, status: 'aprovado' }));
+      setPagou(true);
+      setSubmitting(false);
+    }, 1000);
   };
 
   return (
-    <div className={styles.wrapper}>
-      {/* HEADER */}
-      <header className={styles.header}>
-        <div className={styles.logo}>Flig</div>
-        <div className={styles.headerRight}>
-          <Link to="/faq" className={styles.helpIcon}>❓</Link>
-          <div className={styles.userIconWrapper}>
-            <button className={styles.userIcon}>👤</button>
-            <div className={styles.userPopup}>
-              <p>👤 <u>Perfil</u></p>
-              <p>⚙️ <u>Configurações</u></p>
-              <p>🔓 <u>Sair</u></p>
-            </div>
+    <Layout sidebarLinks={sidebarLinks} userType="cliente">
+      <div style={{ maxWidth: 400, margin: '0 auto', background: '#fff', borderRadius: 12, padding: 32 }}>
+        <h2 style={{ marginBottom: 24 }}>Pagamento (Simulação PagSeguro)</h2>
+        {pagou ? (
+          <div style={{ textAlign: 'center', color: 'green' }}>
+            <img src="https://stc.pagseguro.uol.com.br/public/img/botoes/pagamentos/120x53-pagar.gif" alt="PagSeguro" style={{ marginBottom: 16 }} />
+            <h3>Pagamento aprovado!</h3>
+            <p>Obrigado por utilizar a Flig.</p>
           </div>
-        </div>
-      </header>
-
-      <main className={styles.main}>
-        <h2 className={styles.pageTitle}>← Pagamento:</h2>
-
-        <div className={styles.formContainer}>
-          {/* Coluna da Esquerda */}
-          <div className={styles.leftColumn}>
-            <section className={styles.sectionBox}>
-              <h3>Seus Dados:</h3>
-              <input name="nome" placeholder="Nome Completo..." value={form.nome} onChange={handleChange} />
-              <input name="nomeSocial" placeholder="Nome Comercial..." value={form.nomeSocial} onChange={handleChange} />
-              <input name="email" placeholder="Email utilizado..." value={form.email} onChange={handleChange} />
-              <input name="telefone" placeholder="Número de telefone..." value={form.telefone} onChange={handleChange} />
-              <input name="cpf" placeholder="CPF..." value={form.cpf} onChange={handleChange} />
-            </section>
-
-            <section className={styles.sectionBox}>
-              <h3>Dados de Pagamento:</h3>
-              <select name="formaPagamento" value={form.formaPagamento} onChange={handleChange}>
-                <option>Cartão de Crédito</option>
-              </select>
-              <input name="nomeCartao" placeholder="Nome impresso no cartão" value={form.nomeCartao} onChange={handleChange} />
-              <div className={styles.cardLine}>
-                <input name="numeroCartao" placeholder="Número do Cartão" value={form.numeroCartao} onChange={handleChange} />
-                <input type="month" name="validade" placeholder="MM/AAAA" value={form.validade} onChange={handleChange} />
-                <input name="cvv" placeholder="000" value={form.cvv} onChange={handleChange} />
-              </div>
-              <div className={styles.bandeiras}>
-                <img src="/img/mastercard.png" alt="mastercard" />
-                <img src="/img/elo.png" alt="elo" />
-                <img src="/img/visa.png" alt="visa" />
-                <img src="/img/amex.png" alt="amex" />
-                <img src="/img/hipercard.png" alt="hipercard" />
-              </div>
-            </section>
-          </div>
-
-          {/* Coluna da Direita */}
-          <div className={styles.rightColumn}>
-            <div className={styles.paymentDetails}>
-              <h3>3 Avanços</h3>
-              <p><strong>Valor do produto:</strong> R$ 24,90</p>
-              <p><strong>Desconto:</strong> R$ 0,00</p>
-              <hr />
-              <p><strong>Total a pagar:</strong> R$ 24,90</p>
-              <small>Os dados de pagamentos enviados são protegidos de acordo com a <a href="#">LGPD</a>.</small>
+        ) : (
+          <form onSubmit={handlePagar} noValidate>
+            <label htmlFor="nome">Nome:</label>
+            <input id="nome" name="nome" value={form.nome} onChange={handleChange} required style={{ width: '100%', marginBottom: 4 }} />
+            {errors.nome && <span style={{ color: 'red', fontSize: 12 }}>{errors.nome}</span>}
+            <label htmlFor="email">E-mail:</label>
+            <input id="email" name="email" type="email" value={form.email} onChange={handleChange} required style={{ width: '100%', marginBottom: 4 }} />
+            {errors.email && <span style={{ color: 'red', fontSize: 12 }}>{errors.email}</span>}
+            <label htmlFor="cpf">CPF:</label>
+            <input id="cpf" name="cpf" value={form.cpf} onChange={handleChange} required style={{ width: '100%', marginBottom: 4 }} />
+            {errors.cpf && <span style={{ color: 'red', fontSize: 12 }}>{errors.cpf}</span>}
+            <label htmlFor="valor">Valor:</label>
+            <input id="valor" name="valor" value={form.valor} disabled style={{ width: '100%', marginBottom: 12 }} />
+            <div style={{ textAlign: 'center', margin: '16px 0' }}>
+              <img src="https://stc.pagseguro.uol.com.br/public/img/botoes/pagamentos/120x53-pagar.gif" alt="PagSeguro" />
             </div>
-
-            <div className={styles.checkboxes}>
-              <label><input type="checkbox" /> Li e concordo com a <a href="#">Política de Privacidade</a>.</label>
-              <label><input type="checkbox" /> Li e concordo com os <a href="#">termos de serviço</a>.</label>
-            </div>
-
-            <button className={styles.confirmBtn}>Confirmar Pagamento</button>
-          </div>
-        </div>
-      </main>
-    </div>
+            <button type="submit" style={{ width: '100%', background: '#10c86e', color: '#fff', border: 'none', borderRadius: 6, padding: 12, fontWeight: 600, fontSize: 16, cursor: 'pointer' }} disabled={submitting}>
+              {submitting ? 'Processando...' : 'Pagar com PagSeguro (Simulação)'}
+            </button>
+          </form>
+        )}
+      </div>
+    </Layout>
   );
 }
 

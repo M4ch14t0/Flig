@@ -1,9 +1,10 @@
 import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import styles from './DetEstabelecimentos.module.css';
 
 function DetEstabelecimentos() {
   const location = useLocation();
+  const navigate = useNavigate();
   const estabelecimento = location.state?.estabelecimento;
 
   if (!estabelecimento) {
@@ -18,10 +19,10 @@ function DetEstabelecimentos() {
         <div className={styles.headerRight}>
           <Link to="/faq" className={styles.helpIcon}>❓</Link>
           <div className={styles.userIconWrapper}>
-            <button className={styles.userIcon}>👤</button>
+            <button className={styles.userIcon} onClick={() => navigate('/cliente/perfil')}>👤</button>
             <div className={styles.userPopup}>
-              <p>👤 <u>Perfil</u></p>
-              <p>⚙️ <u>Configurações</u></p>
+              <p onClick={() => navigate('/cliente/perfil')}>👤 <u>Perfil</u></p>
+              <p onClick={() => navigate('/cliente/configuracoes')}>⚙️ <u>Configurações</u></p>
               <p>🔓 <u>Sair</u></p>
             </div>
           </div>
@@ -33,9 +34,9 @@ function DetEstabelecimentos() {
         {/* SIDEBAR */}
         <aside className={styles.sidebar}>
           <nav className={styles.menu}>
-            <Link to="/home" className={styles.homeActive}>🏠 Home</Link>
-            <Link to="/estabelecimentos" className={styles.estabActive}>📍 Estabelecimentos</Link>
-            <Link to="/minhasfilas" className={styles.filasActive}>👥 Minhas Filas</Link>
+            <Link to="/cliente/home" className={styles.homeActive}>🏠 Home</Link>
+            <Link to="/cliente/estabelecimentos" className={styles.estabActive}>📍 Estabelecimentos</Link>
+            <Link to="/cliente/minhas-filas" className={styles.filasActive}>👥 Minhas Filas</Link>
           </nav>
         </aside>
 

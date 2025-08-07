@@ -1,0 +1,16 @@
+.wrapper {
+  padding: 2rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section {
+  margin: 2rem 0;
+}
+.section h2 {
+  margin-top: 1.5rem;
+} 
