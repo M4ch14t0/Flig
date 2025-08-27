@@ -1,0 +1,151 @@
+/* Container principal */
+.empresa-login-container {
+  display: flex;
+  height: 100vh;
+  font-family: sans-serif;
+}
+
+/* Lado esquerdo */
+.empresa-login-left {
+  width: 50%;
+  background-color: #000;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2rem;
+}
+
+.empresa-login-back-button {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.empresa-login-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.empresa-login-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.empresa-login-label {
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+.empresa-login-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 0.6rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: none;
+  box-sizing: border-box;
+}
+
+.empresa-login-link {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.empresa-login-link a {
+  color: white;
+  text-decoration: underline;
+}
+
+/* Corrigido: remover underline dos links de ajuda */
+.empresa-login-help {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.empresa-login-help a {
+  color: white;
+  text-decoration: none;
+}
+
+.empresa-login-faq{
+    color:white;
+    padding: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.empresa-login-suporte{
+    color:white;
+    padding: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.empresa-login-contato{
+    color:white;
+    padding: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+
+/* Botão */
+.empresa-login-button {
+  margin-top: 1rem;
+  padding: 0.6rem 2rem;
+  background: transparent;
+  color: white;
+  border: 1px solid white;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.empresa-login-button:hover {
+  background-color: white;
+  color: black;
+}
+
+/* Rodapé */
+.empresa-login-footer {
+  font-size: 0.75rem;
+  text-align: center;
+  border-top: 1px solid #444;
+  padding-top: 1rem;
+}
+
+/* Lado direito */
+.empresa-login-right {
+  width: 50%;
+  background-color: #0A2A5D;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.empresa-login-logo {
+  text-align: center;
+}
+
+.empresa-login-logo-img {
+  width: 160px;
+  margin-bottom: 0.5rem;
+}
+
+.empresa-login-slogan {
+  font-size: 0.9rem;
+}

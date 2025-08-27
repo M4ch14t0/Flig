@@ -1,0 +1,89 @@
+.planor-main {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+}
+
+.planor-back {
+  background: none;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.planor-card {
+  display: flex;
+  gap: 2rem;
+  background-color: #1e1e1e;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  max-width: 900px;
+  width: 100%;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.planor-info {
+  flex: 1;
+  min-width: 280px;
+}
+
+.planor-info h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.planor-info span {
+  color: #f0d85a;
+}
+
+.planor-info p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.planor-btn {
+  margin-top: 1.5rem;
+  background-color: #f0d85a;
+  color: black;
+  border: none;
+  padding: 0.7rem 2rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.planor-btn:hover {
+  background-color: #e6c94f;
+}
+
+.planor-beneficios {
+  flex: 1;
+  min-width: 280px;
+}
+
+.planor-beneficios h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.planor-beneficios ul {
+  list-style: none;
+  padding: 0;
+}
+
+.planor-beneficios li {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #ccc;
+}

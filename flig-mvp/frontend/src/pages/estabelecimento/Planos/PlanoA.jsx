@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Home, List, ArrowLeft } from "lucide-react";
-import styles from './Plano.module.css';
-import stylesA from './PlanoA.module.css'; // Reutiliza o estilo da página de renovação
+import "./Plano.css";
+import "./PlanoA.css"; // Reutiliza o estilo da página de renovação
 
 export default function PlanoA() {
   const navigate = useNavigate();
@@ -15,9 +15,9 @@ export default function PlanoA() {
 
       <div className="plano-content">
         <aside className="plano-sidebar">
-          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/home") }><Home size={16} /> Home</button>
-          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/gerenciar-filas") }><List size={16} /> Gerenciar Filas</button>
-          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/planos") }><List size={16} /> Planos</button>
+          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/home")}><Home size={16} /> Home</button>
+          <button className="plano-nav-btn"><List size={16} /> Gerenciar Filas</button>
+          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/planos")}><List size={16} /> Planos</button>
         </aside>
 
         <main className="planoa-main">
@@ -34,9 +34,24 @@ export default function PlanoA() {
               <p><strong>Tempo restante:</strong> 29 dias</p>
               <button className="planoa-btn">Assinar Plano</button>
             </div>
+
+            <div className="planoa-beneficios">
+              <h3>Inclui</h3>
+              <ul>
+                <li>✔ Tudo do plano Essencial</li>
+                <li>✔ Estatísticas detalhadas</li>
+                <li>✔ Relatórios automáticos mensais</li>
+                <li>✔ Visualização de pulos pagos e ganhos gerados</li>
+                <li>✔ Suporte prioritário</li>
+              </ul>
+            </div>
           </div>
         </main>
       </div>
+
+      <footer className="plano-footer">
+        <p>Copyright © 2025 Flig Soluções de agilidade. Todos os Direitos Reservados.</p>
+      </footer>
     </div>
   );
 }

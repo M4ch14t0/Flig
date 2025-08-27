@@ -74,9 +74,9 @@ function Estabelecimentos() {
         {/* Sidebar - Menu lateral */}
         <aside className={styles.sidebar}>
           <nav className={styles.menu}>
-            <Link to="/home" className={styles.homeActive}>🏠 Home</Link>
-            <Link to="/estabelecimentos" className={styles.estabActive}>📍 Estabelecimentos</Link>
-            <Link to="/minhasfilas" className={styles.filasActive}>👥 Minhas Filas</Link>
+            <Link to="/cliente/home" className={styles.homeActive}>🏠 Home</Link>
+            <Link to="/cliente/estabelecimentos" className={styles.estabActive}>📍 Estabelecimentos</Link>
+            <Link to="/cliente/minhas-filas" className={styles.filasActive}>👥 Minhas Filas</Link>
           </nav>
         </aside>
 
