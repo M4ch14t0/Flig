@@ -1,0 +1,79 @@
+/* Container principal */
+.userhome-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: sans-serif;
+}
+
+/* Topo */
+.userhome-header {
+  background-color: #0A2A5D;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+
+.userhome-logo {
+  height: 40px;
+}
+
+.userhome-icons button {
+  background: none;
+  border: none;
+  color: white;
+  margin-left: 1rem;
+  cursor: pointer;
+  font-size: 1.25rem;
+}
+
+/* Corpo */
+.userhome-body {
+  display: flex;
+  flex: 1;
+}
+
+/* Barra lateral */
+.userhome-sidebar {
+  background-color: #0A2A5D;
+  width: 200px;
+  padding-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  color: white;
+}
+
+.userhome-nav-btn {
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s;
+}
+
+.userhome-nav-btn:hover {
+  background-color: #0d3a80;
+}
+
+/* Conteúdo principal */
+.userhome-main {
+  flex: 1;
+  background-color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.userhome-welcome {
+  color: #999;
+  font-size: 2rem;
+  text-align: center;
+}

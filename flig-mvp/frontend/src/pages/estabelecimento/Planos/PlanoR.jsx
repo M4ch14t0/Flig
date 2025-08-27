@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Home, List, ArrowLeft } from "lucide-react";
-import styles from './Plano.module.css';
-import stylesR from './PlanoR.module.css';
+import "./Plano.css";
+import "./PlanoR.css";
 
 export default function PlanoR() {
   const navigate = useNavigate();
@@ -15,9 +15,9 @@ export default function PlanoR() {
 
       <div className="plano-content">
         <aside className="plano-sidebar">
-          <button className="plano-nav-btn" onClick={() => navigate("/home-estabelecimento")}><Home size={16} /> Home</button>
+          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/home")}><Home size={16} /> Home</button>
           <button className="plano-nav-btn"><List size={16} /> Gerenciar Filas</button>
-          <button className="plano-nav-btn" onClick={() => navigate("/plano")}><List size={16} /> Planos</button>
+          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/planos")}><List size={16} /> Planos</button>
         </aside>
 
         <main className="planor-main">

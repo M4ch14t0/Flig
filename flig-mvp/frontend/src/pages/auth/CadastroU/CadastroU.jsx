@@ -1,114 +1,227 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import styles from './CadastroU.module.css';
-
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-function validateCPF(cpf) {
-  return /^\d{11}$/.test(cpf.replace(/\D/g, ""));
-}
+import "./CadastroU.css";
 
 export default function CadastroU() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    nome: '',
-    data: '',
-    email: '',
-    cpf: '',
-    cidade: '',
-    uf: '',
-    senha: '',
-    senha2: ''
-  });
-  const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [apiError, setApiError] = useState("");
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: undefined });
+  const [nome, setNome] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [dataNasc, setDataNasc] = useState("");
+  const [erroCpf, setErroCpf] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [senhaRepetida, setSenhaRepetida] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [uf, setUf] = useState("");
+
+
+  const formatCpf = (value) => value.replace(/\D/g, '');
+
+  const handleCpfBlur = async () => {
+    const cleanCpf = formatCpf(cpf);
+
+    if (cleanCpf.length !== 11 || !dataNasc) {
+      if (cleanCpf.length > 0 && cleanCpf.length !== 11) {
+        setErroCpf("CPF deve conter 11 dígitos");
+      } else if (!dataNasc) {
+        setErroCpf("Informe a data de nascimento");
+      }
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/cpf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cpf: cleanCpf,
+          birthDate: dataNasc,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("📣 Resposta CPFHub:", data);
+
+      if (data.valid) {
+        setNome(data.name);
+        setErroCpf("");
+      } else {
+        setErroCpf(data.message || "CPF inválido ou não encontrado");
+        setNome("");
+      }
+    } catch (error) {
+      console.error("❌ Erro ao consultar CPFHub:", error);
+      setErroCpf("Erro ao verificar CPF. Verifique sua conexão.");
+      setNome("");
+    }
+  };
+
+  const handleDateChange = (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 2) value = value.slice(0, 2) + '/' + value.slice(2);
+    if (value.length >= 5) value = value.slice(0, 5) + '/' + value.slice(5, 9);
+    setDataNasc(value);
+  };
+
+  const handleCpfChange = (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 11) value = value.slice(0, 11);
+    if (value.length > 9) {
+      value = value.slice(0, 3) + '.' + value.slice(3, 6) + '.' + value.slice(6, 9) + '-' + value.slice(9);
+    } else if (value.length > 6) {
+      value = value.slice(0, 3) + '.' + value.slice(3, 6) + '.' + value.slice(6);
+    } else if (value.length > 3) {
+      value = value.slice(0, 3) + '.' + value.slice(3);
+    }
+    setCpf(value);
+  };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (senha !== senhaRepetida) {
+    alert("As senhas não coincidem");
+    return;
   }
 
-  function validate() {
-    const newErrors = {};
-    if (!form.nome) newErrors.nome = "Nome obrigatório";
-    if (!form.data) newErrors.data = "Data obrigatória";
-    if (!form.email) newErrors.email = "E-mail obrigatório";
-    else if (!validateEmail(form.email)) newErrors.email = "E-mail inválido";
-    if (!form.cpf) newErrors.cpf = "CPF obrigatório";
-    else if (!validateCPF(form.cpf)) newErrors.cpf = "CPF inválido (apenas números)";
-    if (!form.cidade) newErrors.cidade = "Cidade obrigatória";
-    if (!form.uf) newErrors.uf = "UF obrigatória";
-    if (!form.senha) newErrors.senha = "Senha obrigatória";
-    else if (form.senha.length < 6) newErrors.senha = "Mínimo 6 caracteres";
-    if (form.senha2 !== form.senha) newErrors.senha2 = "Senhas não coincidem";
-    return newErrors;
-  }
+  try {
+    const response = await fetch("http://localhost:5000/api/cadastrar-usuario", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nome_usuario: nome,
+        cpf: cpf.replace(/\D/g, ''),
+        telefone_usuario: "", // ainda não temos esse campo
+        email_usuario: email,
+        senha_usuario: senha,
+        cep_usuario: "", // ainda não temos esse campo
+        endereco_usuario: cidade,
+        numero_usuario: uf,
+      }),
+    });
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setApiError("");
-    const validation = validate();
-    setErrors(validation);
-    if (Object.keys(validation).length > 0) return;
-    setSubmitting(true);
-    // Simulação de chamada de API (substitua por chamada real depois)
-    setTimeout(() => {
-      setSubmitting(false);
-      navigate("/cliente/home");
-    }, 1000);
+    const data = await response.json();
+    if (response.ok) {
+      alert("✅ Usuário cadastrado com sucesso!");
+      navigate("/login");
+    } else {
+      alert("❌ Erro ao cadastrar: " + data.erro);
+    }
+  } catch (err) {
+    console.error("Erro ao cadastrar:", err);
+    alert("❌ Erro interno ao tentar cadastrar");
   }
+};
 
   return (
-    <div className={styles["cadastro-container"]}>
-      {/* Lado esquerdo: logo e ajuda */}
-      <div className={styles["cadastro-left"]}>
-        <div className={styles["cadastro-logo"]}>
-          <img src="/logo-flig.svg" alt="Logo FLIG" className={styles["cadastro-logo-img"]} />
-          <p className={styles["cadastro-slogan"]}>Soluções de Agilidade</p>
+    <div className="cadastro-container">
+      {/* Lado esquerdo */}
+      <div className="cadastro-left">
+        <div className="cadastro-logo">
+          <img src="/logo-flig.svg" alt="Logo FLIG" className="cadastro-logo-img" />
+          <p className="cadastro-slogan">Soluções de Agilidade</p>
         </div>
-        <div className={styles["cadastro-help"]}>
+        <div className="cadastro-help">
           <p>Ajuda:</p>
           <p><a href="/faq"> FAQ</a></p>
           <p><a href="/faq"> Suporte</a></p>
           <p><a href="/faq"> Contate-nos</a></p>
         </div>
       </div>
-      {/* Lado direito: formulário */}
-      <div className={styles["cadastro-right"]}>
-        <button onClick={() => navigate(-1)} className={styles["cadastro-back-button"]}>
-          ← Voltar
-        </button>
-        <form className={styles["cadastro-form"]} onSubmit={handleSubmit} noValidate>
+
+      {/* Lado direito */}
+      <div className="cadastro-right">
+        <button onClick={() => navigate(-1)} className="cadastro-back-button">← Voltar</button>
+
+        <form className="cadastro-form" onSubmit={handleSubmit}>
           <h2>Cadastro</h2>
-          <div className={styles["cadastro-row"]}>
-            <input name="nome" type="text" placeholder="Nome:" className={styles["input-nome"]} value={form.nome} onChange={handleChange} />
-            <input name="data" type="date" className={styles["input-data"]} value={form.data} onChange={handleChange} />
+
+          <div className="cadastro-row">
+            <input
+              type="text"
+              placeholder="Nome:"
+              className="input-nome"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              readOnly={nome && erroCpf === ""}
+            />
+            <input
+              type="text"
+              placeholder="Data de Nascimento (dd/mm/yyyy):"
+              className="input-data"
+              value={dataNasc}
+              onChange={handleDateChange}
+              maxLength="10"
+            />
           </div>
-          {errors.nome && <span className={styles["erro"]}>{errors.nome}</span>}
-          {errors.data && <span className={styles["erro"]}>{errors.data}</span>}
-          <input name="email" type="email" placeholder="E-mail" className={styles["cadastro-input"]} value={form.email} onChange={handleChange} />
-          {errors.email && <span className={styles["erro"]}>{errors.email}</span>}
-          <input name="cpf" type="text" placeholder="CPF:" className={styles["cadastro-input"]} value={form.cpf} onChange={handleChange} />
-          {errors.cpf && <span className={styles["erro"]}>{errors.cpf}</span>}
-          <div className={styles["cadastro-row"]}>
-            <input name="cidade" type="text" placeholder="Cidade:" className={styles["input-cidade"]} value={form.cidade} onChange={handleChange} />
-            <input name="uf" type="text" placeholder="UF:" className={styles["input-uf"]} value={form.uf} onChange={handleChange} />
-          </div>
-          {errors.cidade && <span className={styles["erro"]}>{errors.cidade}</span>}
-          {errors.uf && <span className={styles["erro"]}>{errors.uf}</span>}
-          <input name="senha" type="password" placeholder="Senha" className={styles["cadastro-input"]} value={form.senha} onChange={handleChange} />
-          {errors.senha && <span className={styles["erro"]}>{errors.senha}</span>}
-          <input name="senha2" type="password" placeholder="Repita a Senha" className={styles["cadastro-input"]} value={form.senha2} onChange={handleChange} />
-          {errors.senha2 && <span className={styles["erro"]}>{errors.senha2}</span>}
-          <p className={styles["cadastro-login"]}>
+
+          <input
+          type="email"
+          placeholder="E-mail"
+          className="cadastro-input"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            type="text"
+            placeholder="CPF:"
+            className="cadastro-input"
+            value={cpf}
+            onChange={handleCpfChange}
+            onBlur={handleCpfBlur}
+            maxLength="14"
+          />
+          {erroCpf && <p className="erro-cpf">{erroCpf}</p>}
+
+          <div className="cadastro-row">
+          <input
+          type="text"
+          placeholder="Cidade:"
+          className="input-cidade"
+          value={cidade}
+          onChange={(e) => setCidade(e.target.value)}
+          />
+        <input
+          type="text"
+          placeholder="UF:"
+          className="input-uf"
+          maxLength="2"
+          value={uf}
+          onChange={(e) => setUf(e.target.value)}
+        />
+</div>
+
+<input
+    type="password"
+    placeholder="Senha"
+    className="cadastro-input"
+    value={senha}
+    onChange={(e) => setSenha(e.target.value)}
+/>
+
+<input
+  type="password"
+  placeholder="Repita a Senha"
+  className="cadastro-input"
+  value={senhaRepetida}
+  onChange={(e) => setSenhaRepetida(e.target.value)}
+/>
+
+          <p className="cadastro-login">
             Já tem uma conta? <a href="/login">Entrar</a>
           </p>
-          {apiError && <span className={styles["erro"]}>{apiError}</span>}
-          <button type="submit" className={styles["cadastro-button"]} disabled={submitting}>{submitting ? "Enviando..." : "Acessar"}</button>
+
+          <button type="submit" className="cadastro-button" >Cadastrar</button>
+
         </form>
-        <footer className={styles["cadastro-footer"]}>
+
+        <footer className="cadastro-footer">
           Copyright© 2025 Flig Soluções de Agilidade. Todos os Direitos Reservados
         </footer>
       </div>
