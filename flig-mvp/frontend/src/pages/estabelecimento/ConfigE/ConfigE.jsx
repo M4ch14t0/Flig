@@ -1,6 +1,6 @@
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import "./ConfigE.css";
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import './ConfigE.css';
 
 export default function ConfigE() {
   const navigate = useNavigate();

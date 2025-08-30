@@ -13,7 +13,7 @@ function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 function validateCPF(cpf) {
-  return /^\d{11}$/.test(cpf.replace(/\D/g, ""));
+  return /^\d{11}$/.test(cpf.replace(/\D/g, ''));
 }
 
 function Pagamento() {
@@ -36,11 +36,11 @@ function Pagamento() {
 
   function validate() {
     const newErrors = {};
-    if (!form.nome) newErrors.nome = "Nome obrigatório";
-    if (!form.email) newErrors.email = "E-mail obrigatório";
-    else if (!validateEmail(form.email)) newErrors.email = "E-mail inválido";
-    if (!form.cpf) newErrors.cpf = "CPF obrigatório";
-    else if (!validateCPF(form.cpf)) newErrors.cpf = "CPF inválido (apenas números)";
+    if (!form.nome) newErrors.nome = 'Nome obrigatório';
+    if (!form.email) newErrors.email = 'E-mail obrigatório';
+    else if (!validateEmail(form.email)) newErrors.email = 'E-mail inválido';
+    if (!form.cpf) newErrors.cpf = 'CPF obrigatório';
+    else if (!validateCPF(form.cpf)) newErrors.cpf = 'CPF inválido (apenas números)';
     return newErrors;
   }
 

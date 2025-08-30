@@ -42,7 +42,7 @@ function Estabelecimentos() {
 
   // Navega para detalhes do estabelecimento
   const handleClickEstab = (estabelecimento) => {
-   navigate(`/cliente/estabelecimentos/${estabelecimento.id}`, { state: { estabelecimento } });
+    navigate(`/cliente/estabelecimentos/${estabelecimento.id}`, { state: { estabelecimento } });
   };
 
   // Muda de página

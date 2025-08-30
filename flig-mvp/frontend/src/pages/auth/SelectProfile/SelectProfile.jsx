@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import "./SelectProfile.css";
+import { useNavigate } from 'react-router-dom';
+import './SelectProfile.css';
 
 export default function SelectProfile() {
   const navigate = useNavigate();
@@ -17,13 +17,13 @@ export default function SelectProfile() {
 
           <div className="select-options">
             <button
-              onClick={() => navigate("/login")}
+              onClick={() => navigate('/login')}
               className="select-button"
             >
               Cliente
             </button>
             <button
-              onClick={() => navigate("/login-estab")}
+              onClick={() => navigate('/login-estab')}
               className="select-button"
             >
               Estabelecimento
@@ -43,10 +43,10 @@ export default function SelectProfile() {
         </div>
 
         <div className="select-help">
-            <p>Ajuda:</p>
-            <p><a href="/faq" className="select-faq"> FAQ</a></p>
-            <p><a href="/faq" className="select-suporte"> Suporte</a></p>
-            <p><a href="/faq" className="select-contato"> Contate-nos</a></p>
+          <p>Ajuda:</p>
+          <p><a href="/faq" className="select-faq"> FAQ</a></p>
+          <p><a href="/faq" className="select-suporte"> Suporte</a></p>
+          <p><a href="/faq" className="select-contato"> Contate-nos</a></p>
         </div>
       </div>
     </div>

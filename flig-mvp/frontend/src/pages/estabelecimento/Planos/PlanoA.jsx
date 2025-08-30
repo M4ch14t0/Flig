@@ -1,7 +1,7 @@
-import { useNavigate } from "react-router-dom";
-import { Home, List, ArrowLeft } from "lucide-react";
-import "./Plano.css";
-import "./PlanoA.css"; // Reutiliza o estilo da página de renovação
+import { useNavigate } from 'react-router-dom';
+import { Home, List, ArrowLeft } from 'lucide-react';
+import './Plano.css';
+import './PlanoA.css'; // Reutiliza o estilo da página de renovação
 
 export default function PlanoA() {
   const navigate = useNavigate();
@@ -15,9 +15,9 @@ export default function PlanoA() {
 
       <div className="plano-content">
         <aside className="plano-sidebar">
-          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/home")}><Home size={16} /> Home</button>
+          <button className="plano-nav-btn" onClick={() => navigate('/estabelecimento/home')}><Home size={16} /> Home</button>
           <button className="plano-nav-btn"><List size={16} /> Gerenciar Filas</button>
-          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/planos")}><List size={16} /> Planos</button>
+          <button className="plano-nav-btn" onClick={() => navigate('/estabelecimento/planos')}><List size={16} /> Planos</button>
         </aside>
 
         <main className="planoa-main">

@@ -1,5 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
-import styles from "./Webpage.module.css";
+import { Link, useNavigate } from 'react-router-dom';
+import styles from './Webpage.module.css';
 
 function Webpage() {
   const navigate = useNavigate();
@@ -7,7 +7,7 @@ function Webpage() {
     <div className={styles.welcome}>
       {/* NAVBAR */}
       <nav className={styles.navbar}>
-        <div className={styles.logo} onClick={() => navigate("/")} style={{cursor: 'pointer'}}>
+        <div className={styles.logo} onClick={() => navigate('/')} style={{cursor: 'pointer'}}>
           <span className={styles.highlight}>F</span>lig
         </div>
 
@@ -177,7 +177,7 @@ function Webpage() {
             <img
               src="/logo-footer.svg"
               alt="Logo Flig"
-              style={{ width: "80px" }}
+              style={{ width: '80px' }}
             />
             <p>
               <strong>FligPTI@gmail.com</strong>
