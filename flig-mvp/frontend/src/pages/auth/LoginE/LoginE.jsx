@@ -1,6 +1,6 @@
 // LoginE.jsx
-import { useNavigate } from "react-router-dom";
-import "./LoginE.css";
+import { useNavigate } from 'react-router-dom';
+import './LoginE.css';
 
 export default function LoginE() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function LoginE() {
             Ainda não tem uma conta? <a href="/cadastro-estabelecimento">Crie agora.</a>
           </p>
 
-           <button className="empresa-login-button"onClick={() => navigate("/estabelecimento/home")}>
+          <button className="empresa-login-button"onClick={() => navigate('/estabelecimento/home')}>
           Acessar</button>
         </div>
 

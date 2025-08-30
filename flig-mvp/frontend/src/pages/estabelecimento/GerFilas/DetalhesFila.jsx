@@ -27,4 +27,4 @@ export default function DetalhesFila() {
       </div>
     </div>
   );
-} 
+}

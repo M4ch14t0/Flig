@@ -19,4 +19,4 @@ export default function PlanoPremium() {
       </div>
     </div>
   );
-} 
+}

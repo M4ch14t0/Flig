@@ -1,37 +1,42 @@
-// EstHome.jsx
-import { useNavigate } from "react-router-dom";
-import "./EstHome.css";
-import { Home, List, HelpCircle, User, Settings } from "lucide-react";
+import React from 'react';
+import Layout from '../../../components/Layout';
+import { Home, List, CreditCard } from 'lucide-react';
+import styles from './EstHome.module.css';
 
 export default function EstHome() {
-  const navigate = useNavigate();
+  const sidebarLinks = [
+    {
+      to: '/estabelecimento/home',
+      label: 'Home',
+      icon: <Home size={16} />,
+      active: true
+    },
+    {
+      to: '/estabelecimento/gerenciar-filas',
+      label: 'Gerenciar Filas',
+      icon: <List size={16} />
+    },
+    {
+      to: '/estabelecimento/planos',
+      label: 'Planos',
+      icon: <CreditCard size={16} />
+    }
+  ];
 
   return (
-    <div className="esthome-container">
-      {/* Topo */}
-      <header className="esthome-header">
-        <img src="/logo-flig.svg" alt="Flig logo" className="esthome-logo" />
-        <div className="esthome-icons">
-          <button onClick={() => navigate("/faq")}><HelpCircle /></button>
-          <button onClick={() => navigate("/estabelecimento/perfil")}><User /></button>
-          <button type="button" onClick={() => navigate("/estabelecimento/configuracoes")}><Settings /></button>
-        </div>
-      </header>
-
-      {/* Corpo */}
-      <div className="esthome-body">
-        {/* Sidebar */}
-        <aside className="esthome-sidebar">
-          <button className="esthome-nav-btn" onClick={() => navigate("/estabelecimento/home")}><Home size={16} /> Home</button>
-          <button className="esthome-nav-btn" onClick={() => navigate("/estabelecimento/gerenciar-filas")}><List size={16} /> Gerenciar Filas</button>
-          <button className="esthome-nav-btn" onClick={() => navigate("/estabelecimento/planos")}><List size={16} /> Planos</button>
-        </aside>
-
-        {/* Conteúdo principal */}
-        <main className="esthome-main">
-          <h1 className="esthome-welcome">Bem-vindo a <strong>Flig</strong></h1>
-        </main>
+    <Layout
+      sidebarLinks={sidebarLinks}
+      userType="estabelecimento"
+      showFooter={false}
+    >
+      <div className={styles.welcomeContainer}>
+        <h1 className={styles.welcomeTitle}>
+          Bem-vindo a <strong>Flig</strong>
+        </h1>
+        <p className={styles.welcomeSubtitle}>
+          Gerencie suas filas e otimize a experiência dos seus clientes
+        </p>
       </div>
-    </div>
+    </Layout>
   );
 }
