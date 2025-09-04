@@ -104,7 +104,6 @@
   width: 220px;
   padding: 24px 16px;
   box-shadow: 2px 0 6px rgba(0,0,0,0.2);
-  height: 100%;
   position: relative;
   z-index: 999;
   display: flex;

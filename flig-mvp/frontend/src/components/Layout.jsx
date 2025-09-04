@@ -1,17 +1,17 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/authContextImports.js';
 import styles from './Layout.module.css';
 
 /**
  * Componente Layout - Estrutura Base da Aplicação
- * 
+ *
  * Funcionalidade:
  * - Fornece estrutura consistente para todas as páginas
  * - Inclui header, sidebar, conteúdo principal e footer
  * - Gerencia navegação e funcionalidades comuns
  * - Suporta configuração flexível de elementos visíveis
- * 
+ *
  * @param {Array} sidebarLinks - Array de links para a sidebar (to, label, icon, active)
  * @param {React.ReactNode} children - Conteúdo principal da página
  * @param {string} userType - Tipo de usuário ('cliente' ou 'estabelecimento')
@@ -30,10 +30,8 @@ export default function Layout({
 }) {
   // Hook do React Router para navegação programática
   const navigate = useNavigate();
-  
   // Hook do React Router para obter informações da rota atual
   const location = useLocation();
-  
   // Hook personalizado para acessar função de logout
   const { logout } = useAuth();
 
@@ -72,7 +70,7 @@ export default function Layout({
 
   return (
     <div className={styles.wrapper}>
-      {/* 
+      {/*
         HEADER - Cabeçalho da aplicação
         Contém logo, ícones de ajuda e menu do usuário
       */}
@@ -82,21 +80,21 @@ export default function Layout({
           <div className={styles.logo} onClick={handleHomeClick}>
             <img src="/logo-flig.svg" alt="Flig" className={styles.logoImg} />
           </div>
-          
+
           {/* Área direita do header com ícones e menu */}
           <div className={styles.headerRight}>
             {/* Link para FAQ */}
             <Link to="/faq" className={styles.helpIcon} aria-label="FAQ">
               ❓
             </Link>
-            
+
             {/* Menu do usuário com dropdown */}
             <div className={styles.userIconWrapper}>
               {/* Botão do usuário que abre dropdown */}
               <button className={styles.userIcon} onClick={handleProfileClick}>
                 👤
               </button>
-              
+
               {/* Dropdown com opções do usuário */}
               <div className={styles.userPopup}>
                 <p onClick={handleProfileClick}>👤 <u>Perfil</u></p> {/* Acessar perfil */}
@@ -108,12 +106,12 @@ export default function Layout({
         </header>
       )}
 
-      {/* 
+      {/*
         CONTEÚDO PRINCIPAL
         Área que contém sidebar e conteúdo da página
       */}
       <div className={styles.content}>
-        {/* 
+        {/*
           SIDEBAR - Menu lateral de navegação
           Só é exibida se showSidebar for true e houver links
         */}
@@ -136,14 +134,14 @@ export default function Layout({
           </aside>
         )}
 
-        {/* 
+        {/*
           MAIN - Área principal de conteúdo
           Renderiza os componentes filhos (children)
         */}
         <main className={styles.main}>{children}</main>
       </div>
 
-      {/* 
+      {/*
         FOOTER - Rodapé da aplicação
         Contém informações da empresa, links úteis e formulário de feedback
       */}
@@ -161,7 +159,7 @@ export default function Layout({
                 <img src="/social/tiktok.svg" alt="TikTok" />
               </div>
             </div>
-            
+
             {/* Coluna 2: Serviços oferecidos */}
             <div className={styles.footerColumn}>
               <h4>Serviços:</h4>
@@ -169,7 +167,7 @@ export default function Layout({
               <p>App Flig</p>
               <p>Termos de privacidade</p>
             </div>
-            
+
             {/* Coluna 3: Links de ajuda */}
             <div className={styles.footerColumn}>
               <h4>Ajuda:</h4>
@@ -177,7 +175,7 @@ export default function Layout({
               <p>🛠️ Suporte</p>
               <p>📞 Contate-nos</p>
             </div>
-            
+
             {/* Coluna 4: Formulário de feedback */}
             <div className={styles.footerColumn}>
               <h4>Tem alguma dica pra gente?</h4>

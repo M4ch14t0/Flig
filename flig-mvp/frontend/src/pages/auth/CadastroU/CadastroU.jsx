@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../contexts/authContextImports.js';
 import './CadastroU.css';
 
 export default function CadastroU() {
@@ -141,7 +141,6 @@ export default function CadastroU() {
               className="input-nome"
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              readOnly={nome && erroCpf === ''}
             />
             <input
               type="text"

@@ -19,5 +19,15 @@
         "Seguro",
         "Simulação",
         "utilizar"
-    ]
+    ],
+    "workbench.editor.enablePreview": false,
+    "workbench.editor.autoLockGroups": {
+        "mainThreadWebview-browserPreview": false,
+        "terminalEditor": false,
+        "mainThreadWebview-simpleBrowser.view": false
+    },
+    "workbench.editor.focusRecentEditorAfterClose": false,
+    "workbench.editor.closeEmptyGroups": false,
+    "workbench.editor.customLabels.enabled": false,
+    "workbench.editor.decorations.badges": false
 }

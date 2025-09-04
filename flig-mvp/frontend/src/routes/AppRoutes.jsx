@@ -61,14 +61,14 @@ import PlanoPremium from '../pages/estabelecimento/Planos/PlanoPremium'; // Deta
 function AppRoutes() {
   return (
     <Routes>
-      {/* 
+      {/*
         ROTAS PÚBLICAS
         Acessíveis a todos os usuários, sem autenticação
       */}
       <Route path="/" element={<Webpage />} /> {/* Página inicial da empresa */}
       <Route path="/faq" element={<FAQ />} /> {/* Perguntas frequentes */}
 
-      {/* 
+      {/*
         ROTAS DE AUTENTICAÇÃO
         Para login, cadastro e seleção de perfil
         Não requerem autenticação prévia
@@ -79,32 +79,54 @@ function AppRoutes() {
       <Route path="/cadastro-cliente" element={<CadastroU />} /> {/* Cadastro de clientes */}
       <Route path="/cadastro-estabelecimento" element={<CadastroE />} /> {/* Cadastro de estabelecimentos */}
 
-      {/* 
+      {/*
         ROTAS PROTEGIDAS - CLIENTE
         Acessíveis apenas para usuários logados como cliente
         Usam o componente ProtectedRoute para verificar autenticação e tipo
       */}
-      <Route path="/cliente" element={
+      {/* Rotas protegidas do cliente */}
+      <Route path="/cliente/home" element={
         <ProtectedRoute requiredUserType="cliente">
-          <Routes>
-            <Route path="home" element={<UserHome />} /> {/* Página inicial do cliente */}
-            <Route path="estabelecimentos" element={<Estabelecimentos />} /> {/* Lista de estabelecimentos */}
-            <Route path="estabelecimentos/:id" element={<DetEstabelecimentos />} /> {/* Detalhes de estabelecimento específico */}
-            <Route path="minhas-filas" element={<MinhasFilas />} /> {/* Filas do cliente */}
-            <Route path="pagamento" element={<Pagamento />} /> {/* Página de pagamento */}
-            <Route path="perfil" element={<ContaU />} /> {/* Perfil do cliente */}
-            <Route path="configuracoes" element={<ConfigU />} /> {/* Configurações da conta */}
-            <Route path="*" element={<Navigate to="/cliente/home" replace />} /> {/* Redireciona rotas inválidas para home */}
-          </Routes>
+          <UserHome />
+        </ProtectedRoute>
+      } />
+      <Route path="/cliente/estabelecimentos" element={
+        <ProtectedRoute requiredUserType="cliente">
+          <Estabelecimentos />
+        </ProtectedRoute>
+      } />
+      <Route path="/cliente/estabelecimentos/:id" element={
+        <ProtectedRoute requiredUserType="cliente">
+          <DetEstabelecimentos />
+        </ProtectedRoute>
+      } />
+      <Route path="/cliente/minhas-filas" element={
+        <ProtectedRoute requiredUserType="cliente">
+          <MinhasFilas />
+        </ProtectedRoute>
+      } />
+      <Route path="/cliente/pagamento" element={
+        <ProtectedRoute requiredUserType="cliente">
+          <Pagamento />
+        </ProtectedRoute>
+      } />
+      <Route path="/cliente/perfil" element={
+        <ProtectedRoute requiredUserType="cliente">
+          <ContaU />
+        </ProtectedRoute>
+      } />
+      <Route path="/cliente/configuracoes" element={
+        <ProtectedRoute requiredUserType="cliente">
+          <ConfigU />
         </ProtectedRoute>
       } />
 
-      {/* 
+      {/*
         ROTAS PROTEGIDAS - ESTABELECIMENTO
         Acessíveis apenas para usuários logados como estabelecimento
         Usam o componente ProtectedRoute para verificar autenticação e tipo
       */}
-      <Route path="/estabelecimento" element={
+      <Route path="/estabelecimento/*" element={
         <ProtectedRoute requiredUserType="estabelecimento">
           <Routes>
             <Route path="home" element={<EstHome />} /> {/* Página inicial do estabelecimento */}
@@ -124,7 +146,7 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
-      {/* 
+      {/*
         ROTA 404 - PÁGINA NÃO ENCONTRADA
         Captura todas as rotas que não correspondem às definidas acima
         Deve ser sempre a última rota

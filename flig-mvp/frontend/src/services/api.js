@@ -1,144 +1,228 @@
 import axios from 'axios';
 
-/**
- * Configuração base da API usando Axios
- * Cria uma instância do Axios com configurações padrão
- */
-const api = axios.create({
-  // Define a URL base da API - usa variável de ambiente ou fallback para localhost:5000
-  // Corrigido de 3000 para 5000 para corresponder ao backend
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  // Timeout de 10 segundos para evitar requisições pendentes indefinidamente
-  timeout: 10000,
-  // Define o tipo de conteúdo padrão como JSON
+// ========================================
+// CONFIGURAÇÃO DA API
+// ========================================
+// URL base do backend - ajuste conforme necessário
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+// ========================================
+// INSTÂNCIA DO AXIOS
+// ========================================
+export const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000, // 10 segundos
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-/**
- * Interceptor de requisição - executa ANTES de cada requisição HTTP
- * Adiciona automaticamente o token de autenticação em todas as requisições
- */
+// ========================================
+// INTERCEPTORS
+// ========================================
+
+// Interceptor para adicionar token em todas as requisições
 api.interceptors.request.use(
   (config) => {
-    // Busca o token de autenticação do localStorage
     const token = localStorage.getItem('authToken');
-    
-    // Se existir um token, adiciona no header Authorization
     if (token) {
-      // Formato: "Bearer <token>" - padrão JWT
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // Retorna a configuração modificada
     return config;
   },
   (error) => {
-    // Se houver erro na configuração da requisição, rejeita a Promise
     return Promise.reject(error);
   }
 );
 
-/**
- * Interceptor de resposta - executa APÓS cada resposta HTTP
- * Trata automaticamente erros de autenticação e redireciona se necessário
- */
+// Interceptor para tratar respostas
 api.interceptors.response.use(
   (response) => {
-    // Se a resposta for bem-sucedida, retorna normalmente
     return response;
   },
   (error) => {
-    // Se receber erro 401 (não autorizado) - token expirado ou inválido
+    // Se receber 401 (não autorizado), limpa os dados de autenticação
     if (error.response?.status === 401) {
-      // Remove dados de autenticação do localStorage
       localStorage.removeItem('authToken');
       localStorage.removeItem('userType');
-      
-      // Redireciona para a página de escolha de login
-      window.location.href = '/escolha-login';
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userName');
+
+      // Redireciona para login se estiver em uma página protegida
+      if (window.location.pathname.includes('/cliente/') ||
+          window.location.pathname.includes('/estabelecimento/')) {
+        window.location.href = '/escolha-login';
+      }
     }
-    
-    // Rejeita a Promise com o erro para tratamento posterior
+
     return Promise.reject(error);
   }
 );
 
+// ========================================
+// FUNÇÕES AUXILIARES
+// ========================================
+
 /**
- * Serviços de autenticação
- * Funções para login, registro e logout de usuários
+ * Função para verificar se o backend está disponível
+ * @returns {Promise<boolean>}
  */
-export const authService = {
-  // Faz login do usuário enviando credenciais para /auth/login
-  login: (credentials) => api.post('/auth/login', credentials),
-  
-  // Registra novo usuário enviando dados para /auth/register
-  register: (userData) => api.post('/auth/register', userData),
-  
-  // Faz logout do usuário enviando requisição para /auth/logout
-  logout: () => api.post('/auth/logout'),
+export const checkBackendHealth = async () => {
+  try {
+    const response = await api.get('/health');
+    return response.status === 200;
+  } catch (error) {
+    console.error('Backend não está disponível:', error);
+    return false;
+  }
 };
 
 /**
- * Serviços do usuário cliente
- * Funções para gerenciar perfil, estabelecimentos e filas do usuário
+ * Função para obter dados do usuário atual
+ * @returns {Promise<Object>}
  */
-export const userService = {
-  // Busca perfil do usuário logado
-  getProfile: () => api.get('/user/profile'),
-  
-  // Atualiza dados do perfil do usuário
-  updateProfile: (data) => api.put('/user/profile', data),
-  
-  // Lista todos os estabelecimentos disponíveis
-  getEstablishments: () => api.get('/establishments'),
-  
-  // Busca dados de um estabelecimento específico por ID
-  getEstablishment: (id) => api.get(`/establishments/${id}`),
-  
-  // Lista filas que o usuário está participando
-  getMyQueues: () => api.get('/user/queues'),
-  
-  // Entra em uma fila de um estabelecimento específico
-  joinQueue: (establishmentId) => api.post(`/establishments/${establishmentId}/join`),
-  
-  // Sai de uma fila específica
-  leaveQueue: (queueId) => api.delete(`/queues/${queueId}`),
+export const getCurrentUser = async () => {
+  try {
+    const response = await api.get('/auth/me');
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao obter dados do usuário:', error);
+    throw error;
+  }
+};
+
+// ========================================
+// ENDPOINTS DE AUTENTICAÇÃO
+// ========================================
+
+/**
+ * Login de usuário
+ * @param {Object} credentials - Email e senha
+ * @param {string} userType - Tipo de usuário
+ * @returns {Promise<Object>}
+ */
+export const loginUser = async (credentials, userType) => {
+  return api.post('/auth/login', {
+    email: credentials.email,
+    password: credentials.password,
+    userType: userType
+  });
 };
 
 /**
- * Serviços do estabelecimento
- * Funções para gerenciar perfil, filas e planos do estabelecimento
+ * Registro de usuário
+ * @param {Object} userData - Dados do usuário
+ * @param {string} userType - Tipo de usuário
+ * @returns {Promise<Object>}
  */
-export const establishmentService = {
-  // Busca perfil do estabelecimento logado
-  getProfile: () => api.get('/establishment/profile'),
-  
-  // Atualiza dados do perfil do estabelecimento
-  updateProfile: (data) => api.put('/establishment/profile', data),
-  
-  // Lista todas as filas do estabelecimento
-  getQueues: () => api.get('/establishment/queues'),
-  
-  // Busca dados de uma fila específica por ID
-  getQueue: (id) => api.get(`/establishment/queues/${id}`),
-  
-  // Cria uma nova fila no estabelecimento
-  createQueue: (data) => api.post('/establishment/queues', data),
-  
-  // Atualiza dados de uma fila existente
-  updateQueue: (id, data) => api.put(`/establishment/queues/${id}`, data),
-  
-  // Remove uma fila do estabelecimento
-  deleteQueue: (id) => api.delete(`/establishment/queues/${id}`),
-  
-  // Lista planos disponíveis para o estabelecimento
-  getPlans: () => api.get('/establishment/plans'),
-  
-  // Inscreve o estabelecimento em um plano específico
-  subscribePlan: (planId) => api.post(`/establishment/plans/${planId}/subscribe`),
+export const registerUser = async (userData, userType) => {
+  return api.post('/auth/register', {
+    ...userData,
+    userType: userType
+  });
 };
 
-// Exporta a instância da API como padrão
+/**
+ * Logout de usuário
+ * @returns {Promise<Object>}
+ */
+export const logoutUser = async () => {
+  return api.post('/auth/logout');
+};
+
+// ========================================
+// ENDPOINTS DE ESTABELECIMENTOS
+// ========================================
+
+/**
+ * Listar estabelecimentos
+ * @param {Object} filters - Filtros de busca
+ * @returns {Promise<Object>}
+ */
+export const getEstablishments = async (filters = {}) => {
+  return api.get('/establishments', { params: filters });
+};
+
+/**
+ * Obter detalhes de um estabelecimento
+ * @param {number} id - ID do estabelecimento
+ * @returns {Promise<Object>}
+ */
+export const getEstablishmentById = async (id) => {
+  return api.get(`/establishments/${id}`);
+};
+
+// ========================================
+// ENDPOINTS DE FILAS
+// ========================================
+
+/**
+ * Listar filas do usuário
+ * @returns {Promise<Object>}
+ */
+export const getUserQueues = async () => {
+  return api.get('/queues/user');
+};
+
+/**
+ * Entrar em uma fila
+ * @param {number} establishmentId - ID do estabelecimento
+ * @returns {Promise<Object>}
+ */
+export const joinQueue = async (establishmentId) => {
+  return api.post('/queues/join', { establishmentId });
+};
+
+/**
+ * Sair de uma fila
+ * @param {number} queueId - ID da fila
+ * @returns {Promise<Object>}
+ */
+export const leaveQueue = async (queueId) => {
+  return api.post('/queues/leave', { queueId });
+};
+
+// ========================================
+// ENDPOINTS DE ESTABELECIMENTO (GERENCIAMENTO)
+// ========================================
+
+/**
+ * Listar filas do estabelecimento
+ * @returns {Promise<Object>}
+ */
+export const getEstablishmentQueues = async () => {
+  return api.get('/establishment/queues');
+};
+
+/**
+ * Criar nova fila
+ * @param {Object} queueData - Dados da fila
+ * @returns {Promise<Object>}
+ */
+export const createQueue = async (queueData) => {
+  return api.post('/establishment/queues', queueData);
+};
+
+/**
+ * Atualizar fila
+ * @param {number} queueId - ID da fila
+ * @param {Object} queueData - Dados da fila
+ * @returns {Promise<Object>}
+ */
+export const updateQueue = async (queueId, queueData) => {
+  return api.put(`/establishment/queues/${queueId}`, queueData);
+};
+
+/**
+ * Deletar fila
+ * @param {number} queueId - ID da fila
+ * @returns {Promise<Object>}
+ */
+export const deleteQueue = async (queueId) => {
+  return api.delete(`/establishment/queues/${queueId}`);
+};
+
+// ========================================
+// EXPORT DEFAULT
+// ========================================
 export default api;

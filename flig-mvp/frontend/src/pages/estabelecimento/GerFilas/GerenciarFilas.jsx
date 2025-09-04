@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import Layout from '../../../components/Layout';
+import { Home, BarChart2, List, CreditCard } from 'lucide-react';
 import styles from './GerFilas.module.css';
 
 function GerenciarFilas() {
@@ -15,6 +17,13 @@ function GerenciarFilas() {
     agendamento: '',
     reserva: 'individual',
   });
+
+  const sidebarLinks = [
+    { to: '/estabelecimento/home', label: 'Home', icon: <Home size={16} /> },
+    { to: '/estabelecimento/dashboard', label: 'Dashboard', icon: <BarChart2 size={16} /> },
+    { to: '/estabelecimento/gerenciar-filas', label: 'Gerenciar Filas', icon: <List size={16} />, active: true },
+    { to: '/estabelecimento/planos', label: 'Planos', icon: <CreditCard size={16} /> },
+  ];
 
   const handleCriarFila = () => {
     const nova = {
@@ -36,36 +45,8 @@ function GerenciarFilas() {
   };
 
   return (
-    <div className={styles.wrapper}>
-      {/* HEADER */}
-      <header className={styles.header}>
-        <div className={styles.logo}>Flig</div>
-        <div className={styles.headerRight}>
-          <Link to="/faq" className={styles.helpIcon}>❓</Link>
-          <div className={styles.userIconWrapper}>
-            <button className={styles.userIcon} onClick={() => navigate('/estabelecimento/perfil')}>👤</button>
-            <div className={styles.userPopup}>
-              <p onClick={() => navigate('/estabelecimento/perfil')}>👤 <u>Perfil</u></p>
-              <p onClick={() => navigate('/estabelecimento/configuracoes')}>⚙️ <u>Configurações</u></p>
-              <p>🔓 <u>Sair</u></p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* CONTEÚDO */}
-      <div className={styles.content}>
-        {/* SIDEBAR */}
-        <aside className={styles.sidebar}>
-          <nav className={styles.menu}>
-            <Link to="/estabelecimento/home" className={styles.homeActive}>🏠 Home</Link>
-            <Link to="/estabelecimento/dashboard" className={styles.dashboardActive}>📊 Dashboard</Link>
-            <Link to="/estabelecimento/gerenciar-filas" className={styles.gerActive}>👥 Gerenciar Filas</Link>
-            <Link to="/estabelecimento/planos" className={styles.planosActive}>💳 Planos</Link>
-          </nav>
-        </aside>
-
-        {/* MAIN */}
+    <Layout sidebarLinks={sidebarLinks} userType="estabelecimento" showFooter={false}>
+      <div className={styles.wrapper}>
         <main className={styles.main}>
           <h2>Gerenciar Filas</h2>
           <div className={styles.barTop}>
@@ -100,7 +81,6 @@ function GerenciarFilas() {
           </table>
         </main>
 
-        {/* POPUP */}
         {popupVisible && (
           <div className={styles.popupOverlay} onClick={() => setPopupVisible(false)}>
             <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
@@ -192,7 +172,7 @@ function GerenciarFilas() {
           </div>
         )}
       </div>
-    </div>
+    </Layout>
   );
 }
 

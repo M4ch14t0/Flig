@@ -1,9 +1,49 @@
 // LoginE.jsx
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../../contexts/authContextImports.js';
 import './LoginE.css';
 
 export default function LoginE() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await login(formData, 'estabelecimento');
+
+      if (result.success) {
+        const from = location.state?.from?.pathname || '/estabelecimento/home';
+        navigate(from, { replace: true });
+      } else {
+        setError(result.error);
+      }
+    } catch (error) {
+      setError('Erro ao fazer login. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="empresa-login-container">
@@ -17,15 +57,36 @@ export default function LoginE() {
           <h1 className="empresa-login-title">Bem vindo a FLIG!</h1>
           <p className="empresa-login-label">Entrar:</p>
 
-          <input type="email" placeholder="E-mail:" className="empresa-login-input" />
-          <input type="password" placeholder="Senha:" className="empresa-login-input" />
+          <form onSubmit={handleSubmit} className="empresa-login-form">
+            {error && <div className="empresa-login-error">{error}</div>}
 
-          <p className="empresa-login-link">
-            Ainda não tem uma conta? <a href="/cadastro-estabelecimento">Crie agora.</a>
-          </p>
+            <input
+              type="email"
+              name="email"
+              placeholder="E-mail:"
+              className="empresa-login-input"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Senha:"
+              className="empresa-login-input"
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+            />
 
-          <button className="empresa-login-button"onClick={() => navigate('/estabelecimento/home')}>
-          Acessar</button>
+            <p className="empresa-login-link">
+              Ainda não tem uma conta? <a href="/cadastro-estabelecimento">Crie agora.</a>
+            </p>
+
+            <button className="empresa-login-button" type="submit" disabled={loading}>
+              {loading ? 'Entrando...' : 'Acessar'}
+            </button>
+          </form>
         </div>
 
         <footer className="empresa-login-footer">

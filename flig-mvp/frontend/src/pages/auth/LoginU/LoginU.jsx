@@ -1,7 +1,7 @@
 // LoginU.jsx
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../contexts/authContextImports.js';
 import './LoginU.css';
 
 export default function LoginU() {
@@ -38,7 +38,7 @@ export default function LoginU() {
       } else {
         setError(result.error);
       }
-    } catch {
+    } catch (error) {
       setError('Erro ao fazer login. Tente novamente.');
     } finally {
       setLoading(false);
