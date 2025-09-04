@@ -1,31 +1,25 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, List, HelpCircle, User, Settings } from 'lucide-react';
+import Layout from '../../../components/Layout';
+import { Home, BarChart2, List, CreditCard } from 'lucide-react';
 import './Plano.css';
 
 export default function Plano() {
   const navigate = useNavigate();
 
+  const sidebarLinks = [
+    { to: '/estabelecimento/home', label: 'Home', icon: <Home size={16} /> },
+    { to: '/estabelecimento/dashboard', label: 'Dashboard', icon: <BarChart2 size={16} /> },
+    { to: '/estabelecimento/gerenciar-filas', label: 'Gerenciar Filas', icon: <List size={16} /> },
+    { to: '/estabelecimento/planos', label: 'Planos', icon: <CreditCard size={16} />, active: true },
+  ];
+
   return (
-    <div className="plano-container">
-      <header className="plano-header">
-        <img src="/logo-flig.svg" alt="Logo Flig" className="plano-logo" />
-        <h1>Planos</h1>
-        <div className="plano-icons">
-          <button onClick={() => navigate('/faq')}><HelpCircle /></button>
-          <button onClick={() => navigate('/estabelecimento/perfil')}><User /></button>
-          <button type="button" onClick={() => navigate('/estabelecimento/configuracoes')}><Settings /></button>
-        </div>
-      </header>
-
-      <div className="plano-content">
-        <aside className="plano-sidebar">
-          <button className="plano-nav-btn" onClick={() => navigate('/estabelecimento/home')}><Home size={16} /> Home</button>
-          <button className="plano-nav-btn"><List size={16} /> Gerenciar Filas</button>
-          <button className="plano-nav-btn" onClick={() => navigate('/estabelecimento/planos')}><List size={16} /> Planos</button>
-        </aside>
-
+    <Layout sidebarLinks={sidebarLinks} userType="estabelecimento" showFooter={false}>
+      <div className="plano-container">
         <main className="plano-main">
+          <h1>Planos</h1>
+
           <div className="plano-card">
             <h2>Essencial</h2>
             <p className="plano-preco">R$ 89,90/mês</p>
@@ -43,11 +37,6 @@ export default function Plano() {
           </div>
         </main>
       </div>
-
-      <footer className="plano-footer">
-        <p>Entre em contato com a Flig para mais informações.</p>
-        <p>Copyright © 2023 Flig Soluções de agilidade. Todos os Direitos Reservados.</p>
-      </footer>
-    </div>
+    </Layout>
   );
 }

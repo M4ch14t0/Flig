@@ -1,16 +1,16 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/authContextImports.js';
 
 /**
  * Componente ProtectedRoute - Rota Protegida
- * 
+ *
  * Funcionalidade:
  * - Protege rotas que requerem autenticação
  * - Verifica se o usuário está logado
  * - Verifica se o usuário tem o tipo correto (cliente ou estabelecimento)
  * - Redireciona usuários não autorizados para páginas apropriadas
- * 
+ *
  * @param {React.ReactNode} children - Componentes filhos a serem renderizados se autorizado
  * @param {string|null} requiredUserType - Tipo de usuário requerido ('cliente', 'estabelecimento' ou null para qualquer tipo)
  * @param {string} redirectTo - Rota para redirecionar usuários não autenticados
@@ -23,7 +23,7 @@ export default function ProtectedRoute({
 }) {
   // Hook personalizado para acessar dados de autenticação
   const { isAuthenticated, userType, loading } = useAuth();
-  
+
   // Hook do React Router para obter informações da rota atual
   const location = useLocation();
 
@@ -66,7 +66,7 @@ export default function ProtectedRoute({
   if (requiredUserType && userType !== requiredUserType) {
     // Define a rota de redirecionamento baseada no tipo atual do usuário
     const redirectPath = userType === 'cliente' ? '/cliente/home' : '/estabelecimento/home';
-    
+
     // Redireciona para a home apropriada do tipo de usuário
     return <Navigate to={redirectPath} replace />;
     // replace: substitui a entrada no histórico (evita navegação incorreta)

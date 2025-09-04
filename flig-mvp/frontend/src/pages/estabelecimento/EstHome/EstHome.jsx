@@ -12,6 +12,11 @@ export default function EstHome() {
       active: true
     },
     {
+      to: '/estabelecimento/dashboard',
+      label: 'Dashboard',
+      icon: <Home size={16} />
+    },
+    {
       to: '/estabelecimento/gerenciar-filas',
       label: 'Gerenciar Filas',
       icon: <List size={16} />
