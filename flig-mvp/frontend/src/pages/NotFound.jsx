@@ -12,4 +12,4 @@ export default function NotFound() {
       <Link to="/" className={styles.link}>Voltar para a página inicial</Link>
     </div>
   );
-} 
+}

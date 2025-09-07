@@ -1,28 +1,26 @@
-import { useNavigate } from "react-router-dom";
-import { Home, List, ArrowLeft } from "lucide-react";
-import "./Plano.css";
-import "./PlanoR.css";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import Layout from '../../../components/Layout';
+import { Home, BarChart2, List, CreditCard } from 'lucide-react';
+import './Plano.css';
+import './PlanoR.css';
 
 export default function PlanoR() {
   const navigate = useNavigate();
 
+  const sidebarLinks = [
+    { to: '/estabelecimento/home', label: 'Home', icon: <Home size={16} /> },
+    { to: '/estabelecimento/dashboard', label: 'Dashboard', icon: <BarChart2 size={16} /> },
+    { to: '/estabelecimento/gerenciar-filas', label: 'Gerenciar Filas', icon: <List size={16} /> },
+    { to: '/estabelecimento/planos', label: 'Planos', icon: <CreditCard size={16} />, active: true },
+  ];
+
   return (
-    <div className="plano-container">
-      <header className="plano-header">
-        <img src="/logo-flig.svg" alt="Logo Flig" className="plano-logo" />
-        <h1>Renovação de Plano</h1>
-      </header>
-
-      <div className="plano-content">
-        <aside className="plano-sidebar">
-          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/home")}><Home size={16} /> Home</button>
-          <button className="plano-nav-btn"><List size={16} /> Gerenciar Filas</button>
-          <button className="plano-nav-btn" onClick={() => navigate("/estabelecimento/planos")}><List size={16} /> Planos</button>
-        </aside>
-
+    <Layout sidebarLinks={sidebarLinks} userType="estabelecimento" showFooter={false}>
+      <div className="plano-container">
         <main className="planor-main">
           <button className="planor-back" onClick={() => navigate(-1)}>
-            <ArrowLeft size={18} /> Voltar
+            Voltar
           </button>
 
           <div className="planor-card">
@@ -47,10 +45,6 @@ export default function PlanoR() {
           </div>
         </main>
       </div>
-
-      <footer className="plano-footer">
-        <p>Copyright ©2025 Flig Soluções de agilidade. Todos os Direitos Reservados.</p>
-      </footer>
-    </div>
+    </Layout>
   );
 }

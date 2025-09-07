@@ -77,6 +77,17 @@
   margin-bottom: 1rem;
 }
 
+.cadastro-error {
+  background-color: #ff4444;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-align: center;
+  width: 100%;
+  max-width: 450px;
+}
+
 /* Linhas com dois campos */
 .cadastro-row {
   display: flex;

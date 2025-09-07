@@ -1,9 +1,49 @@
 // LoginU.jsx
-import { useNavigate } from "react-router-dom";
-import "./LoginU.css";
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../../contexts/authContextImports.js';
+import './LoginU.css';
 
 export default function LoginU() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await login(formData, 'cliente');
+
+      if (result.success) {
+        const from = location.state?.from?.pathname || '/cliente/home';
+        navigate(from, { replace: true });
+      } else {
+        setError(result.error);
+      }
+    } catch (error) {
+      setError('Erro ao fazer login. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="login-container">
@@ -17,17 +57,40 @@ export default function LoginU() {
           <h1 className="login-title">Bem vindo a FLIG!</h1>
           <p className="login-label">Entrar:</p>
 
-          <input type="email" placeholder="E-mail:" className="login-input" />
-          <input type="password" placeholder="Senha:" className="login-input" />
+          <form onSubmit={handleSubmit} className="login-form">
+            {error && <div className="login-error">{error}</div>}
 
-          <p className="login-link">
-            Ainda não tem uma conta? <a href="/cadastro-cliente">Crie agora.</a>
-          </p>
+            <input
+              type="email"
+              name="email"
+              placeholder="E-mail:"
+              className="login-input"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Senha:"
+              className="login-input"
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+            />
 
-          <button className="login-button" onClick={() => navigate("/cliente/home")}>
-          Acessar
-          </button>
+            <p className="login-link">
+              Ainda não tem uma conta? <a href="/cadastro-cliente">Crie agora.</a>
+            </p>
 
+            <button
+              type="submit"
+              className="login-button"
+              disabled={loading}
+            >
+              {loading ? 'Entrando...' : 'Acessar'}
+            </button>
+          </form>
         </div>
 
         <footer className="login-footer">

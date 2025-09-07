@@ -1,20 +1,23 @@
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import "./CadastroU.css";
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useAuth } from '../../../contexts/authContextImports.js';
+import './CadastroU.css';
 
 export default function CadastroU() {
   const navigate = useNavigate();
+  const { register } = useAuth();
 
-  const [nome, setNome] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [dataNasc, setDataNasc] = useState("");
-  const [erroCpf, setErroCpf] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [senhaRepetida, setSenhaRepetida] = useState("");
-  const [cidade, setCidade] = useState("");
-  const [uf, setUf] = useState("");
-
+  const [nome, setNome] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [dataNasc, setDataNasc] = useState('');
+  const [erroCpf, setErroCpf] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [senhaRepetida, setSenhaRepetida] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [uf, setUf] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const formatCpf = (value) => value.replace(/\D/g, '');
 
@@ -23,46 +26,36 @@ export default function CadastroU() {
 
     if (cleanCpf.length !== 11 || !dataNasc) {
       if (cleanCpf.length > 0 && cleanCpf.length !== 11) {
-        setErroCpf("CPF deve conter 11 dígitos");
+        setErroCpf('CPF deve conter 11 dígitos');
       } else if (!dataNasc) {
-        setErroCpf("Informe a data de nascimento");
+        setErroCpf('Informe a data de nascimento');
       }
       return;
     }
 
+    // Para desenvolvimento, vamos simular a validação do CPF
     try {
-      const response = await fetch("http://localhost:5000/api/cpf", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          cpf: cleanCpf,
-          birthDate: dataNasc,
-        }),
-      });
+      // Simular delay de rede
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const data = await response.json();
-      console.log("📣 Resposta CPFHub:", data);
-
-      if (data.valid) {
-        setNome(data.name);
-        setErroCpf("");
+      // Simular validação bem-sucedida
+      if (cleanCpf.length === 11) {
+        setNome('Usuário Teste');
+        setErroCpf('');
       } else {
-        setErroCpf(data.message || "CPF inválido ou não encontrado");
-        setNome("");
+        setErroCpf('CPF inválido');
+        setNome('');
       }
-    } catch (error) {
-      console.error("❌ Erro ao consultar CPFHub:", error);
-      setErroCpf("Erro ao verificar CPF. Verifique sua conexão.");
-      setNome("");
+    } catch {
+      setErroCpf('Erro ao verificar CPF. Verifique sua conexão.');
+      setNome('');
     }
   };
 
   const handleDateChange = (e) => {
     let value = e.target.value.replace(/\D/g, '');
-    if (value.length >= 2) value = value.slice(0, 2) + '/' + value.slice(2);
-    if (value.length >= 5) value = value.slice(0, 5) + '/' + value.slice(5, 9);
+    if (value.length >= 2) value = `${value.slice(0, 2)}/${value.slice(2)}`;
+    if (value.length >= 5) value = `${value.slice(0, 5)}/${value.slice(5, 9)}`;
     setDataNasc(value);
   };
 
@@ -70,53 +63,51 @@ export default function CadastroU() {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 11) value = value.slice(0, 11);
     if (value.length > 9) {
-      value = value.slice(0, 3) + '.' + value.slice(3, 6) + '.' + value.slice(6, 9) + '-' + value.slice(9);
+      value = `${value.slice(0, 3)}.${value.slice(3, 6)}.${value.slice(6, 9)}-${value.slice(9)}`;
     } else if (value.length > 6) {
-      value = value.slice(0, 3) + '.' + value.slice(3, 6) + '.' + value.slice(6);
+      value = `${value.slice(0, 3)}.${value.slice(3, 6)}.${value.slice(6)}`;
     } else if (value.length > 3) {
-      value = value.slice(0, 3) + '.' + value.slice(3);
+      value = `${value.slice(0, 3)}.${value.slice(3)}`;
     }
     setCpf(value);
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  if (senha !== senhaRepetida) {
-    alert("As senhas não coincidem");
-    return;
-  }
+    if (senha !== senhaRepetida) {
+      setError('As senhas não coincidem');
+      setLoading(false);
+      return;
+    }
 
-  try {
-    const response = await fetch("http://localhost:5000/api/cadastrar-usuario", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    try {
+      const userData = {
         nome_usuario: nome,
         cpf: cpf.replace(/\D/g, ''),
-        telefone_usuario: "", // ainda não temos esse campo
+        telefone_usuario: '',
         email_usuario: email,
         senha_usuario: senha,
-        cep_usuario: "", // ainda não temos esse campo
+        cep_usuario: '',
         endereco_usuario: cidade,
         numero_usuario: uf,
-      }),
-    });
+      };
 
-    const data = await response.json();
-    if (response.ok) {
-      alert("✅ Usuário cadastrado com sucesso!");
-      navigate("/login");
-    } else {
-      alert("❌ Erro ao cadastrar: " + data.erro);
+      const result = await register(userData, 'cliente');
+
+      if (result.success) {
+        navigate('/cliente/home');
+      } else {
+        setError(result.error);
+      }
+    } catch {
+      setError('Erro interno ao tentar cadastrar');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Erro ao cadastrar:", err);
-    alert("❌ Erro interno ao tentar cadastrar");
-  }
-};
+  };
 
   return (
     <div className="cadastro-container">
@@ -141,6 +132,8 @@ export default function CadastroU() {
         <form className="cadastro-form" onSubmit={handleSubmit}>
           <h2>Cadastro</h2>
 
+          {error && <div className="cadastro-error">{error}</div>}
+
           <div className="cadastro-row">
             <input
               type="text"
@@ -148,7 +141,6 @@ export default function CadastroU() {
               className="input-nome"
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              readOnly={nome && erroCpf === ""}
             />
             <input
               type="text"
@@ -161,11 +153,12 @@ export default function CadastroU() {
           </div>
 
           <input
-          type="email"
-          placeholder="E-mail"
-          className="cadastro-input"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            placeholder="E-mail"
+            className="cadastro-input"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
 
           <input
@@ -180,44 +173,48 @@ export default function CadastroU() {
           {erroCpf && <p className="erro-cpf">{erroCpf}</p>}
 
           <div className="cadastro-row">
+            <input
+              type="text"
+              placeholder="Cidade:"
+              className="input-cidade"
+              value={cidade}
+              onChange={(e) => setCidade(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="UF:"
+              className="input-uf"
+              maxLength="2"
+              value={uf}
+              onChange={(e) => setUf(e.target.value)}
+            />
+          </div>
+
           <input
-          type="text"
-          placeholder="Cidade:"
-          className="input-cidade"
-          value={cidade}
-          onChange={(e) => setCidade(e.target.value)}
+            type="password"
+            placeholder="Senha"
+            className="cadastro-input"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            required
           />
-        <input
-          type="text"
-          placeholder="UF:"
-          className="input-uf"
-          maxLength="2"
-          value={uf}
-          onChange={(e) => setUf(e.target.value)}
-        />
-</div>
 
-<input
-    type="password"
-    placeholder="Senha"
-    className="cadastro-input"
-    value={senha}
-    onChange={(e) => setSenha(e.target.value)}
-/>
-
-<input
-  type="password"
-  placeholder="Repita a Senha"
-  className="cadastro-input"
-  value={senhaRepetida}
-  onChange={(e) => setSenhaRepetida(e.target.value)}
-/>
+          <input
+            type="password"
+            placeholder="Repita a Senha"
+            className="cadastro-input"
+            value={senhaRepetida}
+            onChange={(e) => setSenhaRepetida(e.target.value)}
+            required
+          />
 
           <p className="cadastro-login">
             Já tem uma conta? <a href="/login">Entrar</a>
           </p>
 
-          <button type="submit" className="cadastro-button" >Cadastrar</button>
+          <button type="submit" className="cadastro-button" disabled={loading}>
+            {loading ? 'Cadastrando...' : 'Cadastrar'}
+          </button>
 
         </form>
 
