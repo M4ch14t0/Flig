@@ -149,3 +149,4 @@ Quando implementar o backend, os seguintes endpoints devem estar disponíveis:
    - Confirme estrutura de resposta do backend
    - Verifique logs do console
 
+
