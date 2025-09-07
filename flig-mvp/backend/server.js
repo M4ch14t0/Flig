@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const connection = require("./db");
+const connection = require("./config/db");
 const app = express();
 const PORT = 5000;
 
@@ -146,3 +146,27 @@ app.post("/api/cadastrar-usuario", (req, res) => {
     }
   );
 });
+
+// Rota para cadastrar um novo estabelecimento
+// Rota para cadastrar estabelecimento
+// 📌 Cadastrar empresa
+app.post("/api/empresa", (req, res) => {
+  const { nome_empresa, cnpj, cep_empresa, endereco_empresa} = req.body;
+
+  const sql2 = `
+    INSERT INTO estabelecimentos (nome_empresa, cnpj, cep_empresa, endereco_empresa) 
+    VALUES (?, ?, ?, ?)
+  `;
+
+  connection.query(sql2, [nome_empresa, cnpj, cep_empresa, endereco_empresa], (err, result) => {
+    if (err) {
+      console.error("❌ Erro ao inserir empresa:", err);
+      return res.status(500).json({ success: false, message: "Erro ao salvar empresa" });
+    }
+    console.log("✅ Empresa cadastrada com sucesso:", result.insertId);
+    return res.json({ success: true, message: "Empresa cadastrada com sucesso", id: result.insertId });
+  });
+});
+
+
+
