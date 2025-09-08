@@ -105,7 +105,7 @@ export const loginUser = async (credentials, userType) => {
   return api.post('/auth/login', {
     email: credentials.email,
     password: credentials.password,
-    userType: userType
+    userType,
   });
 };
 
@@ -118,7 +118,7 @@ export const loginUser = async (credentials, userType) => {
 export const registerUser = async (userData, userType) => {
   return api.post('/auth/register', {
     ...userData,
-    userType: userType
+    userType,
   });
 };
 

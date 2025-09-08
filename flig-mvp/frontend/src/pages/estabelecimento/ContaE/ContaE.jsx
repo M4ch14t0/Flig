@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../../components/Layout';
-import { Home, BarChart2, List, CreditCard } from 'lucide-react';
+import { Home, BarChart2, List, CreditCard, Trash2, LogOut } from 'lucide-react';
 import styles from './ContaE.module.css';
 
 function validateCNPJ(cnpj) {
@@ -115,12 +115,16 @@ export default function ContaE() {
             </div>
             <div className={styles['contaE-card']}>
               <h3>Encerrar Sessões</h3>
-              <button className={styles['btn-sair']}>🔒 Encerrar Sessões</button>
+              <button className={styles['btn-sair']}>
+                <LogOut size={16} /> Encerrar Sessões
+              </button>
               <p>Termine a sessão de forma segura em todos os dispositivos conectados.</p>
             </div>
             <div className={styles['contaE-card']}>
               <h3>Excluir Conta</h3>
-              <button className={styles['btn-delete']}>🗑 Excluir conta</button>
+              <button className={styles['btn-delete']}>
+                <Trash2 size={16} /> Excluir conta
+              </button>
               <p>Se você não deseja mais utilizar a Flig, pode solicitar a exclusão permanente de sua conta.</p>
             </div>
           </div>

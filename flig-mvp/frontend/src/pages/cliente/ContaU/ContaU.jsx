@@ -1,7 +1,6 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Settings, User, HelpCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Settings, User, HelpCircle, Trash2, LogOut } from 'lucide-react';
 import { useState } from 'react';
-import ConfigU from '../ConfigU/ConfigU';
 import styles from './ContaU.module.css';
 
 function validateCPF(cpf) {
@@ -106,12 +105,16 @@ export default function ContaU() {
           </div>
           <div className={`${styles['contaU-card']} ${styles['contaU-delete']}`}>
             <h3>Excluir conta</h3>
-            <button className={styles['btn-delete']}>🗑 Excluir conta</button>
+            <button className={styles['btn-delete']}>
+              <Trash2 size={16} /> Excluir conta
+            </button>
             <p>Se você não deseja mais utilizar a Flig, pode solicitar a exclusão permanente de sua conta.</p>
           </div>
           <div className={`${styles['contaU-card']} ${styles['contaU-sessions']}`}>
             <h3>Encerrar sessões</h3>
-            <button className={styles['btn-sair']}>🔒 Encerrar Sessões</button>
+            <button className={styles['btn-sair']}>
+              <LogOut size={16} /> Encerrar Sessões
+            </button>
             <p>Termine a sessão de forma segura em todos os dispositivos conectados.</p>
           </div>
           <div className={`${styles['contaU-card']} ${styles['contaU-terms']}`}>

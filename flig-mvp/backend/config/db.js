@@ -1,18 +1,20 @@
 // db.js
 const mysql = require("mysql2");
+require('dotenv').config();
 
 const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",         // ou o usuário que você configurou no Workbench
-  password: "",         // se você tiver senha, coloque aqui
-  database: "fligdb",
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "fligdb",
+  port: process.env.DB_PORT || 3306,
 });
 
 connection.connect((err) => {
   if (err) {
-    console.error("❌ Erro ao conectar ao MySQL:", err);
+    console.error("Erro ao conectar ao MySQL:", err);
   } else {
-    console.log("✅ Conectado ao banco de dados MySQL (fligdb)");
+    console.log("Conectado ao banco de dados MySQL (fligdb)");
   }
 });
 
