@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { HelpCircle, User, Settings, LogOut } from 'lucide-react';
 import styles from './MinhasFilas.module.css';
 
 const filasMock = [
@@ -27,13 +28,13 @@ function MinhasFilas() {
       <header className={styles.header}>
         <div className={styles.logo}>Flig</div>
         <div className={styles.headerRight}>
-          <Link to="/faq" className={styles.helpIcon}>❓</Link>
+          <Link to="/faq" className={styles.helpIcon}><HelpCircle size={20} /></Link>
           <div className={styles.userIconWrapper}>
-            <button className={styles.userIcon} onClick={() => navigate('/cliente/perfil')}>👤</button>
+            <button className={styles.userIcon} onClick={() => navigate('/cliente/perfil')}><User size={20} /></button>
             <div className={styles.userPopup}>
-              <p onClick={() => navigate('/cliente/perfil')}>👤 <u>Perfil</u></p>
-              <p onClick={() => navigate('/cliente/configuracoes')}>⚙️ <u>Configurações</u></p>
-              <p>🔓 <u>Sair</u></p>
+              <p onClick={() => navigate('/cliente/perfil')}><User size={16} /> <u>Perfil</u></p>
+              <p onClick={() => navigate('/cliente/configuracoes')}><Settings size={16} /> <u>Configurações</u></p>
+              <p><LogOut size={16} /> <u>Sair</u></p>
             </div>
           </div>
         </div>

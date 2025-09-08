@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import './SelectProfile.css';
 
 export default function SelectProfile() {
@@ -8,7 +9,7 @@ export default function SelectProfile() {
     <div className="select-container">
       <div className="select-left">
         <button onClick={() => navigate(-1)} className="select-back-button">
-          ← Voltar
+          <ArrowLeft size={16} /> Voltar
         </button>
 
         <div className="select-content">

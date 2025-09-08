@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/authContextImports.js';
+import { User, Settings, LogOut, Wrench, FileText, Phone, HelpCircle } from 'lucide-react';
 import styles from './Layout.module.css';
 
 /**
@@ -85,21 +86,21 @@ export default function Layout({
           <div className={styles.headerRight}>
             {/* Link para FAQ */}
             <Link to="/faq" className={styles.helpIcon} aria-label="FAQ">
-              ❓
+              <HelpCircle size={20} />
             </Link>
 
             {/* Menu do usuário com dropdown */}
             <div className={styles.userIconWrapper}>
               {/* Botão do usuário que abre dropdown */}
               <button className={styles.userIcon} onClick={handleProfileClick}>
-                👤
+                <User size={20} />
               </button>
 
               {/* Dropdown com opções do usuário */}
               <div className={styles.userPopup}>
-                <p onClick={handleProfileClick}>👤 <u>Perfil</u></p> {/* Acessar perfil */}
-                <p onClick={handleSettingsClick}>⚙️ <u>Configurações</u></p> {/* Acessar configurações */}
-                <p onClick={handleLogout}>🔓 <u>Sair</u></p> {/* Fazer logout */}
+                <p onClick={handleProfileClick}><User size={16} /> <u>Perfil</u></p> {/* Acessar perfil */}
+                <p onClick={handleSettingsClick}><Settings size={16} /> <u>Configurações</u></p> {/* Acessar configurações */}
+                <p onClick={handleLogout}><LogOut size={16} /> <u>Sair</u></p> {/* Fazer logout */}
               </div>
             </div>
           </div>
@@ -171,9 +172,9 @@ export default function Layout({
             {/* Coluna 3: Links de ajuda */}
             <div className={styles.footerColumn}>
               <h4>Ajuda:</h4>
-              <p>📑 FAQ</p>
-              <p>🛠️ Suporte</p>
-              <p>📞 Contate-nos</p>
+              <p><FileText size={16} /> FAQ</p>
+              <p><Wrench size={16} /> Suporte</p>
+              <p><Phone size={16} /> Contate-nos</p>
             </div>
 
             {/* Coluna 4: Formulário de feedback */}
