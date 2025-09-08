@@ -25,7 +25,7 @@ export default defineConfig([
     rules: {
       // Regras básicas
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-      'no-console': 'warn',
+      'no-console': 'off', // Permitir console.log em desenvolvimento
       'no-debugger': 'error',
       'no-alert': 'warn',
 

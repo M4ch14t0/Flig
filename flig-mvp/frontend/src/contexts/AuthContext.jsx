@@ -51,7 +51,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('userName');
     } catch (error) {
       // Se houver erro ao acessar localStorage (ex: modo privado), loga o erro
-      // eslint-disable-next-line no-console
       console.error('Erro ao limpar localStorage:', error);
     }
 
@@ -97,7 +96,6 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       // Se houver erro ao acessar localStorage, loga o erro
-      // eslint-disable-next-line no-console
       console.error('Erro ao acessar localStorage:', error);
     } finally {
       // Sempre define loading como false, independente do resultado
@@ -170,7 +168,6 @@ export const AuthProvider = ({ children }) => {
         return { success: true };
       } catch (error) {
         // Se houver erro, loga e retorna mensagem genérica
-        // eslint-disable-next-line no-console
         console.error('Erro no login:', error);
         return { success: false, error: 'Erro ao fazer login. Tente novamente.' };
       }
@@ -234,7 +231,6 @@ export const AuthProvider = ({ children }) => {
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
         // Se houver erro, loga mas continua com o logout
-        // eslint-disable-next-line no-console
         console.error('Erro ao fazer logout:', error);
       } finally {
         // Sempre limpa os dados de autenticação
@@ -328,7 +324,6 @@ export const AuthProvider = ({ children }) => {
         return { success: true };
       } catch (error) {
         // Se houver erro, loga e retorna mensagem genérica
-        // eslint-disable-next-line no-console
         console.error('Erro no registro:', error);
         return { success: false, error: 'Erro ao fazer registro. Tente novamente.' };
       }

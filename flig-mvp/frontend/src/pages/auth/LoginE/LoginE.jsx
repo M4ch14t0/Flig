@@ -38,7 +38,7 @@ export default function LoginE() {
       } else {
         setError(result.error);
       }
-    } catch (error) {
+    } catch {
       setError('Erro ao fazer login. Tente novamente.');
     } finally {
       setLoading(false);

@@ -11,10 +11,10 @@ import { VALIDATIONS, ERROR_MESSAGES } from '../utils/constants';
 export const useFormValidation = (initialValues = {}, validationRules = {}) => {
   // Estado para armazenar os valores atuais dos campos do formulário
   const [values, setValues] = useState(initialValues);
-  
+
   // Estado para armazenar erros de validação de cada campo
   const [errors, setErrors] = useState({});
-  
+
   // Estado para controlar quais campos foram tocados/interagidos pelo usuário
   const [touched, setTouched] = useState({});
 
@@ -28,7 +28,7 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
   const validateField = useCallback((name, value) => {
     // Busca as regras de validação para o campo específico
     const rules = validationRules[name];
-    
+
     // Se não há regras definidas, o campo é considerado válido
     if (!rules) return '';
 
@@ -78,7 +78,7 @@ export const useFormValidation = (initialValues = {}, validationRules = {}) => {
     Object.keys(validationRules).forEach(fieldName => {
       // Valida cada campo individualmente
       const error = validateField(fieldName, values[fieldName] || '');
-      
+
       // Se há erro, adiciona ao objeto de erros e marca como inválido
       if (error) {
         newErrors[fieldName] = error;
@@ -166,31 +166,31 @@ export const VALIDATION_RULES = {
     { required: true }, // Campo obrigatório
     { pattern: VALIDATIONS.email, message: ERROR_MESSAGES.invalidEmail } // Padrão de email válido
   ],
-  
+
   // Regras para campo de senha
   password: [
     { required: true }, // Campo obrigatório
     { minLength: 6, message: 'Senha deve ter pelo menos 6 caracteres' } // Mínimo 6 caracteres
   ],
-  
+
   // Regras para campo de nome
   name: [
     { required: true }, // Campo obrigatório
     { minLength: 2, message: 'Nome deve ter pelo menos 2 caracteres' } // Mínimo 2 caracteres
   ],
-  
+
   // Regras para campo de CPF
   cpf: [
     { required: true }, // Campo obrigatório
     { pattern: VALIDATIONS.cpf, message: ERROR_MESSAGES.invalidCPF } // Padrão de CPF válido
   ],
-  
+
   // Regras para campo de CNPJ
   cnpj: [
     { required: true }, // Campo obrigatório
     { pattern: VALIDATIONS.cnpj, message: ERROR_MESSAGES.invalidCNPJ } // Padrão de CNPJ válido
   ],
-  
+
   // Regras para campo de telefone
   phone: [
     { required: true }, // Campo obrigatório

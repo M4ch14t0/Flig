@@ -2,13 +2,13 @@ import React from 'react';
 
 /**
  * Componente Button - Botão Reutilizável
- * 
+ *
  * Funcionalidade:
  * - Botão personalizado com estilos padrão da aplicação
  * - Suporta customização via props de estilo
  * - Mantém consistência visual em toda a aplicação
  * - Suporta todas as props padrão de um elemento button HTML
- * 
+ *
  * @param {React.ReactNode} children - Conteúdo interno do botão (texto, ícones, etc.)
  * @param {Function} onClick - Função executada quando o botão é clicado
  * @param {string} type - Tipo do botão ('button', 'submit', 'reset') - padrão: 'button'
@@ -17,7 +17,7 @@ import React from 'react';
  * @param {...any} props - Todas as outras props HTML padrão de button
  * @returns {JSX.Element} - Elemento button estilizado
  */
-export default function Button({ 
+export default function Button({
   children, // Conteúdo do botão
   onClick, // Função de clique
   type = 'button', // Tipo do botão (padrão: button)
@@ -41,7 +41,7 @@ export default function Button({
         fontSize: 16, // Tamanho da fonte (16px)
         cursor: 'pointer', // Cursor de mão ao passar o mouse
         transition: 'background 0.2s', // Transição suave na cor de fundo
-        
+
         // Estilos customizados sobrescrevem os padrões
         ...style,
       }}
