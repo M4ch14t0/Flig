@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../../../contexts/authContextImports.js';
+import { ArrowLeft } from 'lucide-react';
 import './CadastroU.css';
 
 export default function CadastroU() {
@@ -127,7 +128,7 @@ export default function CadastroU() {
 
       {/* Lado direito */}
       <div className="cadastro-right">
-        <button onClick={() => navigate(-1)} className="cadastro-back-button">← Voltar</button>
+        <button onClick={() => navigate(-1)} className="cadastro-back-button"><ArrowLeft size={16} /> Voltar</button>
 
         <form className="cadastro-form" onSubmit={handleSubmit}>
           <h2>Cadastro</h2>

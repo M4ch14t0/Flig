@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../../components/Layout';
-import { Home, BarChart2, List, CreditCard } from 'lucide-react';
+import { Home, BarChart2, List, CreditCard, ArrowLeft } from 'lucide-react';
 import styles from './PagamentoE.module.css';
 
 function PagamentoEstab() {
@@ -53,7 +53,7 @@ function PagamentoEstab() {
       <div className={styles.wrapper}>
         <main className={styles.main}>
           <h2 className={styles.pageTitle}>
-            <button className={styles.backBtn} onClick={() => navigate('/estabelecimento/planos')}>←</button>
+            <button className={styles.backBtn} onClick={() => navigate('/estabelecimento/planos')}><ArrowLeft size={16} /></button>
             Pagamento:
           </h2>
 

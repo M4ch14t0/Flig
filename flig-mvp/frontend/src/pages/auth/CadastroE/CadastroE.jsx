@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import styles from './CadastroE.module.css';
 
 function validateEmail(email) {
@@ -167,7 +168,7 @@ export default function CadastroE() {
       {/* Lado direito */}
       <div className={styles['empresa-cadastro-right']}>
         <button onClick={() => navigate(-1)} className={styles['empresa-cadastro-back-button']}>
-          ← Voltar
+          <ArrowLeft size={16} /> Voltar
         </button>
         <form className={styles['empresa-cadastro-form']} onSubmit={handleSubmit} noValidate>
           <h2>Cadastro</h2>

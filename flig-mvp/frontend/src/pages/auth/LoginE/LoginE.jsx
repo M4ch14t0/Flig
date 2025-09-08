@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../contexts/authContextImports.js';
+import { ArrowLeft } from 'lucide-react';
 import './LoginE.css';
 
 export default function LoginE() {
@@ -50,7 +51,7 @@ export default function LoginE() {
       {/* Lado esquerdo */}
       <div className="empresa-login-left">
         <button onClick={() => navigate(-1)} className="empresa-login-back-button">
-          ← Voltar
+          <ArrowLeft size={16} /> Voltar
         </button>
 
         <div className="empresa-login-content">

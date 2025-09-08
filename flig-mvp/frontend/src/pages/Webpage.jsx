@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Wrench, FileText, Phone, Zap, RefreshCw, Lightbulb, Trophy, Send, Instagram, Linkedin } from 'lucide-react';
 import styles from './Webpage.module.css';
 
 function Webpage() {
@@ -20,7 +21,7 @@ function Webpage() {
               <a href="#equipe">Nosso Time</a>
             </li>
             <li>
-              <a href="#produto">Produto</a>
+              <a href="#oferece">Produto</a>
             </li>
             <li>
               <a href="#plano">Planos</a>
@@ -59,7 +60,7 @@ function Webpage() {
             <button className={styles.readmore}>Leia Mais</button>
             <Link to="/escolha-login" className={styles.loginOutline}>
               Login
-              <span>  →</span>
+              <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -119,7 +120,9 @@ function Webpage() {
         </p>
         <div className={styles.features}>
           <div className={styles.feature}>
-            <p className={styles.icon}>🧾</p>
+            <div className={styles.icon}>
+              <Zap size={32} />
+            </div>
             <h3>Agilidade</h3>
             <p>
               A FLIG acredita que tempo é valioso. Por isso, trabalha para
@@ -128,7 +131,9 @@ function Webpage() {
             </p>
           </div>
           <div className={styles.feature}>
-            <p className={styles.icon}>🔁</p>
+            <div className={styles.icon}>
+              <RefreshCw size={32} />
+            </div>
             <h3>Flexibilidade</h3>
             <p>
               Cada estabelecimento é único. Por isso, a FLIG oferece planos e
@@ -137,7 +142,9 @@ function Webpage() {
             </p>
           </div>
           <div className={styles.feature}>
-            <p className={styles.icon}>💡</p>
+            <div className={styles.icon}>
+              <Lightbulb size={32} />
+            </div>
             <h3>Inovação</h3>
             <p>
               Estamos sempre buscando novas formas de transformar a gestão de
@@ -146,7 +153,9 @@ function Webpage() {
             </p>
           </div>
           <div className={styles.feature}>
-            <p className={styles.icon}>🏆</p>
+            <div className={styles.icon}>
+              <Trophy size={32} />
+            </div>
             <h3>Pioneirismo</h3>
             <p>
               Somos a primeira plataforma 100% digital focada em otimizar o
@@ -182,25 +191,33 @@ function Webpage() {
             <p>
               <strong>FligPTI@gmail.com</strong>
             </p>
-            <div>
-              <img src="/social/instagram.svg" alt="Instagram" />
-              <img src="/social/linkedin.svg" alt="LinkedIn" />
-              <img src="/social/tiktok.svg" alt="TikTok" />
+            <div className={styles.socialLinks}>
+              <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <Instagram size={24} />
+              </a>
+              <a href="https://linkedin.com/company/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <Linkedin size={24} />
+              </a>
+              <a href="https://tiktok.com/" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                </svg>
+              </a>
             </div>
           </div>
 
           <div className={styles.footerColumn}>
             <h4>Serviços:</h4>
-            <p>Login Clientes</p>
-            <p>App Flig</p>
-            <p>Termos de privacidade</p>
+            <Link to="/escolha-login">Login Clientes</Link>
+            <a href="#baixarapp">App Flig</a>
+            <a href="#termos">Termos de privacidade</a>
           </div>
 
           <div className={styles.footerColumn}>
             <h4>Ajuda:</h4>
-            <p>📑 FAQ</p>
-            <p>🛠️ Suporte</p>
-            <p>📞 Contate-nos</p>
+            <Link to="/faq"><FileText size={16} /> FAQ</Link>
+            <a href="#suporte"><Wrench size={16} /> Suporte</a>
+            <a href="#contato"><Phone size={16} /> Contate-nos</a>
           </div>
 
           <div className={styles.footerColumn}>
@@ -208,7 +225,9 @@ function Webpage() {
             <p>Dê um FeedBack! Agradecemos Muito</p>
             <div className={styles.footerInput}>
               <input type="text" placeholder="Digite Aqui..." />
-              <img src="/icons/send.svg" alt="Enviar" />
+              <button type="button" aria-label="Enviar feedback">
+                <Send size={20} />
+              </button>
             </div>
           </div>
         </div>

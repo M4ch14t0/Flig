@@ -1,6 +1,7 @@
 // Estabelecimentos.jsx - Lista de estabelecimentos para clientes
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { HelpCircle, User, Settings, LogOut } from 'lucide-react';
 import styles from './Estabelecimentos.module.css';
 
 // Dados mockados para demonstração
@@ -57,13 +58,13 @@ function Estabelecimentos() {
       <header className={styles.header}>
         <div className={styles.logo}>Flig</div>
         <div className={styles.headerRight}>
-          <Link to="/faq" className={styles.helpIcon}>❓</Link>
+          <Link to="/faq" className={styles.helpIcon}><HelpCircle size={20} /></Link>
           <div className={styles.userIconWrapper}>
-            <button className={styles.userIcon}>👤</button>
+            <button className={styles.userIcon}><User size={20} /></button>
             <div className={styles.userPopup}>
-              <p>👤 <u>Perfil</u></p>
-              <p>⚙️ <u>Configurações</u></p>
-              <p>🔓 <u>Sair</u></p>
+              <p><User size={16} /> <u>Perfil</u></p>
+              <p><Settings size={16} /> <u>Configurações</u></p>
+              <p><LogOut size={16} /> <u>Sair</u></p>
             </div>
           </div>
         </div>
