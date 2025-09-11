@@ -10,6 +10,7 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import Webpage from '../pages/Webpage'; // Página inicial institucional da empresa
 import FAQ from '../pages/FAQ'; // Página de perguntas frequentes
 import NotFound from '../pages/NotFound'; // Página 404 - rota não encontrada
+import TesteFila from '../pages/TesteFila'; // Página de teste do sistema
 
 /**
  * PÁGINAS DE AUTENTICAÇÃO
@@ -145,6 +146,12 @@ function AppRoutes() {
           </Routes>
         </ProtectedRoute>
       } />
+
+      {/*
+        ROTA DE TESTE
+        Página para testar funcionalidades do sistema
+      */}
+      <Route path="/teste" element={<TesteFila />} />
 
       {/*
         ROTA 404 - PÁGINA NÃO ENCONTRADA

@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const connection = require("./config/db");
+const redisService = require("./services/redis");
+const Queue = require("./models/Queue");
 require('dotenv').config();
 
 const app = express();
@@ -11,6 +13,9 @@ const TOKEN = process.env.CNPJA_TOKEN || "48e69a53-66d7-4661-a641-a708a81bba25-2
 app.use(cors());
 app.use(express.json());
 
+// Importar rotas do sistema de filas
+const queueRoutes = require('./routes/queueRoutes');
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ 
@@ -18,6 +23,88 @@ app.get('/health', (req, res) => {
     message: 'Backend is running',
     timestamp: new Date().toISOString()
   });
+});
+
+// Usar rotas do sistema de filas
+app.use('/api/queues', queueRoutes);
+
+// Rota para buscar estabelecimentos
+app.get("/api/estabelecimentos", (req, res) => {
+  connection.query("SELECT * FROM estabelecimentos WHERE status = 'ativo' ORDER BY nome_empresa", (err, results) => {
+    if (err) {
+      console.error("Erro ao buscar estabelecimentos:", err);
+      return res.status(500).json({ error: "Erro no servidor" });
+    }
+    res.json(results);
+  });
+});
+
+// Rota para buscar usuários
+app.get("/api/usuarios", (req, res) => {
+  connection.query("SELECT id, nome_usuario, cpf, telefone_usuario, email_usuario, cep_usuario, endereco_usuario, numero_usuario FROM usuarios ORDER BY nome_usuario", (err, results) => {
+    if (err) {
+      console.error("Erro ao buscar usuários:", err);
+      return res.status(500).json({ error: "Erro no servidor" });
+    }
+    res.json(results);
+  });
+});
+
+// Rota para adicionar usuários na fila de teste (para demonstração)
+app.post("/api/teste/adicionar-usuarios-fila", async (req, res) => {
+  try {
+    const { queueId } = req.body;
+    
+    if (!queueId) {
+      return res.status(400).json({ error: "ID da fila é obrigatório" });
+    }
+
+    // Busca usuários do banco
+    const usuarios = await new Promise((resolve, reject) => {
+      connection.query("SELECT id, nome_usuario, telefone_usuario, email_usuario FROM usuarios LIMIT 5", (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    });
+
+    const queueModel = new Queue(queueId, 'Fila de Teste', 1, 'Fila de demonstração', 'ativa', 8, 2.00, 5);
+
+    const resultados = [];
+    
+    for (let i = 0; i < usuarios.length; i++) {
+      const usuario = usuarios[i];
+      const clientData = {
+        nome: usuario.nome_usuario,
+        telefone: usuario.telefone_usuario,
+        email: usuario.email_usuario
+      };
+
+      try {
+        const resultado = await queueModel.addClient(clientData);
+        resultados.push({
+          usuario: usuario.nome_usuario,
+          sucesso: true,
+          posicao: resultado.position
+        });
+      } catch (error) {
+        resultados.push({
+          usuario: usuario.nome_usuario,
+          sucesso: false,
+          erro: error.message
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Adicionados ${resultados.filter(r => r.sucesso).length} usuários na fila`,
+      resultados
+    });
+
+  } catch (error) {
+    console.error("Erro ao adicionar usuários na fila:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
 });
 
 /**
@@ -49,7 +136,7 @@ function validarCPF(cpf) {
 }
 
 // Consulta CNPJ via CNPJá API
-app.get("/api/cnpj/:cnpj", async (req, res) => {
+/*app.get("/api/cnpj/:cnpj", async (req, res) => {
   const cnpj = req.params.cnpj;
   console.log("Requisição recebida para CNPJ:", cnpj);
 
@@ -75,7 +162,7 @@ app.get("/api/cnpj/:cnpj", async (req, res) => {
     console.error("Erro interno ao consultar CNPJá:", error);
     return res.status(500).json({ valid: false, message: "Erro interno no servidor" });
   }
-});
+}); */
 
 // Validação de CPF local
 app.post("/api/cpf", (req, res) => {
@@ -191,7 +278,17 @@ app.use('*', (req, res) => {
 });
 
 // Inicialização do servidor
-app.listen(PORT, () => {
-  console.log(`Backend rodando em http://localhost:${PORT}`);
-  console.log(`Health check disponível em http://localhost:${PORT}/health`);
+app.listen(PORT, async () => {
+  console.log(`🚀 Backend rodando em http://localhost:${PORT}`);
+  console.log(`🏥 Health check disponível em http://localhost:${PORT}/health`);
+  console.log(`📋 Rotas de filas disponíveis em http://localhost:${PORT}/api/queues`);
+  
+  // Inicializar conexão com Redis
+  try {
+    await redisService.connectRedis();
+    console.log(`✅ Sistema de filas inicializado com sucesso`);
+  } catch (error) {
+    console.error(`❌ Erro ao inicializar Redis:`, error.message);
+    console.log(`⚠️  Sistema funcionará sem filas até Redis estar disponível`);
+  }
 });

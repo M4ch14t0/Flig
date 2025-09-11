@@ -40,4 +40,90 @@
   border-radius: 12px;
   padding: 32px;
   min-height: 200px;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+}
+
+.error {
+  color: #e74c3c;
+}
+
+.statusActive {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.statusPaused {
+  color: #f39c12;
+  font-weight: bold;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem;
+  color: #7f8c8d;
+}
+
+.clientsTable {
+  margin-top: 1rem;
+}
+
+.clientsTable table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.clientsTable th,
+.clientsTable td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.clientsTable th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+}
+
+.position {
+  text-align: center;
+}
+
+.positionBadge {
+  background: #152E60;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.email {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.phone {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.waitTime {
+  color: #e67e22;
+  font-weight: 600;
+}
+
+.timestamp {
+  color: #6c757d;
+  font-size: 0.85rem;
 } 
