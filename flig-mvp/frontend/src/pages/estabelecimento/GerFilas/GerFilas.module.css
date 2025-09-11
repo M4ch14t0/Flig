@@ -154,13 +154,172 @@
   background-color: #3D3D3D;
 }
 
-.tabela button {
-  margin-right: 0.5rem;
-  padding: 0.3rem 0.7rem;
+/* Loading e Error States */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #666;
+}
+
+.loader {
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  color: #e74c3c;
+}
+
+.retryButton {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+.retryButton:hover {
+  background-color: #2980b9;
+}
+
+.noQueues {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.createButton {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 16px;
+  font-weight: 600;
+}
+
+.createButton:hover {
+  background-color: #229954;
+}
+
+/* Fila Info */
+.filaInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.filaInfo strong {
+  font-size: 16px;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.filaInfo small {
+  color: #7f8c8d;
+  font-size: 12px;
+}
+
+/* Status */
+.status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status.active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status.paused {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status.inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Info Icons */
+.clientCount,
+.timeEstimate,
+.priceInfo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actions button {
+  padding: 6px 12px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background-color: #ebda6b;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.pauseButton {
+  background-color: #f39c12;
+  color: white;
+}
+
+.pauseButton:hover {
+  background-color: #e67e22;
+}
+
+.resumeButton {
+  background-color: #27ae60;
+  color: white;
+}
+
+.resumeButton:hover {
+  background-color: #229954;
+}
+
+.detailsButton {
+  background-color: #3498db;
+  color: white;
+}
+
+.detailsButton:hover {
+  background-color: #2980b9;
+}
+
+.closeButton {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.closeButton:hover {
+  background-color: #c0392b;
 }
 
 .popupOverlay {
@@ -200,11 +359,13 @@
 .popup input[type="text"],
 .popup input[type="number"],
 .popup input[type="time"],
-.popup select {
+.popup select,
+.popup textarea {
   width: 100%;
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
 .popup input[type="checkbox"],

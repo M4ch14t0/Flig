@@ -1,18 +1,11 @@
 // Estabelecimentos.jsx - Lista de estabelecimentos para clientes
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HelpCircle, User, Settings, LogOut } from 'lucide-react';
+import { HelpCircle, User, Settings, LogOut, Loader2 } from 'lucide-react';
 import styles from './Estabelecimentos.module.css';
 
-// Dados mockados para demonstração
-const estabelecimentosMock = Array.from({ length: 50 }, (_, i) => ({
-  id: i + 1,
-  nome: `Estabelecimento ${String.fromCharCode(65 + (i % 26))}${i + 1}`,
-  nota: 4.8,
-  avaliacoes: 209,
-  filas: 3,
-  pessoas: 72,
-}));
+// URL base da API (ajuste conforme necessário)
+const API_BASE_URL = 'http://localhost:5000/api';
 
 function Estabelecimentos() {
   const [pesquisa, setPesquisa] = useState('');
@@ -20,17 +13,95 @@ function Estabelecimentos() {
   const [showFilters, setShowFilters] = useState(false);
   const [paginaAtual, setPaginaAtual] = useState(1);
   const itemsPorPagina = 8;
+  
+  // Estados para dados reais
+  const [estabelecimentos, setEstabelecimentos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const navigate = useNavigate();
+
+  // Função para buscar estabelecimentos da API
+  const fetchEstabelecimentos = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Busca estabelecimentos do banco de dados
+      const response = await fetch(`${API_BASE_URL}/estabelecimentos`);
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar estabelecimentos');
+      }
+      
+      const data = await response.json();
+      
+      // Para cada estabelecimento, busca suas filas ativas
+      const estabelecimentosComFilas = await Promise.all(
+        data.map(async (estabelecimento) => {
+          try {
+            const filasResponse = await fetch(`${API_BASE_URL}/queues/establishment/${estabelecimento.id}`);
+            const filasData = filasResponse.ok ? await filasResponse.json() : { data: [] };
+            
+            // Calcula total de pessoas em filas ativas
+            const totalPessoas = filasData.data
+              .filter(fila => fila.status === 'ativa')
+              .reduce((total, fila) => total + (fila.stats?.totalClients || 0), 0);
+            
+            return {
+              ...estabelecimento,
+              filas: filasData.data.filter(fila => fila.status === 'ativa').length,
+              pessoas: totalPessoas,
+              nota: 4.5 + Math.random() * 0.5, // Simula nota (em produção viria de avaliações reais)
+              avaliacoes: Math.floor(Math.random() * 200) + 50 // Simula avaliações
+            };
+          } catch (error) {
+            console.error(`Erro ao buscar filas do estabelecimento ${estabelecimento.id}:`, error);
+            return {
+              ...estabelecimento,
+              filas: 0,
+              pessoas: 0,
+              nota: 4.5,
+              avaliacoes: 0
+            };
+          }
+        })
+      );
+      
+      setEstabelecimentos(estabelecimentosComFilas);
+    } catch (error) {
+      console.error('Erro ao buscar estabelecimentos:', error);
+      setError('Erro ao carregar estabelecimentos. Tente novamente.');
+      
+      // Fallback para dados mockados em caso de erro
+      const estabelecimentosMock = Array.from({ length: 4 }, (_, i) => ({
+        id: i + 1,
+        nome_empresa: `Estabelecimento ${String.fromCharCode(65 + (i % 26))}${i + 1}`,
+        categoria: ['Restaurante', 'Barbearia', 'Clínica', 'Academia'][i],
+        nota: 4.5 + Math.random() * 0.5,
+        avaliacoes: Math.floor(Math.random() * 200) + 50,
+        filas: Math.floor(Math.random() * 3) + 1,
+        pessoas: Math.floor(Math.random() * 50) + 10,
+      }));
+      setEstabelecimentos(estabelecimentosMock);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carrega dados quando o componente monta
+  useEffect(() => {
+    fetchEstabelecimentos();
+  }, []);
 
   // Função para aplicar filtros
   const handleFiltro = (tipo) => setFiltro(tipo);
 
   // Filtra estabelecimentos baseado na pesquisa e filtros
-  const filtrados = estabelecimentosMock.filter((est) => {
-    const nomeMatch = est.nome.toLowerCase().includes(pesquisa.toLowerCase());
-    const filtroMatch = filtro ? est.nota >= filtro : true;
-    return nomeMatch && filtroMatch;
+  const filtrados = estabelecimentos.filter((est) => {
+    const nomeMatch = est.nome_empresa.toLowerCase().includes(pesquisa.toLowerCase());
+    const categoriaMatch = filtro ? est.categoria === filtro : true;
+    return nomeMatch && categoriaMatch;
   });
 
   const totalPaginas = Math.ceil(filtrados.length / itemsPorPagina);
@@ -120,17 +191,70 @@ function Estabelecimentos() {
                     {'⭐'.repeat(n)} e acima
                   </label>
                 ))}
-                <p><strong>Estabelecimento:</strong></p>
-                <label><input type="checkbox" /> Clínicas</label>
-                <label><input type="checkbox" /> Casa de Shows</label>
-                <label><input type="checkbox" /> Restaurantes</label>
+                <p><strong>Categoria:</strong></p>
+                <label>
+                  <input 
+                    type="radio" 
+                    name="categoria"
+                    onChange={() => {
+                      handleFiltro(filtro === 'Restaurante' ? null : 'Restaurante');
+                      setPaginaAtual(1);
+                    }}
+                    checked={filtro === 'Restaurante'}
+                  /> Restaurantes
+                </label>
+                <label>
+                  <input 
+                    type="radio" 
+                    name="categoria"
+                    onChange={() => {
+                      handleFiltro(filtro === 'Barbearia' ? null : 'Barbearia');
+                      setPaginaAtual(1);
+                    }}
+                    checked={filtro === 'Barbearia'}
+                  /> Barbearias
+                </label>
+                <label>
+                  <input 
+                    type="radio" 
+                    name="categoria"
+                    onChange={() => {
+                      handleFiltro(filtro === 'Saúde' ? null : 'Saúde');
+                      setPaginaAtual(1);
+                    }}
+                    checked={filtro === 'Saúde'}
+                  /> Clínicas/Saúde
+                </label>
+                <label>
+                  <input 
+                    type="radio" 
+                    name="categoria"
+                    onChange={() => {
+                      handleFiltro(filtro === 'Academia' ? null : 'Academia');
+                      setPaginaAtual(1);
+                    }}
+                    checked={filtro === 'Academia'}
+                  /> Academias
+                </label>
               </div>
             )}
           </div>
 
           {/* Grid de estabelecimentos */}
           <div className={styles.grid}>
-            {resultadosPagina.length === 0 ? (
+            {loading ? (
+              <div className={styles.loadingContainer}>
+                <Loader2 className={styles.loader} size={32} />
+                <p>Carregando estabelecimentos...</p>
+              </div>
+            ) : error ? (
+              <div className={styles.errorContainer}>
+                <p>{error}</p>
+                <button onClick={fetchEstabelecimentos} className={styles.retryButton}>
+                  Tentar Novamente
+                </button>
+              </div>
+            ) : resultadosPagina.length === 0 ? (
               <p>Nenhum estabelecimento encontrado.</p>
             ) : (
               resultadosPagina.map((est) => (
@@ -142,15 +266,23 @@ function Estabelecimentos() {
                   tabIndex={0}
                   onKeyDown={(e) => e.key === 'Enter' ? handleClickEstab(est) : null}
                 >
-                  <div className={styles.cardImage}></div>
+                  <div className={styles.cardImage}>
+                    <div className={styles.categoryBadge}>{est.categoria}</div>
+                  </div>
                   <div className={styles.cardDetails}>
                     <div className={styles.cardLeft}>
-                      <h4>{est.nome}</h4>
-                      <small>⭐ {est.nota} ({est.avaliacoes} avaliações)</small>
+                      <h4>{est.nome_empresa}</h4>
+                      <small>⭐ {est.nota.toFixed(1)} ({est.avaliacoes} avaliações)</small>
+                      <p className={styles.address}>{est.endereco_empresa}</p>
                     </div>
                     <div className={styles.cardRight}>
                       <p>{est.filas} Filas Disponíveis</p>
                       <p>{est.pessoas} Pessoas em Fila</p>
+                      <p className={styles.status}>
+                        Status: <span className={est.status === 'ativo' ? styles.active : styles.inactive}>
+                          {est.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </p>
                     </div>
                   </div>
                 </div>

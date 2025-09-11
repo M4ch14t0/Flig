@@ -6,9 +6,9 @@ import styles from './CadastroE.module.css';
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
-function validateCNPJ(cnpj) {
+/*function validateCNPJ(cnpj) {
   return /^\d{14}$/.test(cnpj.replace(/\D/g, ''));
-}
+}*/
 
 export default function CadastroE() {
   const navigate = useNavigate();

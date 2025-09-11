@@ -219,6 +219,19 @@ html, body {
   background-color: #ccc;
   background-size: cover;
   background-position: center;
+  position: relative;
+}
+
+.categoryBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #152E60;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .cardDetails {
@@ -236,10 +249,77 @@ html, body {
   color: #666;
 }
 
+.cardLeft .address {
+  color: #888;
+  font-size: 12px;
+  margin: 4px 0;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cardRight p {
   margin: 0;
   font-size: 13px;
   text-align: right;
+}
+
+.status {
+  margin-top: 4px !important;
+}
+
+.active {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.inactive {
+  color: #f44336;
+  font-weight: bold;
+}
+
+/* Loading e Error States */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #666;
+}
+
+.loader {
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #f44336;
+}
+
+.retryButton {
+  background-color: #152E60;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+.retryButton:hover {
+  background-color: #1e3a73;
 }
 
 /* PAGINAÇÃO */

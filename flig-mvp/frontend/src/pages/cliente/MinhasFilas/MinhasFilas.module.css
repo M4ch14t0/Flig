@@ -195,3 +195,59 @@
 .avanBtn:hover {
   background-color: #e2b200;
 }
+
+/* Novos estilos para funcionalidades adicionadas */
+.loading, .error {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem;
+  color: #ccc;
+}
+
+.emptyState p {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.exploreBtn {
+  background: #152E60;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.3s;
+}
+
+.exploreBtn:hover {
+  background: #1e3a73;
+}
+
+.queueInfo {
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.actions {
+  margin-top: 1rem;
+}

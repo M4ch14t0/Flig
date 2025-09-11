@@ -210,6 +210,32 @@ html, body {
   margin-right: 6px;
 }
 
+.status {
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+
+.active {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.inactive {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.categoryBadge {
+  display: inline-block;
+  background-color: #152E60;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
 /* Tabela das filas */
 .tabelaFilas {
   width: 100%;
@@ -239,19 +265,105 @@ html, body {
   background-color: #454545;
 }
 
-/* Botão Entrar */
-.entrar {
-  background-color: transparent;
-  border: none;
-  color: #f1c40f;
-  cursor: pointer;
-  font-weight: 600;
-  text-decoration: underline;
-  transition: color 0.3s;
+/* Seção de Filas */
+.filasSection {
+  border-top: 1px solid #444;
+  padding-top: 20px;
 }
 
-.entrar:hover {
-  color: #fff;
+.filasSection h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #f1c40f;
+}
+
+.loader {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.filaInfo {
+  text-align: left;
+}
+
+.filaInfo strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.filaInfo small {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.pessoasCount {
+  background-color: #152E60;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.tempoEstimado {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.noQueues {
+  text-align: center;
+  color: #888;
+  padding: 20px;
+  font-style: italic;
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  color: #f44336;
+}
+
+.retryButton {
+  background-color: #152E60;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.retryButton:hover {
+  background-color: #1e3a73;
+}
+
+/* Botão Entrar */
+.entrar {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.entrar:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.entrar:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* PAGINAÇÃO */
