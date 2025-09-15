@@ -1,17 +1,10 @@
 /**
- * Serviço de Conexão Redis para Sistema de Filas Flig
+ * Serviço de Conexão Redis para Sistema de Filas Flig (Atualizado)
  * 
- * Este módulo gerencia a conexão com Redis e fornece métodos
- * para manipulação de ZSETs (Sorted Sets) que são usados para
- * implementar as filas virtuais do sistema.
+ * Serializa todos os dados de clientes para JSON ao adicionar
+ * e desserializa ao ler, evitando erros de JSON.parse.
  * 
- * Como funciona o Redis ZSET para filas:
- * - Score: posição na fila (menor score = posição mais próxima do atendimento)
- * - Member: dados criptografados do cliente
- * - Operações: ZADD (adicionar), ZRANGE (listar), ZREM (remover), ZRANK (posição)
- * 
- * @author Flig Team
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 const redis = require('redis');
@@ -26,47 +19,27 @@ const REDIS_CONFIG = {
   maxRetriesPerRequest: 3
 };
 
-// Cliente Redis global
 let redisClient = null;
 
-/**
- * Inicializa conexão com Redis
- * 
- * @returns {Promise<Object>} - Cliente Redis conectado
- */
+// Conecta ao Redis
 async function connectRedis() {
   try {
-    if (redisClient && redisClient.isOpen) {
-      return redisClient;
-    }
+    if (redisClient && redisClient.isOpen) return redisClient;
 
     redisClient = redis.createClient(REDIS_CONFIG);
-    
-    // Event listeners para monitoramento
-    redisClient.on('connect', () => {
-      console.log('✅ Conectado ao Redis');
-    });
-    
-    redisClient.on('error', (err) => {
-      console.error('❌ Erro no Redis:', err);
-    });
-    
-    redisClient.on('end', () => {
-      console.log('🔌 Conexão Redis encerrada');
-    });
+
+    redisClient.on('connect', () => console.log('✅ Conectado ao Redis'));
+    redisClient.on('error', (err) => console.error('❌ Erro no Redis:', err));
+    redisClient.on('end', () => console.log('🔌 Conexão Redis encerrada'));
 
     await redisClient.connect();
     return redisClient;
-    
   } catch (error) {
     console.error('❌ Falha ao conectar com Redis:', error);
     throw new Error('Não foi possível conectar com Redis');
   }
 }
 
-/**
- * Fecha conexão com Redis
- */
 async function disconnectRedis() {
   if (redisClient && redisClient.isOpen) {
     await redisClient.quit();
@@ -74,11 +47,6 @@ async function disconnectRedis() {
   }
 }
 
-/**
- * Obtém cliente Redis (conecta se necessário)
- * 
- * @returns {Promise<Object>} - Cliente Redis
- */
 async function getRedisClient() {
   if (!redisClient || !redisClient.isOpen) {
     await connectRedis();
@@ -86,11 +54,6 @@ async function getRedisClient() {
   return redisClient;
 }
 
-/**
- * Verifica se Redis está disponível
- * 
- * @returns {Promise<boolean>} - True se Redis estiver funcionando
- */
 async function isRedisAvailable() {
   try {
     const client = await getRedisClient();
@@ -102,56 +65,27 @@ async function isRedisAvailable() {
   }
 }
 
-/**
- * Gera chave Redis para uma fila específica
- * 
- * @param {string} queueId - ID da fila
- * @returns {string} - Chave Redis formatada
- */
 function getQueueKey(queueId) {
   return `flig:queue:${queueId}`;
 }
 
-/**
- * Gera chave Redis para metadados da fila
- * 
- * @param {string} queueId - ID da fila
- * @returns {string} - Chave Redis para metadados
- */
 function getQueueMetaKey(queueId) {
   return `flig:queue:meta:${queueId}`;
 }
 
-/**
- * Gera chave Redis para estatísticas da fila
- * 
- * @param {string} queueId - ID da fila
- * @returns {string} - Chave Redis para estatísticas
- */
 function getQueueStatsKey(queueId) {
   return `flig:queue:stats:${queueId}`;
 }
 
-/**
- * Adiciona cliente à fila usando ZADD
- * 
- * @param {string} queueId - ID da fila
- * @param {number} position - Posição na fila (score)
- * @param {string} clientData - Dados criptografados do cliente
- * @returns {Promise<number>} - Número de elementos adicionados
- */
+// Adiciona cliente à fila
 async function addClientToQueue(queueId, position, clientData) {
   try {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
-    
-    // ZADD adiciona ou atualiza elemento no ZSET
-    // Score = posição na fila, Member = dados do cliente
-    const result = await client.zAdd(queueKey, {
-      score: position,
-      value: clientData
-    });
-    
+
+    const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
+
+    const result = await client.zAdd(queueKey, { score: position, value });
     return result;
   } catch (error) {
     console.error('Erro ao adicionar cliente à fila:', error);
@@ -159,21 +93,15 @@ async function addClientToQueue(queueId, position, clientData) {
   }
 }
 
-/**
- * Remove cliente da fila usando ZREM
- * 
- * @param {string} queueId - ID da fila
- * @param {string} clientData - Dados do cliente a ser removido
- * @returns {Promise<number>} - Número de elementos removidos
- */
+// Remove cliente da fila
 async function removeClientFromQueue(queueId, clientData) {
   try {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
-    
-    // ZREM remove elemento específico do ZSET
-    const result = await client.zRem(queueKey, clientData);
-    
+
+    const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
+
+    const result = await client.zRem(queueKey, value);
     return result;
   } catch (error) {
     console.error('Erro ao remover cliente da fila:', error);
@@ -181,46 +109,46 @@ async function removeClientFromQueue(queueId, clientData) {
   }
 }
 
-/**
- * Obtém posição do cliente na fila usando ZRANK
- * 
- * @param {string} queueId - ID da fila
- * @param {string} clientData - Dados do cliente
- * @returns {Promise<number|null>} - Posição na fila (0-based) ou null se não encontrado
- */
+// Obtém posição do cliente
 async function getClientPosition(queueId, clientData) {
   try {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
-    
-    // ZRANK retorna posição do elemento no ZSET (0-based)
-    const position = await client.zRank(queueKey, clientData);
-    
-    return position !== null ? position + 1 : null; // Converte para 1-based
+
+    const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
+
+    const position = await client.zRank(queueKey, value);
+    return position !== null ? position + 1 : null; // 1-based
   } catch (error) {
     console.error('Erro ao obter posição do cliente:', error);
     throw new Error('Falha ao obter posição do cliente');
   }
 }
 
-/**
- * Lista todos os clientes da fila usando ZRANGE
- * 
- * @param {string} queueId - ID da fila
- * @param {number} start - Posição inicial (0-based)
- * @param {number} stop - Posição final (0-based)
- * @returns {Promise<Array>} - Array com dados dos clientes
- */
+// Lista clientes da fila
 async function getQueueClients(queueId, start = 0, stop = -1) {
   try {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
-    
-    // ZRANGE retorna elementos ordenados por score
-    const clients = await client.zRange(queueKey, start, stop, {
-      WITHSCORES: true // Inclui scores (posições)
-    });
-    
+
+    const rawClients = await client.zRange(queueKey, start, stop, { WITHSCORES: true });
+    const clients = [];
+
+    for (let i = 0; i < rawClients.length; i += 2) {
+      const value = rawClients[i];
+      const score = Number(rawClients[i + 1]);
+      let clientObj;
+
+      try {
+        clientObj = JSON.parse(value);
+      } catch (err) {
+        console.warn('Cliente inválido ignorado:', value);
+        continue;
+      }
+
+      clients.push({ ...clientObj, position: score });
+    }
+
     return clients;
   } catch (error) {
     console.error('Erro ao obter clientes da fila:', error);
@@ -228,20 +156,12 @@ async function getQueueClients(queueId, start = 0, stop = -1) {
   }
 }
 
-/**
- * Obtém tamanho da fila usando ZCARD
- * 
- * @param {string} queueId - ID da fila
- * @returns {Promise<number>} - Número de clientes na fila
- */
+// Obtém tamanho da fila
 async function getQueueSize(queueId) {
   try {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
-    
-    // ZCARD retorna número de elementos no ZSET
     const size = await client.zCard(queueKey);
-    
     return size;
   } catch (error) {
     console.error('Erro ao obter tamanho da fila:', error);
@@ -249,25 +169,15 @@ async function getQueueSize(queueId) {
   }
 }
 
-/**
- * Move cliente para nova posição na fila
- * 
- * @param {string} queueId - ID da fila
- * @param {string} clientData - Dados do cliente
- * @param {number} newPosition - Nova posição
- * @returns {Promise<boolean>} - True se movimento foi bem-sucedido
- */
+// Move cliente na fila
 async function moveClientInQueue(queueId, clientData, newPosition) {
   try {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
-    
-    // ZADD atualiza score se elemento já existir
-    const result = await client.zAdd(queueKey, {
-      score: newPosition,
-      value: clientData
-    });
-    
+
+    const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
+
+    const result = await client.zAdd(queueKey, { score: newPosition, value });
     return result > 0;
   } catch (error) {
     console.error('Erro ao mover cliente na fila:', error);
@@ -275,22 +185,15 @@ async function moveClientInQueue(queueId, clientData, newPosition) {
   }
 }
 
-/**
- * Remove toda a fila do Redis
- * 
- * @param {string} queueId - ID da fila
- * @returns {Promise<boolean>} - True se remoção foi bem-sucedida
- */
+// Deleta toda a fila
 async function deleteQueue(queueId) {
   try {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
     const metaKey = getQueueMetaKey(queueId);
     const statsKey = getQueueStatsKey(queueId);
-    
-    // Remove todas as chaves relacionadas à fila
+
     await client.del([queueKey, metaKey, statsKey]);
-    
     return true;
   } catch (error) {
     console.error('Erro ao deletar fila:', error);
@@ -298,25 +201,18 @@ async function deleteQueue(queueId) {
   }
 }
 
-/**
- * Define metadados da fila
- * 
- * @param {string} queueId - ID da fila
- * @param {Object} metadata - Metadados da fila
- * @returns {Promise<boolean>} - True se definição foi bem-sucedida
- */
+// Define metadados da fila
 async function setQueueMetadata(queueId, metadata) {
   try {
     const client = await getRedisClient();
     const metaKey = getQueueMetaKey(queueId);
-    
-    // HSET define campos do hash - Redis v4 espera argumentos separados
+
     const fields = [];
     for (const [key, value] of Object.entries(metadata)) {
-      fields.push(key, String(value)); // Converter todos os valores para string
+      fields.push(key, String(value));
     }
+
     await client.hSet(metaKey, fields);
-    
     return true;
   } catch (error) {
     console.error('Erro ao definir metadados da fila:', error);
@@ -324,20 +220,12 @@ async function setQueueMetadata(queueId, metadata) {
   }
 }
 
-/**
- * Obtém metadados da fila
- * 
- * @param {string} queueId - ID da fila
- * @returns {Promise<Object>} - Metadados da fila
- */
+// Obtém metadados da fila
 async function getQueueMetadata(queueId) {
   try {
     const client = await getRedisClient();
     const metaKey = getQueueMetaKey(queueId);
-    
-    // HGETALL retorna todos os campos do hash
     const metadata = await client.hGetAll(metaKey);
-    
     return metadata;
   } catch (error) {
     console.error('Erro ao obter metadados da fila:', error);
@@ -363,4 +251,3 @@ module.exports = {
   setQueueMetadata,
   getQueueMetadata
 };
-
