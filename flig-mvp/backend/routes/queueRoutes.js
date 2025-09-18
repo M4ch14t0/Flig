@@ -24,6 +24,8 @@
 const express = require('express');
 const router = express.Router();
 const queueController = require('../controllers/queueController');
+const { authenticateToken, requireUserType, requireQueueOwnership } = require('../middleware/auth');
+const { validateQueueCreation, validateJoinQueue, validatePayment, sanitizeParams } = require('../middleware/validation');
 
 /**
  * Middleware de validação básica
@@ -71,9 +73,14 @@ router.use(validateRedisConnection);
  * @route POST /api/queues
  * @desc Criar nova fila para estabelecimento
  * @access Estabelecimento
- * @body { nome, estabelecimento_id, descricao, max_avancos, valor_avancos, tempo_estimado }
+ * @body { nome, descricao, max_avancos, valor_avancos, tempo_estimado }
  */
-router.post('/', queueController.createQueue);
+router.post('/', 
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  validateQueueCreation,
+  queueController.createQueue
+);
 
 /**
  * @route GET /api/queues/establishment/:estabelecimentoId
@@ -81,7 +88,12 @@ router.post('/', queueController.createQueue);
  * @access Estabelecimento
  * @params { estabelecimentoId } - ID do estabelecimento
  */
-router.get('/establishment/:estabelecimentoId', queueController.getEstablishmentQueues);
+router.get('/establishment/:estabelecimentoId', 
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  sanitizeParams,
+  queueController.getEstablishmentQueues
+);
 
 /**
  * @route GET /api/queues/:queueId
@@ -98,7 +110,13 @@ router.get('/:queueId', queueController.getQueueById);
  * @params { queueId } - ID da fila
  * @body { nome, telefone, email }
  */
-router.post('/:queueId/join', queueController.joinQueue);
+router.post('/:queueId/join', 
+  authenticateToken,
+  requireUserType('cliente'),
+  sanitizeParams,
+  validateJoinQueue,
+  queueController.joinQueue
+);
 
 /**
  * @route POST /api/queues/:queueId/advance
@@ -107,7 +125,13 @@ router.post('/:queueId/join', queueController.joinQueue);
  * @params { queueId } - ID da fila
  * @body { clientId, positions, paymentData }
  */
-router.post('/:queueId/advance', queueController.advanceInQueue);
+router.post('/:queueId/advance', 
+  authenticateToken,
+  requireUserType('cliente'),
+  sanitizeParams,
+  validatePayment,
+  queueController.advanceInQueue
+);
 
 /**
  * @route GET /api/queues/:queueId/position/:clientId

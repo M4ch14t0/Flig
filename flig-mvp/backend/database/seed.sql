@@ -6,14 +6,14 @@
 -- @author Flig Team
 -- @version 2.0.0
 
-USE fligdb;
+USE flig_db;
 
 -- Limpa dados existentes (cuidado em produção!)
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE logs_sistema;
 TRUNCATE TABLE relatorios_diarios;
 TRUNCATE TABLE historico_clientes_filas;
-TRUNCATE TABLE transacoes_pagamento;
+TRUNCATE TABLE transacoes_pagamentos;
 TRUNCATE TABLE filas;
 TRUNCATE TABLE estabelecimentos;
 TRUNCATE TABLE usuarios;

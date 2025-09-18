@@ -4,7 +4,7 @@ import axios from 'axios';
 // CONFIGURAÇÃO DA API
 // ========================================
 // URL base do backend - ajuste conforme necessário
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // ========================================
 // INSTÂNCIA DO AXIOS
@@ -102,11 +102,17 @@ export const getCurrentUser = async () => {
  * @returns {Promise<Object>}
  */
 export const loginUser = async (credentials, userType) => {
-  return api.post('/auth/login', {
-    email: credentials.email,
-    password: credentials.password,
-    userType,
-  });
+  if (userType === 'cliente') {
+    return api.post('/auth/login/user', {
+      email_usuario: credentials.email,
+      senha_usuario: credentials.password,
+    });
+  } else {
+    return api.post('/auth/login/establishment', {
+      email_empresa: credentials.email,
+      senha_empresa: credentials.password,
+    });
+  }
 };
 
 /**
@@ -116,10 +122,11 @@ export const loginUser = async (credentials, userType) => {
  * @returns {Promise<Object>}
  */
 export const registerUser = async (userData, userType) => {
-  return api.post('/auth/register', {
-    ...userData,
-    userType,
-  });
+  if (userType === 'cliente') {
+    return api.post('/auth/register/user', userData);
+  } else {
+    return api.post('/auth/register/establishment', userData);
+  }
 };
 
 /**
@@ -140,7 +147,7 @@ export const logoutUser = async () => {
  * @returns {Promise<Object>}
  */
 export const getEstablishments = async (filters = {}) => {
-  return api.get('/establishments', { params: filters });
+  return api.get('/estabelecimentos', { params: filters });
 };
 
 /**

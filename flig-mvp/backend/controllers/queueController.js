@@ -71,15 +71,17 @@ async function createQueue(req, res) {
       success: true,
       message: 'Fila criada com sucesso',
       data: {
-        id: queue.id,
-        nome: queue.nome,
-        estabelecimento_id: queue.estabelecimento_id,
-        descricao: queue.descricao,
-        status: queue.status,
-        max_avancos: queue.max_avancos,
-        valor_avancos: queue.valor_avancos,
-        tempo_estimado: queue.tempo_estimado,
-        created_at: queue.created_at
+        queue: {
+          id: queue.id,
+          nome: queue.nome,
+          estabelecimento_id: queue.estabelecimento_id,
+          descricao: queue.descricao,
+          status: queue.status,
+          max_avancos: queue.max_avancos,
+          valor_avancos: queue.valor_avancos,
+          tempo_estimado: queue.tempo_estimado,
+          created_at: queue.created_at
+        }
       }
     });
 

@@ -5,12 +5,12 @@ import { AuthContext } from './authContextImports.js';
 // CONFIGURAÇÃO DE DESENVOLVIMENTO
 // ========================================
 // Altere esta variável para false quando quiser usar o backend real
-const USE_MOCK_AUTH = true;
+const USE_MOCK_AUTH = false;
 
 // ========================================
-// IMPORTS PARA BACKEND REAL (comentados)
+// IMPORTS PARA BACKEND REAL
 // ========================================
-// import { api } from '../services/api';
+import { api } from '../services/api';
 
 /**
  * Provider do contexto de autenticação
@@ -29,12 +29,17 @@ export const AuthProvider = ({ children }) => {
 
   /**
    * Função para validar formato do token
-   * Verifica se o token existe, é uma string e começa com 'mock-jwt-token-'
+   * Verifica se o token existe e é uma string válida
    * @param {string} token - Token a ser validado
    * @returns {boolean} - True se o token for válido, false caso contrário
    */
   const isValidTokenFormat = (token) => {
-    return token && typeof token === 'string' && token.startsWith('mock-jwt-token-');
+    if (USE_MOCK_AUTH) {
+      return token && typeof token === 'string' && token.startsWith('mock-jwt-token-');
+    } else {
+      // Para backend real, verifica se é um JWT válido (tem 3 partes separadas por ponto)
+      return token && typeof token === 'string' && token.split('.').length === 3;
+    }
   };
 
   /**
@@ -86,7 +91,7 @@ export const AuthProvider = ({ children }) => {
 
           // Cria objeto do usuário com dados armazenados
           setUser({
-            id: 1, // ID fixo para mock
+            id: parseInt(localStorage.getItem('userId')) || (storedUserType === 'estabelecimento' ? 8 : 1), // ID do usuário
             email: storedEmail || 'user@example.com', // Email armazenado ou padrão
             name: storedName || 'Usuário', // Nome armazenado ou padrão
             type: storedUserType, // Tipo do usuário
@@ -177,43 +182,48 @@ export const AuthProvider = ({ children }) => {
     // MODO DE PRODUÇÃO (BACKEND REAL)
     // ========================================
     else {
-      /*
       try {
         // Chama a API real do backend
-        const response = await api.post('/auth/login', {
-          email: credentials.email,
-          password: credentials.password,
-          userType: type
+        const endpoint = type === 'cliente' ? '/auth/login/user' : '/auth/login/establishment';
+        const emailField = type === 'cliente' ? 'email_usuario' : 'email_empresa';
+        const passwordField = type === 'cliente' ? 'senha_usuario' : 'senha_empresa';
+
+        const response = await api.post(endpoint, {
+          [emailField]: credentials.email,
+          [passwordField]: credentials.password
         });
 
         if (response.data.success) {
-          const { token, user } = response.data;
+          const { token, user } = response.data.data;
 
           // Armazena dados no localStorage
           localStorage.setItem('authToken', token);
-          localStorage.setItem('userType', user.type);
-          localStorage.setItem('userEmail', user.email);
-          localStorage.setItem('userName', user.name);
+          localStorage.setItem('userType', user.userType);
+          localStorage.setItem('userEmail', user.email_usuario || user.email_empresa);
+          localStorage.setItem('userName', user.nome_usuario || user.nome_empresa);
+          localStorage.setItem('userId', user.id);
 
           // Atualiza os estados
-          setUser(user);
-          setUserType(user.type);
+          setUser({
+            id: user.id,
+            email: user.email_usuario || user.email_empresa,
+            name: user.nome_usuario || user.nome_empresa,
+            type: user.userType,
+            token
+          });
+          setUserType(user.userType);
 
           return { success: true };
         } else {
-          return { success: false, error: response.data.error };
+          return { success: false, error: response.data.message };
         }
       } catch (error) {
         console.error('Erro no login:', error);
         return {
           success: false,
-          error: error.response?.data?.error || 'Erro ao fazer login. Tente novamente.'
+          error: error.response?.data?.message || 'Erro ao fazer login. Tente novamente.'
         };
       }
-      */
-
-      // Fallback temporário caso o backend não esteja implementado
-      return { success: false, error: 'Backend não implementado ainda' };
     }
   };
 
@@ -242,7 +252,6 @@ export const AuthProvider = ({ children }) => {
     // MODO DE PRODUÇÃO (BACKEND REAL)
     // ========================================
     else {
-      /*
       try {
         // Chama a API real do backend para logout
         await api.post('/auth/logout');
@@ -252,10 +261,6 @@ export const AuthProvider = ({ children }) => {
         // Sempre limpa os dados locais
         clearAuthData();
       }
-      */
-
-      // Fallback temporário
-      clearAuthData();
     }
   };
 
@@ -333,42 +338,43 @@ export const AuthProvider = ({ children }) => {
     // MODO DE PRODUÇÃO (BACKEND REAL)
     // ========================================
     else {
-      /*
       try {
         // Chama a API real do backend para registro
-        const response = await api.post('/auth/register', {
-          ...userData,
-          userType: type
-        });
+        const endpoint = type === 'cliente' ? '/auth/register/user' : '/auth/register/establishment';
+        
+        const response = await api.post(endpoint, userData);
 
         if (response.data.success) {
-          const { token, user } = response.data;
+          const { token, user } = response.data.data;
 
           // Armazena dados no localStorage
           localStorage.setItem('authToken', token);
-          localStorage.setItem('userType', user.type);
-          localStorage.setItem('userEmail', user.email);
-          localStorage.setItem('userName', user.name);
+          localStorage.setItem('userType', user.userType);
+          localStorage.setItem('userEmail', user.email_usuario || user.email_empresa);
+          localStorage.setItem('userName', user.nome_usuario || user.nome_empresa);
+          localStorage.setItem('userId', user.id);
 
           // Atualiza os estados
-          setUser(user);
-          setUserType(user.type);
+          setUser({
+            id: user.id,
+            email: user.email_usuario || user.email_empresa,
+            name: user.nome_usuario || user.nome_empresa,
+            type: user.userType,
+            token
+          });
+          setUserType(user.userType);
 
           return { success: true };
         } else {
-          return { success: false, error: response.data.error };
+          return { success: false, error: response.data.message };
         }
       } catch (error) {
         console.error('Erro no registro:', error);
         return {
           success: false,
-          error: error.response?.data?.error || 'Erro ao fazer registro. Tente novamente.'
+          error: error.response?.data?.message || 'Erro ao fazer registro. Tente novamente.'
         };
       }
-      */
-
-      // Fallback temporário
-      return { success: false, error: 'Backend não implementado ainda' };
     }
   };
 

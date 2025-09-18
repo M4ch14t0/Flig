@@ -1,85 +1,86 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { HelpCircle, User, Settings, LogOut, Loader2, Clock, Users, MapPin } from 'lucide-react';
+import { useLocation, Link, useNavigate, useParams } from 'react-router-dom';
+import { HelpCircle, User, Settings, LogOut, Loader2, Clock, Users, MapPin, ArrowLeft, Phone } from 'lucide-react';
+import { api } from '../../../services/api';
+import QueueComponent from '../../../components/QueueComponent';
 import styles from './DetEstabelecimentos.module.css';
 
-// URL base da API
-const API_BASE_URL = 'http://localhost:5000/api';
-
 function DetEstabelecimentos() {
+  const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const estabelecimento = location.state?.estabelecimento;
+  const estabelecimentoFromState = location.state?.estabelecimento;
   
-  // Estados para dados das filas
+  // Estados para dados do estabelecimento e filas
+  const [establishment, setEstablishment] = useState(estabelecimentoFromState);
   const [filas, setFilas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedQueue, setSelectedQueue] = useState(null);
 
-  // Função para buscar filas do estabelecimento
-  const fetchFilas = async () => {
-    if (!estabelecimento?.id) return;
-    
+  // Função para carregar dados do estabelecimento e filas
+  const loadEstablishmentData = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await fetch(`${API_BASE_URL}/queues/establishment/${estabelecimento.id}`);
-      
-      if (!response.ok) {
-        throw new Error('Erro ao buscar filas do estabelecimento');
+
+      // Se não temos dados do estabelecimento, busca pela API
+      if (!establishment) {
+        const establishmentResponse = await api.get(`/establishments/${id}`);
+        if (establishmentResponse.data.success) {
+          setEstablishment(establishmentResponse.data.data);
+        }
       }
-      
-      const data = await response.json();
-      setFilas(data.data || []);
+
+      // Busca filas do estabelecimento
+      const queuesResponse = await api.get(`/establishments/${id}/queues`);
+      if (queuesResponse.data.success) {
+        setFilas(queuesResponse.data.data);
+      }
     } catch (error) {
-      console.error('Erro ao buscar filas:', error);
-      setError('Erro ao carregar filas. Tente novamente.');
+      console.error('Erro ao carregar dados:', error);
+      setError('Erro ao carregar dados do estabelecimento');
     } finally {
       setLoading(false);
     }
   };
 
-  // Carrega filas quando o componente monta
+  // Carrega dados quando o componente monta
   useEffect(() => {
-    fetchFilas();
-  }, [estabelecimento?.id]);
+    loadEstablishmentData();
+  }, [id]);
 
-  // Função para entrar na fila
-  const handleEntrarFila = async (fila) => {
-    try {
-      // Dados do cliente (em produção viria do contexto de autenticação)
-      const clientData = {
-        nome: 'Cliente Teste',
-        telefone: '(11) 99999-9999',
-        email: 'cliente@teste.com'
-      };
-
-      const response = await fetch(`${API_BASE_URL}/queues/${fila.id}/join`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(clientData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao entrar na fila');
-      }
-
-      const result = await response.json();
-      alert(`Você entrou na fila "${fila.nome}"! Posição: ${result.data.position}`);
-      
-      // Atualiza a lista de filas
-      fetchFilas();
-    } catch (error) {
-      console.error('Erro ao entrar na fila:', error);
-      alert('Erro ao entrar na fila. Tente novamente.');
-    }
+  const handleJoinSuccess = (data) => {
+    // Recarrega dados após entrar na fila
+    loadEstablishmentData();
   };
 
-  if (!estabelecimento) {
-    return <div className={styles.wrapper}>Estabelecimento não encontrado.</div>;
+  const handleError = (message) => {
+    setError(message);
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.wrapper}>
+        <div className={styles.loading}>
+          <Loader2 className={styles.loader} size={32} />
+          <p>Carregando estabelecimento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !establishment) {
+    return (
+      <div className={styles.wrapper}>
+        <div className={styles.error}>
+          <p>{error || 'Estabelecimento não encontrado'}</p>
+          <button onClick={() => navigate('/cliente/estabelecimentos')}>
+            Voltar para Estabelecimentos
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -112,36 +113,51 @@ function DetEstabelecimentos() {
         </aside>
 
         <main className={styles.main}>
+          {/* Botão Voltar */}
+          <button 
+            className={styles.backButton}
+            onClick={() => navigate('/cliente/estabelecimentos')}
+          >
+            <ArrowLeft size={16} />
+            Voltar
+          </button>
+
           <div className={styles.estabCard}>
             <div className={styles.imageBox}></div>
 
             <div className={styles.infoBox}>
               <div className={styles.infoTop}>
                 <div>
-                  <h2>{estabelecimento.nome_empresa}</h2>
-                  <div className={styles.categoryBadge}>{estabelecimento.categoria}</div>
+                  <h2>{establishment.nome_empresa}</h2>
+                  <div className={styles.categoryBadge}>{establishment.categoria}</div>
                   <p className={styles.label}>Descrição</p>
                   <p className={styles.desc}>
-                    {estabelecimento.descricao || 'Descrição não disponível.'}
+                    {establishment.descricao || 'Descrição não disponível.'}
                   </p>
                 </div>
                 <div>
                   <p className={styles.label}>
                     <MapPin size={16} /> Endereço
                   </p>
-                  <p>{estabelecimento.endereco_empresa}</p>
-                  <p className={styles.tempo}>
-                    <Clock size={16} /> Tempo médio de espera geral: {estabelecimento.tempo_estimado || 15}min
-                  </p>
+                  <p>{establishment.endereco_empresa}</p>
+                  {establishment.telefone_empresa && (
+                    <p className={styles.tempo}>
+                      <Phone size={16} /> {establishment.telefone_empresa}
+                    </p>
+                  )}
+                  {establishment.horario_funcionamento && (
+                    <p className={styles.tempo}>
+                      <Clock size={16} /> {establishment.horario_funcionamento}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className={styles.avaliacao}>
-                <h3>Avaliação</h3>
-                <p><span className={styles.estrela}>⭐</span> <strong>{estabelecimento.nota?.toFixed(1) || '4.5'}</strong> ({estabelecimento.avaliacoes || 0} avaliações)</p>
+                <h3>Status</h3>
                 <p className={styles.status}>
-                  Status: <span className={estabelecimento.status === 'ativo' ? styles.active : styles.inactive}>
-                    {estabelecimento.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                  Status: <span className={establishment.status === 'ativo' ? styles.active : styles.inactive}>
+                    {establishment.status === 'ativo' ? 'Ativo' : 'Inativo'}
                   </span>
                 </p>
               </div>
@@ -149,72 +165,75 @@ function DetEstabelecimentos() {
               <div className={styles.filasSection}>
                 <h3>
                   <Users size={20} /> Filas Disponíveis
-                  {loading && <Loader2 className={styles.loader} size={16} />}
                 </h3>
                 
-                {error ? (
-                  <div className={styles.errorContainer}>
-                    <p>{error}</p>
-                    <button onClick={fetchFilas} className={styles.retryButton}>
-                      Tentar Novamente
-                    </button>
+                {filas.length === 0 ? (
+                  <div className={styles.noQueues}>
+                    <Users size={48} />
+                    <h4>Nenhuma fila ativa</h4>
+                    <p>Este estabelecimento não possui filas ativas no momento.</p>
                   </div>
-                ) : filas.length === 0 ? (
-                  <p className={styles.noQueues}>Nenhuma fila ativa no momento.</p>
                 ) : (
-                  <table className={styles.tabelaFilas}>
-                    <thead>
-                      <tr>
-                        <th>Nome da Fila</th>
-                        <th>Pessoas</th>
-                        <th>Tempo Estimado</th>
-                        <th>Status</th>
-                        <th>Ação</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filas.map((fila) => (
-                        <tr key={fila.id}>
-                          <td>
-                            <div className={styles.filaInfo}>
-                              <strong>{fila.nome}</strong>
-                              <small>{fila.descricao}</small>
-                            </div>
-                          </td>
-                          <td>
-                            <span className={styles.pessoasCount}>
-                              {fila.stats?.totalClients || 0}
-                            </span>
-                          </td>
-                          <td>
-                            <span className={styles.tempoEstimado}>
-                              {fila.stats?.averageWaitTime || 0}min
-                            </span>
-                          </td>
-                          <td>
-                            <span className={`${styles.status} ${fila.status === 'ativa' ? styles.active : styles.inactive}`}>
-                              {fila.status === 'ativa' ? 'Ativa' : 'Inativa'}
-                            </span>
-                          </td>
-                          <td>
-                            <button 
-                              className={styles.entrar}
-                              onClick={() => handleEntrarFila(fila)}
-                              disabled={fila.status !== 'ativa'}
-                            >
-                              {fila.status === 'ativa' ? 'Entrar' : 'Indisponível'}
-                            </button>
-                          </td>
-                          <td>&gt;</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className={styles.queuesList}>
+                    {filas.map((fila) => (
+                      <div 
+                        key={fila.id}
+                        className={`${styles.queueCard} ${selectedQueue?.id === fila.id ? styles.selected : ''}`}
+                        onClick={() => setSelectedQueue(fila)}
+                      >
+                        <div className={styles.queueHeader}>
+                          <h4>{fila.nome}</h4>
+                          <span className={`${styles.status} ${styles[fila.status]}`}>
+                            {fila.status}
+                          </span>
+                        </div>
+                        
+                        {fila.descricao && (
+                          <p className={styles.queueDescription}>{fila.descricao}</p>
+                        )}
+                        
+                        <div className={styles.queueInfo}>
+                          <div className={styles.infoItem}>
+                            <Clock size={14} />
+                            <span>{Number(fila.tempo_estimado || 0)} min por posição</span>
+                          </div>
+                          <div className={styles.infoItem}>
+                            <Users size={14} />
+                            <span>{fila.stats?.totalClients || 0} pessoas</span>
+                          </div>
+                          <div className={styles.infoItem}>
+                            <span>R$ {Number(fila.valor_avancos || 0).toFixed(2)} por avanço</span>
+                          </div>
+                        </div>
+                        
+                        <button 
+                          className={styles.selectQueueButton}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedQueue(fila);
+                          }}
+                        >
+                          {selectedQueue?.id === fila.id ? 'Selecionada' : 'Selecionar Fila'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
           </div>
+
+          {/* Componente de Fila */}
+          {selectedQueue && (
+            <div className={styles.queueComponent}>
+              <QueueComponent
+                queueId={selectedQueue.id}
+                establishmentId={id}
+                onJoinSuccess={handleJoinSuccess}
+                onError={handleError}
+              />
+            </div>
+          )}
         </main>
       </div>
     </div>

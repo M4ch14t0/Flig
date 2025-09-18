@@ -6,8 +6,10 @@ const connection = mysql.createConnection({
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || "fligdb",
+  database: process.env.DB_NAME || "flig_db",
   port: process.env.DB_PORT || 3306,
+  charset: 'utf8mb4',
+  timezone: 'Z'
 });
 
 connection.connect((err) => {
