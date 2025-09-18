@@ -104,9 +104,21 @@ class Queue {
 
   /** Lista filas de um estabelecimento */
   static async findByEstabelecimento(estabelecimentoId) {
-    const sql = 'SELECT * FROM filas WHERE estabelecimento_id = ? ORDER BY created_at DESC';
+    const sql = 'SELECT * FROM filas WHERE estabelecimento_id = ? AND status != "encerrada" ORDER BY created_at DESC';
+    console.log('🔍 Buscando filas para estabelecimento:', estabelecimentoId);
+    console.log('📝 SQL:', sql);
+    
     const results = await new Promise((resolve, reject) =>
-      connection.query(sql, [estabelecimentoId], (err, results) => err ? reject(err) : resolve(results))
+      connection.query(sql, [estabelecimentoId], (err, results) => {
+        if (err) {
+          console.error('❌ Erro na query:', err);
+          reject(err);
+        } else {
+          console.log('✅ Resultados encontrados:', results.length);
+          console.log('📊 Filas:', results.map(r => ({ id: r.id, nome: r.nome, status: r.status })));
+          resolve(results);
+        }
+      })
     );
     return results.map(row => new Queue(row));
   }
@@ -118,13 +130,8 @@ class Queue {
     let queueClients = await redisService.getQueueClients(this.id);
     if (!Array.isArray(queueClients)) queueClients = [];
 
-    const isDuplicate = queueClients.some(([clientDataStr]) => {
-      try {
-        const existingClient = typeof clientDataStr === 'string' ? JSON.parse(clientDataStr) : clientDataStr;
-        return existingClient.email === clientData.email || existingClient.telefone === clientData.telefone;
-      } catch {
-        return false;
-      }
+    const isDuplicate = queueClients.some((existingClient) => {
+      return existingClient.email === clientData.email || existingClient.telefone === clientData.telefone;
     });
 
     if (isDuplicate) throw new Error('Cliente já está nesta fila');

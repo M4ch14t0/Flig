@@ -106,7 +106,7 @@ export default function DetalhesFila() {
             <div className={styles.card}>
               <Clock size={28} />
               <h2>Tempo Estimado</h2>
-              <p>{fila.tempo_estimado} min/posição</p>
+              <p>{Number(fila.tempo_estimado || 0)} min/posição</p>
             </div>
             <div className={styles.card}>
               <DollarSign size={28} />
@@ -155,7 +155,7 @@ export default function DetalhesFila() {
                       <td className={styles.email}>{client.email}</td>
                       <td className={styles.phone}>{client.telefone}</td>
                       <td className={styles.waitTime}>
-                        {calculateWaitTime(client.position, fila?.tempo_estimado || 5)} min
+                        {calculateWaitTime(client.position, Number(fila?.tempo_estimado || 5))} min
                       </td>
                       <td className={styles.timestamp}>
                         {formatTimestamp(client.timestamp)}

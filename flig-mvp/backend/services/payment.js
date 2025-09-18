@@ -205,7 +205,7 @@ function generateTransactionId() {
 async function saveTransaction(transactionData) {
   try {
     const sql = `
-      INSERT INTO transacoes_pagamento 
+      INSERT INTO transacoes_pagamentos 
       (transaction_id, client_id, queue_id, positions, amount, payment_method, status, error_message, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
@@ -246,7 +246,7 @@ async function saveTransaction(transactionData) {
 async function getClientTransactions(clientId) {
   try {
     const sql = `
-      SELECT * FROM transacoes_pagamento 
+      SELECT * FROM transacoes_pagamentos 
       WHERE client_id = ? 
       ORDER BY created_at DESC
     `;
@@ -280,7 +280,7 @@ async function getQueuePaymentStats(queueId) {
         SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved_transactions,
         SUM(CASE WHEN status = 'approved' THEN amount ELSE 0 END) as total_revenue,
         SUM(CASE WHEN status = 'approved' THEN positions ELSE 0 END) as total_positions_advanced
-      FROM transacoes_pagamento 
+      FROM transacoes_pagamentos 
       WHERE queue_id = ?
     `;
 
@@ -322,7 +322,7 @@ async function confirmPayment(transactionId) {
     console.log(`🔔 Simulando webhook de confirmação: ${transactionId}`);
 
     // Atualiza status da transação no banco
-    const sql = 'UPDATE transacoes_pagamento SET status = ?, updated_at = NOW() WHERE transaction_id = ?';
+    const sql = 'UPDATE transacoes_pagamentos SET status = ?, updated_at = NOW() WHERE transaction_id = ?';
     
     await new Promise((resolve, reject) => {
       connection.query(sql, ['confirmed', transactionId], (err, result) => {

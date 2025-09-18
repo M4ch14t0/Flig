@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import { Home, BarChart2, List, CreditCard, Loader2, Users, Clock, DollarSign } from 'lucide-react';
 import styles from './GerFilas.module.css';
-
-// URL base da API
-const API_BASE_URL = 'http://localhost:5000/api';
+import { api } from '../../../services/api';
+import { AuthContext } from '../../../contexts/authContextImports';
 
 function GerenciarFilas() {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [popupVisible, setPopupVisible] = useState(false);
   const [filas, setFilas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,8 +21,8 @@ function GerenciarFilas() {
     tempo_estimado: 5,
   });
 
-  // ID do estabelecimento (em produção viria do contexto de autenticação)
-  const estabelecimentoId = 1; // Temporário para teste
+  // ID do estabelecimento (obtido do contexto de autenticação)
+  const estabelecimentoId = user?.id || 8; // Fallback para teste
 
   const sidebarLinks = [
     { to: '/estabelecimento/home', label: 'Home', icon: <Home size={16} /> },
@@ -37,13 +37,8 @@ function GerenciarFilas() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/queues/establishment/${estabelecimentoId}`);
-      
-      if (!response.ok) {
-        throw new Error('Erro ao buscar filas');
-      }
-      
-      const data = await response.json();
+      const response = await api.get('/establishments/queues');
+      const data = response.data;
       setFilas(data.data || []);
     } catch (error) {
       console.error('Erro ao buscar filas:', error);
@@ -60,22 +55,26 @@ function GerenciarFilas() {
 
   const handleCriarFila = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/queues`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...novaFila,
-          estabelecimento_id: estabelecimentoId
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao criar fila');
+      console.log('Dados da nova fila:', novaFila);
+      console.log('Estabelecimento ID:', estabelecimentoId);
+      console.log('User context:', user);
+      
+      // Validação básica
+      if (!novaFila.nome.trim()) {
+        alert('Nome da fila é obrigatório');
+        return;
       }
+      
+      const payload = {
+        ...novaFila,
+        estabelecimento_id: estabelecimentoId
+      };
+      
+      console.log('Payload sendo enviado:', payload);
+      
+      const response = await api.post('/queues', payload);
 
-      const result = await response.json();
+      const result = response.data;
       alert('Fila criada com sucesso!');
       
       // Atualiza a lista de filas
@@ -96,17 +95,7 @@ function GerenciarFilas() {
 
   const handleStatusChange = async (filaId, novoStatus) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/queues/${filaId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: novoStatus })
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao atualizar status da fila');
-      }
+      const response = await api.put(`/queues/${filaId}/status`, { status: novoStatus });
 
       alert(`Fila ${novoStatus === 'pausada' ? 'pausada' : 'reativada'} com sucesso!`);
       fetchFilas();
@@ -122,13 +111,7 @@ function GerenciarFilas() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/queues/${filaId}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao encerrar fila');
-      }
+      const response = await api.delete(`/queues/${filaId}`);
 
       alert('Fila encerrada com sucesso!');
       fetchFilas();

@@ -148,7 +148,7 @@ function MinhasFilas() {
                       <div className={styles.queueInfo}>
                         <div className={styles.infoItem}>
                           <Clock size={16} />
-                          <span>Tempo estimado: {fila.tempo_estimado}min</span>
+                          <span>Tempo estimado: {Number(fila.tempo_estimado || 0)}min</span>
                         </div>
                         <div className={styles.infoItem}>
                           <Users size={16} />

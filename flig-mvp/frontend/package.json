@@ -1,34 +1,71 @@
 {
-  "name": "flig-mvp",
+  "name": "flig-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "Frontend do Sistema Flig - Filas Virtuais Inteligentes",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext js,jsx --fix",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
-    "axios": "^1.10.0",
-    "lucide-react": "^0.525.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router": "^7.7.1",
-    "react-router-dom": "^7.7.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.1",
+    "axios": "^1.6.2",
+    "lucide-react": "^0.294.0",
+    "react-icons": "^4.12.0",
+    "clsx": "^2.0.0",
+    "date-fns": "^2.30.0",
+    "react-hot-toast": "^2.4.1",
+    "framer-motion": "^10.16.16",
+    "react-query": "^3.39.3",
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@eslint/js": "^9.30.1",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.6.0",
-    "eslint": "^9.30.1",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "globals": "^16.3.0",
-    "terser": "^5.44.0",
-    "vite": "^7.0.4"
-  }
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@vitejs/plugin-react": "^4.1.1",
+    "vite": "^5.0.0",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "vitest": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/user-event": "^14.5.1",
+    "jsdom": "^23.0.1",
+    "c8": "^8.0.1"
+  },
+  "keywords": [
+    "react",
+    "vite",
+    "filas",
+    "queue",
+    "frontend",
+    "ui",
+    "dashboard"
+  ],
+  "author": "Flig Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seu-usuario/flig.git"
+  },
+  "bugs": {
+    "url": "https://github.com/seu-usuario/flig/issues"
+  },
+  "homepage": "https://github.com/seu-usuario/flig#readme"
 }

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FiBarChart2, FiUsers, FiClock, FiTrendingUp, FiHome, FiList, FiCreditCard, FiDollarSign, FiActivity } from 'react-icons/fi';
 import Layout from '../../components/Layout';
+import { api } from '../../services/api';
+import { useAuth } from '../../contexts/authContextImports.js';
 import styles from './Dashboard.module.css';
-
-// URL base da API
-const API_BASE_URL = 'http://localhost:5000/api';
 
 const sidebarLinks = [
   { to: '/estabelecimento/home', label: 'Home', icon: <FiHome /> },
@@ -14,6 +13,7 @@ const sidebarLinks = [
 ];
 
 export default function Dashboard() {
+  const { user } = useAuth();
   // Estados para dados do dashboard
   const [dashboardData, setDashboardData] = useState({
     totalAtendimentos: 0,
@@ -27,54 +27,31 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ID do estabelecimento (em produção viria do contexto de autenticação)
-  const estabelecimentoId = 1; // Temporário para teste
-
   // Função para buscar dados do dashboard
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Busca filas do estabelecimento
-      const filasResponse = await fetch(`${API_BASE_URL}/queues/establishment/${estabelecimentoId}`);
-      const filasData = filasResponse.ok ? await filasResponse.json() : { data: [] };
-      
-      setFilas(filasData.data || []);
-
-      // Calcula estatísticas agregadas
-      const filasAtivas = filasData.data.filter(fila => fila.status === 'ativa');
-      const totalAtendimentos = filasData.data.reduce((total, fila) => total + (fila.stats?.totalClients || 0), 0);
-      const tempoMedioEspera = filasAtivas.length > 0 
-        ? filasAtivas.reduce((total, fila) => total + (fila.stats?.averageWaitTime || 0), 0) / filasAtivas.length
-        : 0;
-      
-      // Busca estatísticas de pagamento para cada fila
-      let totalAvanços = 0;
-      let receitaTotal = 0;
-
-      for (const fila of filasAtivas) {
-        try {
-          const statsResponse = await fetch(`${API_BASE_URL}/queues/${fila.id}/stats`);
-          if (statsResponse.ok) {
-            const statsData = await statsResponse.json();
-            const paymentStats = statsData.data.paymentStats;
-            totalAvanços += paymentStats.totalPositionsAdvanced || 0;
-            receitaTotal += paymentStats.totalRevenue || 0;
-          }
-        } catch (error) {
-          console.error(`Erro ao buscar stats da fila ${fila.id}:`, error);
-        }
+      // Busca estatísticas do estabelecimento
+      const statsResponse = await api.get('/establishments/stats');
+      if (statsResponse.data.success) {
+        const stats = statsResponse.data.data;
+        setDashboardData({
+          totalAtendimentos: stats.totalClientesAtendidos || 0,
+          tempoMedioEspera: Math.round(stats.tempoMedioEstimado || 0),
+          totalAvanços: stats.totalClientesUnicos || 0,
+          receitaTotal: stats.receitaTotal || 0,
+          filasAtivas: stats.filasAtivas || 0,
+          clientesEmFila: stats.totalClientesAtendidos || 0
+        });
       }
 
-      setDashboardData({
-        totalAtendimentos,
-        tempoMedioEspera: Math.round(tempoMedioEspera),
-        totalAvanços,
-        receitaTotal,
-        filasAtivas: filasAtivas.length,
-        clientesEmFila: filasAtivas.reduce((total, fila) => total + (fila.stats?.totalClients || 0), 0)
-      });
+      // Busca filas do estabelecimento
+      const filasResponse = await api.get('/establishments/queues');
+      if (filasResponse.data.success) {
+        setFilas(filasResponse.data.data);
+      }
 
     } catch (error) {
       console.error('Erro ao buscar dados do dashboard:', error);
@@ -149,7 +126,7 @@ export default function Dashboard() {
                 </div>
                 <div className={styles.statContent}>
                   <h3>Receita Total</h3>
-                  <p className={styles.statValue}>R$ {dashboardData.receitaTotal.toFixed(2)}</p>
+                  <p className={styles.statValue}>R$ {Number(dashboardData.receitaTotal || 0).toFixed(2)}</p>
                   <small>De avanços pagos</small>
                 </div>
               </div>
@@ -208,7 +185,7 @@ export default function Dashboard() {
                         </div>
                         <div className={styles.filaStat}>
                           <span className={styles.filaStatLabel}>Receita:</span>
-                          <span className={styles.filaStatValue}>R$ {(fila.stats?.totalRevenue || 0).toFixed(2)}</span>
+                          <span className={styles.filaStatValue}>R$ {Number(fila.stats?.totalRevenue || 0).toFixed(2)}</span>
                         </div>
                       </div>
                       <div className={styles.filaActions}>

@@ -2,10 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HelpCircle, User, Settings, LogOut, Loader2 } from 'lucide-react';
+import { api } from '../../../services/api';
 import styles from './Estabelecimentos.module.css';
-
-// URL base da API (ajuste conforme necessário)
-const API_BASE_URL = 'http://localhost:5000/api';
 
 function Estabelecimentos() {
   const [pesquisa, setPesquisa] = useState('');
@@ -27,48 +25,48 @@ function Estabelecimentos() {
       setLoading(true);
       setError(null);
       
-      // Busca estabelecimentos do banco de dados
-      const response = await fetch(`${API_BASE_URL}/estabelecimentos`);
+      // Busca estabelecimentos usando a nova API
+      const response = await api.get('/establishments');
       
-      if (!response.ok) {
+      if (response.data.success) {
+        const data = response.data.data;
+        
+        // Para cada estabelecimento, busca suas filas ativas
+        const estabelecimentosComFilas = await Promise.all(
+          data.map(async (estabelecimento) => {
+            try {
+              const filasResponse = await api.get(`/establishments/${estabelecimento.id}/queues`);
+              const filasData = filasResponse.data.success ? filasResponse.data.data : [];
+              
+              // Calcula total de pessoas em filas ativas
+              const totalPessoas = filasData
+                .filter(fila => fila.status === 'ativa')
+                .reduce((total, fila) => total + (fila.stats?.totalClients || 0), 0);
+              
+              return {
+                ...estabelecimento,
+                filas: filasData.filter(fila => fila.status === 'ativa').length,
+                pessoas: totalPessoas,
+                nota: 4.5 + Math.random() * 0.5, // Simula nota (em produção viria de avaliações reais)
+                avaliacoes: Math.floor(Math.random() * 200) + 50 // Simula avaliações
+              };
+            } catch (error) {
+              console.error(`Erro ao buscar filas do estabelecimento ${estabelecimento.id}:`, error);
+              return {
+                ...estabelecimento,
+                filas: 0,
+                pessoas: 0,
+                nota: 4.5,
+                avaliacoes: 0
+              };
+            }
+          })
+        );
+        
+        setEstabelecimentos(estabelecimentosComFilas);
+      } else {
         throw new Error('Erro ao buscar estabelecimentos');
       }
-      
-      const data = await response.json();
-      
-      // Para cada estabelecimento, busca suas filas ativas
-      const estabelecimentosComFilas = await Promise.all(
-        data.map(async (estabelecimento) => {
-          try {
-            const filasResponse = await fetch(`${API_BASE_URL}/queues/establishment/${estabelecimento.id}`);
-            const filasData = filasResponse.ok ? await filasResponse.json() : { data: [] };
-            
-            // Calcula total de pessoas em filas ativas
-            const totalPessoas = filasData.data
-              .filter(fila => fila.status === 'ativa')
-              .reduce((total, fila) => total + (fila.stats?.totalClients || 0), 0);
-            
-            return {
-              ...estabelecimento,
-              filas: filasData.data.filter(fila => fila.status === 'ativa').length,
-              pessoas: totalPessoas,
-              nota: 4.5 + Math.random() * 0.5, // Simula nota (em produção viria de avaliações reais)
-              avaliacoes: Math.floor(Math.random() * 200) + 50 // Simula avaliações
-            };
-          } catch (error) {
-            console.error(`Erro ao buscar filas do estabelecimento ${estabelecimento.id}:`, error);
-            return {
-              ...estabelecimento,
-              filas: 0,
-              pessoas: 0,
-              nota: 4.5,
-              avaliacoes: 0
-            };
-          }
-        })
-      );
-      
-      setEstabelecimentos(estabelecimentosComFilas);
     } catch (error) {
       console.error('Erro ao buscar estabelecimentos:', error);
       setError('Erro ao carregar estabelecimentos. Tente novamente.');
@@ -272,7 +270,7 @@ function Estabelecimentos() {
                   <div className={styles.cardDetails}>
                     <div className={styles.cardLeft}>
                       <h4>{est.nome_empresa}</h4>
-                      <small>⭐ {est.nota.toFixed(1)} ({est.avaliacoes} avaliações)</small>
+                      <small>⭐ {Number(est.nota || 0).toFixed(1)} ({est.avaliacoes} avaliações)</small>
                       <p className={styles.address}>{est.endereco_empresa}</p>
                     </div>
                     <div className={styles.cardRight}>

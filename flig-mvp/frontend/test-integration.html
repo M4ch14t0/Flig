@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Integração Flig</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Integração Flig</h1>
+    
+    <div class="test-section">
+        <h2>1. Teste de Conectividade</h2>
+        <button onclick="testBackendHealth()">Testar Backend</button>
+        <button onclick="testFrontend()">Testar Frontend</button>
+        <div id="connectivity-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Teste de Autenticação</h2>
+        <button onclick="testUserRegistration()">Registrar Usuário</button>
+        <button onclick="testUserLogin()">Login Usuário</button>
+        <button onclick="testEstablishmentRegistration()">Registrar Estabelecimento</button>
+        <div id="auth-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Teste de APIs</h2>
+        <button onclick="testEstablishmentsList()">Listar Estabelecimentos</button>
+        <button onclick="testUserProfile()">Perfil do Usuário</button>
+        <div id="api-results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        const FRONTEND_URL = 'http://localhost:3000';
+
+        async function testBackendHealth() {
+            const resultDiv = document.getElementById('connectivity-results');
+            try {
+                const response = await fetch('http://localhost:5000/health');
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Backend Funcionando</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Backend Offline</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function testFrontend() {
+            const resultDiv = document.getElementById('connectivity-results');
+            try {
+                const response = await fetch(FRONTEND_URL);
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Frontend Funcionando</h3>
+                            <p>Frontend rodando em: ${FRONTEND_URL}</p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Frontend Offline</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function testUserRegistration() {
+            const resultDiv = document.getElementById('auth-results');
+            const timestamp = Date.now();
+            const userData = {
+                nome_usuario: `Teste Frontend ${timestamp}`,
+                cpf: `111444777${timestamp.toString().slice(-2)}`,
+                email_usuario: `teste.frontend.${timestamp}@example.com`,
+                senha_usuario: '123456'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register/user`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Registro de Usuário OK</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erro no Registro</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function testUserLogin() {
+            const resultDiv = document.getElementById('auth-results');
+            try {
+                const response = await fetch(`${API_BASE}/auth/login/user`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email_usuario: 'teste.final@example.com',
+                        senha_usuario: '123456'
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('testToken', data.data.token);
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Login de Usuário OK</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erro no Login</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function testEstablishmentRegistration() {
+            const resultDiv = document.getElementById('auth-results');
+            const timestamp = Date.now();
+            const establishmentData = {
+                nome_empresa: `Estabelecimento Teste ${timestamp}`,
+                cnpj: `12345678000${timestamp.toString().slice(-3)}`,
+                email_empresa: `estabelecimento.${timestamp}@teste.com`,
+                senha_empresa: '123456',
+                categoria: 'Restaurante'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register/establishment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(establishmentData)
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Registro de Estabelecimento OK</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erro no Registro</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function testEstablishmentsList() {
+            const resultDiv = document.getElementById('api-results');
+            try {
+                const response = await fetch(`${API_BASE}/estabelecimentos`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Lista de Estabelecimentos OK</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erro na Lista</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function testUserProfile() {
+            const resultDiv = document.getElementById('api-results');
+            const token = localStorage.getItem('testToken');
+            
+            if (!token) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Token não encontrado</h3>
+                        <p>Faça login primeiro</p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Perfil do Usuário OK</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erro no Perfil</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Teste automático ao carregar a página
+        window.onload = function() {
+            testBackendHealth();
+            testFrontend();
+        };
+    </script>
+</body>
+</html>
+
