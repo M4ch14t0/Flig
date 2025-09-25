@@ -1,24 +1,30 @@
 // db.js
-const mysql = require("mysql2");
+// Garantir que dotenv seja carregado primeiro
 require('dotenv').config();
 
-const connection = mysql.createConnection({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || "flig_db",
-  port: process.env.DB_PORT || 3306,
-  charset: 'utf8mb4',
-  timezone: 'Z'
-});
+// Importar configuração do banco de dados
+const { pool, testConnection } = require('./database');
 
-connection.connect((err) => {
-  if (err) {
-    console.error("Erro ao conectar ao MySQL:", err);
-  } else {
-    console.log("Conectado ao banco de dados MySQL (fligdb)");
+// Manter compatibilidade com código existente
+const connection = {
+  query: (sql, params, callback) => {
+    if (typeof params === 'function') {
+      callback = params;
+      params = [];
+    }
+    
+    pool.execute(sql, params)
+      .then(([rows]) => {
+        if (callback) callback(null, rows);
+      })
+      .catch((error) => {
+        if (callback) callback(error, null);
+      });
   }
-});
+};
+
+// Testar conexão na inicialização (após carregar dotenv)
+testConnection();
 
 module.exports = connection;
 

@@ -238,34 +238,61 @@ async function getQueueHistory(req, res) {
  */
 async function getActiveQueues(req, res) {
   try {
-    const { userId } = req.user;
-
-    const sql = `
-      SELECT 
-        hcf.*,
-        f.nome as fila_nome,
-        f.tempo_estimado,
-        f.valor_avancos,
-        e.nome_empresa as estabelecimento_nome,
-        e.endereco_empresa,
-        e.telefone_empresa
-      FROM historico_clientes_filas hcf
-      JOIN filas f ON hcf.queue_id = f.id
-      JOIN estabelecimentos e ON f.estabelecimento_id = e.id
-      WHERE hcf.client_id = ? AND hcf.status = 'aguardando'
-      ORDER BY hcf.data_entrada ASC
-    `;
-
-    const results = await new Promise((resolve, reject) => {
-      connection.query(sql, [`client-${userId}`], (err, results) => {
-        if (err) reject(err);
-        else resolve(results);
-      });
+    const { userId, email } = req.user;
+    const redisService = require('../services/redis');
+    
+    // Buscar todas as filas ativas
+    const allQueues = await new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT 
+          f.id as queue_id,
+          f.nome as fila_nome,
+          f.tempo_estimado,
+          f.valor_avancos,
+          e.nome_empresa as estabelecimento_nome,
+          e.endereco_empresa,
+          e.telefone_empresa
+        FROM filas f
+        JOIN estabelecimentos e ON f.estabelecimento_id = e.id
+        WHERE f.status = 'ativa'`,
+        (err, results) => {
+          if (err) reject(err);
+          else resolve(results);
+        }
+      );
     });
+    
+    const userQueues = [];
+    
+    // Verificar cada fila para ver se o usuário está nela
+    for (const queue of allQueues) {
+      try {
+        const clients = await redisService.getQueueClients(queue.queue_id);
+        const userInQueue = clients.find(client => client.email === email);
+        
+        if (userInQueue) {
+          userQueues.push({
+            queue_id: queue.queue_id,
+            fila_nome: queue.fila_nome,
+            tempo_estimado: queue.tempo_estimado,
+            valor_avancos: queue.valor_avancos,
+            estabelecimento_nome: queue.estabelecimento_nome,
+            endereco_empresa: queue.endereco_empresa,
+            telefone_empresa: queue.telefone_empresa,
+            posicao_atual: userInQueue.position || 1,
+            total_pessoas_fila: clients.length,
+            status: 'aguardando',
+            data_entrada: userInQueue.timestamp || new Date().toISOString()
+          });
+        }
+      } catch (err) {
+        console.warn(`Erro ao verificar fila ${queue.queue_id}:`, err);
+      }
+    }
 
     res.json({
       success: true,
-      data: results
+      data: userQueues
     });
 
   } catch (error) {
@@ -344,11 +371,28 @@ async function listUsers(req, res) {
   try {
     const { limit = 50, offset = 0, search = '' } = req.query;
 
-    const users = await User.findAll({ limit, offset, search });
+    // Validação de parâmetros
+    const parsedLimit = Math.min(parseInt(limit) || 50, 100); // Máximo 100 registros
+    const parsedOffset = Math.max(parseInt(offset) || 0, 0);
+
+    const users = await User.findAll({ 
+      limit: parsedLimit, 
+      offset: parsedOffset, 
+      search: search.trim() 
+    });
+
+    // Buscar total de registros para paginação
+    const totalCount = await User.count({ search: search.trim() });
 
     res.json({
       success: true,
-      data: users.map(user => user.toPublicObject())
+      data: users.map(user => user.toPublicObject()),
+      pagination: {
+        limit: parsedLimit,
+        offset: parsedOffset,
+        total: totalCount,
+        hasMore: (parsedOffset + parsedLimit) < totalCount
+      }
     });
 
   } catch (error) {

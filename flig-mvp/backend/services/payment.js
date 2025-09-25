@@ -34,8 +34,8 @@ async function processPayment(paymentData) {
 
     console.log(`🔄 Processando pagamento simulado: ${positions} posições por R$ ${amount}`);
 
-    // Simula validação de dados do cartão
-    if (paymentMethod === 'credit_card') {
+    // Simula validação de dados do cartão (apenas se dados foram fornecidos)
+    if (paymentMethod === 'credit_card' && cardData && Object.keys(cardData).length > 0) {
       const isValidCard = validateCardData(cardData);
       if (!isValidCard) {
         throw new Error('Dados do cartão inválidos');

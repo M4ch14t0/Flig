@@ -99,10 +99,41 @@ async function removeClientFromQueue(queueId, clientData) {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
 
+    // Se já é string, usa diretamente; senão converte para JSON
     const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
 
-    const result = await client.zRem(queueKey, value);
-    return result;
+    console.log(`🔍 Tentando remover cliente da fila ${queueId}`);
+    console.log(`🔍 Queue key: ${queueKey}`);
+    console.log(`🔍 Cliente value: ${value}`);
+    
+    // Verificar se a fila existe
+    const exists = await client.exists(queueKey);
+    console.log(`🔍 Fila existe: ${exists}`);
+    
+    if (exists) {
+      const allClients = await client.zRange(queueKey, 0, -1);
+      console.log(`📋 Clientes na fila antes da remoção:`, allClients);
+      
+      // Tentar remover usando o valor exato
+      const result = await client.zRem(queueKey, value);
+      console.log(`✅ Resultado da remoção: ${result}`);
+      
+      if (result === 0) {
+        console.log(`⚠️ Cliente não encontrado na fila. Tentando com valor exato...`);
+        // Tentar com o valor exato do Redis
+        if (allClients.length > 0) {
+          const exactValue = allClients[0];
+          console.log(`🔍 Tentando com valor exato: ${exactValue}`);
+          const result2 = await client.zRem(queueKey, exactValue);
+          console.log(`✅ Resultado da remoção com valor exato: ${result2}`);
+          return result2;
+        }
+      }
+      
+      return result;
+    }
+    
+    return 0;
   } catch (error) {
     console.error('Erro ao remover cliente da fila:', error);
     throw new Error('Falha ao remover cliente da fila');
@@ -131,28 +162,63 @@ async function getQueueClients(queueId, start = 0, stop = -1) {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
 
-    const rawClients = await client.zRange(queueKey, start, stop, { WITHSCORES: true });
+    // Tentar diferentes formatos de resposta do Redis
+    let rawClients;
+    try {
+      rawClients = await client.zRange(queueKey, start, stop, { WITHSCORES: true });
+    } catch (err) {
+      // Fallback para versões mais antigas
+      rawClients = await client.zRangeWithScores(queueKey, start, stop);
+    }
+
     const clients = [];
 
-    for (let i = 0; i < rawClients.length; i += 2) {
-      const value = rawClients[i];
-      const score = Number(rawClients[i + 1]);
-      let clientObj;
-
-      try {
-        clientObj = JSON.parse(value);
-      } catch (err) {
-        console.warn('Cliente inválido ignorado:', value);
-        continue;
+    // O formato pode variar dependendo da versão do Redis
+    if (Array.isArray(rawClients)) {
+      for (let i = 0; i < rawClients.length; i += 2) {
+        const value = rawClients[i];
+        const score = Number(rawClients[i + 1]);
+        
+        try {
+          const clientObj = JSON.parse(value);
+          clients.push({ ...clientObj, position: score || 1 });
+        } catch (err) {
+          console.warn('Cliente inválido ignorado:', value);
+          continue;
+        }
       }
-
-      clients.push({ ...clientObj, position: score });
     }
 
     return clients;
   } catch (error) {
     console.error('Erro ao obter clientes da fila:', error);
     throw new Error('Falha ao obter clientes da fila');
+  }
+}
+
+// Define clientes da fila (substitui todos os clientes)
+async function setQueueClients(queueId, clients) {
+  try {
+    const client = await getRedisClient();
+    const queueKey = getQueueKey(queueId);
+
+    // Remove todos os clientes existentes
+    await client.del(queueKey);
+
+    // Adiciona os novos clientes
+    for (let i = 0; i < clients.length; i++) {
+      const clientData = clients[i];
+      const position = i + 1;
+      const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
+      
+      await client.zAdd(queueKey, { score: position, value });
+    }
+
+    console.log(`✅ ${clients.length} clientes definidos para a fila ${queueId}`);
+    return true;
+  } catch (error) {
+    console.error('Erro ao definir clientes da fila:', error);
+    throw new Error('Falha ao definir clientes da fila');
   }
 }
 
@@ -233,6 +299,51 @@ async function getQueueMetadata(queueId) {
   }
 }
 
+// Obtém o próximo cliente da fila (o primeiro da fila)
+async function getNextClient(queueId) {
+  try {
+    const client = await getRedisClient();
+    const queueKey = getQueueKey(queueId);
+
+    console.log('🔍 Buscando próximo cliente na fila:', queueKey);
+
+    // Busca o primeiro cliente (menor score = posição 1)
+    const result = await client.zRange(queueKey, 0, 0, { withScores: true });
+    
+    console.log('📊 Resultado da busca:', result);
+    
+    if (result.length === 0) {
+      console.log('❌ Fila vazia');
+      return null; // Fila vazia
+    }
+
+    // O resultado pode vir em formatos diferentes dependendo da versão do Redis
+    let clientData, score;
+    
+    if (Array.isArray(result[0])) {
+      // Formato antigo: [value, score]
+      [clientData, score] = result[0];
+    } else {
+      // Formato novo: {value, score}
+      clientData = result[0].value;
+      score = result[0].score;
+    }
+    
+    console.log('📝 Dados do cliente:', clientData);
+    console.log('🎯 Score:', score);
+    
+    const clientInfo = JSON.parse(clientData);
+    
+    return {
+      ...clientInfo,
+      position: score
+    };
+  } catch (error) {
+    console.error('❌ Erro ao obter próximo cliente:', error);
+    throw new Error('Falha ao obter próximo cliente');
+  }
+}
+
 module.exports = {
   connectRedis,
   disconnectRedis,
@@ -245,9 +356,11 @@ module.exports = {
   removeClientFromQueue,
   getClientPosition,
   getQueueClients,
+  setQueueClients,
   getQueueSize,
   moveClientInQueue,
   deleteQueue,
   setQueueMetadata,
-  getQueueMetadata
+  getQueueMetadata,
+  getNextClient
 };

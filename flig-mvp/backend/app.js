@@ -8,9 +8,19 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const TOKEN = process.env.CNPJA_TOKEN || "48e69a53-66d7-4661-a641-a708a81bba25-2b5c80fd-96f3-44fb-82b5-f698f61c9550";
+const TOKEN = process.env.CNPJA_TOKEN;
 
-app.use(cors());
+if (!TOKEN) {
+  console.warn('⚠️  CNPJA_TOKEN not configured. Some features may not work properly.');
+}
+
+// Configuração CORS mais permissiva para desenvolvimento
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Importar rotas
@@ -185,37 +195,73 @@ app.get("/api/filas/:id/estatisticas", (req, res) => {
 });
 
 // Rota para buscar estatísticas de um estabelecimento
-app.get("/api/estabelecimentos/:id/estatisticas", (req, res) => {
+app.get("/api/estabelecimentos/:id/estatisticas", async (req, res) => {
   const estabelecimentoId = req.params.id;
   
-  connection.query(
-    `SELECT 
-       COUNT(DISTINCT f.id) as total_filas,
-       COUNT(DISTINCT CASE WHEN f.status = 'ativa' THEN f.id END) as filas_ativas,
-       SUM(f.total_clientes_atendidos) as total_clientes_atendidos,
-       SUM(f.receita_total) as receita_total,
-       AVG(f.tempo_estimado) as tempo_medio_estimado
-     FROM filas f 
-     WHERE f.estabelecimento_id = ?`,
-    [estabelecimentoId],
-    (err, results) => {
-      if (err) {
-        console.error("Erro ao buscar estatísticas:", err);
-        return res.status(500).json({ error: "Erro no servidor" });
+  try {
+    // Buscar estatísticas básicas do banco
+    const stats = await new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT 
+           COUNT(DISTINCT f.id) as total_filas,
+           COUNT(DISTINCT CASE WHEN f.status = 'ativa' THEN f.id END) as filas_ativas,
+           COUNT(DISTINCT CASE WHEN f.status = 'encerrada' THEN f.id END) as filas_encerradas,
+           SUM(f.total_clientes_atendidos) as total_clientes_atendidos,
+           SUM(f.receita_total) as receita_total,
+           AVG(f.tempo_estimado) as tempo_medio_estimado
+         FROM filas f 
+         WHERE f.estabelecimento_id = ?`,
+        [estabelecimentoId],
+        (err, results) => {
+          if (err) reject(err);
+          else resolve(results[0] || {
+            total_filas: 0,
+            filas_ativas: 0,
+            filas_encerradas: 0,
+            total_clientes_atendidos: 0,
+            receita_total: 0,
+            tempo_medio_estimado: 0
+          });
+        }
+      );
+    });
+
+    // Buscar clientes atuais nas filas ativas do Redis
+    const redisService = require('./services/redis');
+    let clientesAtuais = 0;
+    
+    try {
+      // Buscar filas ativas
+      const filasAtivas = await new Promise((resolve, reject) => {
+        connection.query(
+          `SELECT id FROM filas WHERE estabelecimento_id = ? AND status = 'ativa'`,
+          [estabelecimentoId],
+          (err, results) => {
+            if (err) reject(err);
+            else resolve(results);
+          }
+        );
+      });
+
+      // Contar clientes em cada fila ativa
+      for (const fila of filasAtivas) {
+        const queueSize = await redisService.getQueueSize(fila.id);
+        clientesAtuais += queueSize;
       }
-      
-      const stats = results[0] || {
-        total_filas: 0,
-        filas_ativas: 0,
-        total_clientes_atendidos: 0,
-        receita_total: 0,
-        tempo_medio_estimado: 0
-      };
-      
-      res.json(stats);
+    } catch (redisErr) {
+      console.warn('Erro ao buscar clientes do Redis:', redisErr);
     }
-  );
+
+    // Adicionar clientes atuais às estatísticas
+    stats.clientes_atuais = clientesAtuais;
+    
+    res.json(stats);
+  } catch (error) {
+    console.error("Erro ao buscar estatísticas:", error);
+    res.status(500).json({ error: "Erro no servidor" });
+  }
 });
+
 
 // Rota para buscar relatórios de um estabelecimento
 app.get("/api/estabelecimentos/:id/relatorios", (req, res) => {
@@ -319,22 +365,14 @@ app.put("/api/configuracoes/:chave", (req, res) => {
   );
 });
 
-// Middleware de tratamento de erros
-app.use((err, req, res, next) => {
-  console.error('Erro não tratado:', err);
-  res.status(500).json({ 
-    error: 'Erro interno do servidor',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Algo deu errado'
-  });
-});
+// Importar middleware de tratamento de erros
+const { globalErrorHandler, notFoundHandler } = require('./utils/errorHandler');
 
-// Rota 404
-app.use('*', (req, res) => {
-  res.status(404).json({ 
-    error: 'Rota não encontrada',
-    message: `A rota ${req.originalUrl} não existe`
-  });
-});
+// Rota 404 - deve vir antes do middleware de erro
+app.use('*', notFoundHandler);
+
+// Middleware global de tratamento de erros - deve ser o último
+app.use(globalErrorHandler);
 
 module.exports = app;
 

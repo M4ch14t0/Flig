@@ -26,16 +26,16 @@ function DetEstabelecimentos() {
 
       // Se não temos dados do estabelecimento, busca pela API
       if (!establishment) {
-        const establishmentResponse = await api.get(`/establishments/${id}`);
+        const establishmentResponse = await api.get(`/estabelecimentos/${id}`);
         if (establishmentResponse.data.success) {
           setEstablishment(establishmentResponse.data.data);
         }
       }
 
       // Busca filas do estabelecimento
-      const queuesResponse = await api.get(`/establishments/${id}/queues`);
-      if (queuesResponse.data.success) {
-        setFilas(queuesResponse.data.data);
+      const queuesResponse = await api.get(`/estabelecimentos/${id}/filas`);
+      if (queuesResponse.data && Array.isArray(queuesResponse.data)) {
+        setFilas(queuesResponse.data);
       }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -226,6 +226,7 @@ function DetEstabelecimentos() {
           {/* Componente de Fila */}
           {selectedQueue && (
             <div className={styles.queueComponent}>
+              <h3>Fila Selecionada: {selectedQueue.nome}</h3>
               <QueueComponent
                 queueId={selectedQueue.id}
                 establishmentId={id}

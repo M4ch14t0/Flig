@@ -10,6 +10,8 @@ function GerenciarFilas() {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const [popupVisible, setPopupVisible] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [filaEditando, setFilaEditando] = useState(null);
   const [filas, setFilas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,6 +21,8 @@ function GerenciarFilas() {
     max_avancos: 8,
     valor_avancos: 2.00,
     tempo_estimado: 5,
+    chamada_automatica: false,
+    intervalo_chamada: 5, // minutos
   });
 
   // ID do estabelecimento (obtido do contexto de autenticação)
@@ -37,9 +41,22 @@ function GerenciarFilas() {
       setLoading(true);
       setError(null);
       
-      const response = await api.get('/establishments/queues');
+      // Verifica se o usuário está logado e é um estabelecimento
+      if (!user || !user.id) {
+        setError('Usuário não autenticado');
+        setLoading(false);
+        return;
+      }
+      
+      if (user.type !== 'estabelecimento') {
+        setError('Acesso negado. Apenas estabelecimentos podem gerenciar filas.');
+        setLoading(false);
+        return;
+      }
+      
+      const response = await api.get(`/queues/establishment/${user.id}`);
       const data = response.data;
-      setFilas(data.data || []);
+      setFilas(data.success && Array.isArray(data.data) ? data.data : []);
     } catch (error) {
       console.error('Erro ao buscar filas:', error);
       setError('Erro ao carregar filas');
@@ -72,24 +89,44 @@ function GerenciarFilas() {
       
       console.log('Payload sendo enviado:', payload);
       
-      const response = await api.post('/queues', payload);
+      let response;
+      if (editMode && filaEditando) {
+        // Modo de edição
+        response = await api.put(`/queues/${filaEditando.id}`, payload);
+        if (response.data.success) {
+          alert('Fila atualizada com sucesso!');
+        } else {
+          alert('Erro ao atualizar fila: ' + (response.data.message || 'Erro desconhecido'));
+          return;
+        }
+      } else {
+        // Modo de criação
+        response = await api.post('/queues', payload);
+        if (response.data.success) {
+          alert('Fila criada com sucesso!');
+        } else {
+          alert('Erro ao criar fila: ' + (response.data.message || 'Erro desconhecido'));
+          return;
+        }
+      }
 
-      const result = response.data;
-      alert('Fila criada com sucesso!');
-      
       // Atualiza a lista de filas
       fetchFilas();
       setPopupVisible(false);
+      setEditMode(false);
+      setFilaEditando(null);
       setNovaFila({
         nome: '',
         descricao: '',
         max_avancos: 8,
         valor_avancos: 2.00,
         tempo_estimado: 5,
+        chamada_automatica: false,
+        intervalo_chamada: 5,
       });
     } catch (error) {
-      console.error('Erro ao criar fila:', error);
-      alert('Erro ao criar fila. Tente novamente.');
+      console.error('Erro ao criar/editar fila:', error);
+      alert('Erro ao criar/editar fila. Tente novamente.');
     }
   };
 
@@ -103,6 +140,38 @@ function GerenciarFilas() {
       console.error('Erro ao atualizar status:', error);
       alert('Erro ao atualizar status da fila');
     }
+  };
+
+  const handleChamarProximo = async (filaId) => {
+    try {
+      const response = await api.post(`/queues/${filaId}/chamar-proximo`);
+      
+      if (response.data.success) {
+        const cliente = response.data.data;
+        alert(`Próximo cliente: ${cliente.nome} (${cliente.email})`);
+        fetchFilas(); // Atualiza a lista
+      } else {
+        alert('Não há clientes na fila ou erro ao chamar próximo');
+      }
+    } catch (error) {
+      console.error('Erro ao chamar próximo:', error);
+      alert('Erro ao chamar próximo cliente');
+    }
+  };
+
+  const handleEditarFila = (fila) => {
+    setFilaEditando(fila);
+    setEditMode(true);
+    setNovaFila({
+      nome: fila.nome,
+      descricao: fila.descricao || '',
+      max_avancos: fila.max_avancos || 8,
+      valor_avancos: fila.valor_avancos || 2.00,
+      tempo_estimado: fila.tempo_estimado || 5,
+      chamada_automatica: fila.chamada_automatica || false,
+      intervalo_chamada: fila.intervalo_chamada || 5,
+    });
+    setPopupVisible(true);
   };
 
   const handleEncerrarFila = async (filaId) => {
@@ -209,6 +278,22 @@ function GerenciarFilas() {
                           </button>
                         ) : null}
                         
+                        {fila.status === 'ativa' && (
+                          <button 
+                            onClick={() => handleChamarProximo(fila.id)}
+                            className={styles.callButton}
+                          >
+                            Chamar Próximo
+                          </button>
+                        )}
+                        
+                        <button 
+                          onClick={() => handleEditarFila(fila)}
+                          className={styles.editButton}
+                        >
+                          Editar
+                        </button>
+                        
                         <button 
                           onClick={() => navigate(`/estabelecimento/gerenciar-filas/${fila.id}`)}
                           className={styles.detailsButton}
@@ -234,7 +319,7 @@ function GerenciarFilas() {
         {popupVisible && (
           <div className={styles.popupOverlay} onClick={() => setPopupVisible(false)}>
             <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
-              <h3>Criar Fila</h3>
+              <h3>{editMode ? 'Editar Fila' : 'Criar Fila'}</h3>
 
               <label>Nome da Fila:</label>
               <input
@@ -278,7 +363,32 @@ function GerenciarFilas() {
                 onChange={(e) => setNovaFila({ ...novaFila, tempo_estimado: parseInt(e.target.value) })}
               />
 
-              <button onClick={handleCriarFila}>Confirmar</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '15px' }}>
+                <input
+                  type="checkbox"
+                  id="chamada_automatica"
+                  checked={novaFila.chamada_automatica}
+                  onChange={(e) => setNovaFila({ ...novaFila, chamada_automatica: e.target.checked })}
+                />
+                <label htmlFor="chamada_automatica">Habilitar chamada automática</label>
+              </div>
+
+              {novaFila.chamada_automatica && (
+                <div>
+                  <label>Intervalo entre chamadas (minutos):</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={novaFila.intervalo_chamada}
+                    onChange={(e) => setNovaFila({ ...novaFila, intervalo_chamada: parseInt(e.target.value) })}
+                  />
+                </div>
+              )}
+
+              <button onClick={handleCriarFila}>
+                {editMode ? 'Atualizar' : 'Criar'}
+              </button>
             </div>
           </div>
         )}
