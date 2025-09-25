@@ -7,9 +7,9 @@
 -- @version 1.0.0
 
 -- Criação do banco de dados (se não existir)
-CREATE DATABASE IF NOT EXISTS fligdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS flig_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE fligdb;
+USE flig_db;
 
 -- Tabela de usuários (clientes)
 CREATE TABLE IF NOT EXISTS usuarios (
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS filas (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabela de transações de pagamento
-CREATE TABLE IF NOT EXISTS transacoes_pagamento (
+CREATE TABLE IF NOT EXISTS transacoes_pagamentos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     transaction_id VARCHAR(100) UNIQUE NOT NULL,
     client_id VARCHAR(36) NOT NULL, -- UUID do cliente
@@ -224,7 +224,7 @@ GROUP BY f.id, f.nome, f.estabelecimento_id, e.nome_empresa, f.status, f.total_c
 DELIMITER //
 
 CREATE TRIGGER tr_update_queue_stats_after_transaction
-AFTER INSERT ON transacoes_pagamento
+AFTER INSERT ON transacoes_pagamentos
 FOR EACH ROW
 BEGIN
     IF NEW.status = 'approved' THEN
@@ -248,14 +248,14 @@ DELIMITER ;
 
 -- Índices adicionais para performance
 CREATE INDEX idx_filas_status_estabelecimento ON filas(status, estabelecimento_id);
-CREATE INDEX idx_transacoes_status_queue ON transacoes_pagamento(status, queue_id);
+CREATE INDEX idx_transacoes_status_queue ON transacoes_pagamentos(status, queue_id);
 CREATE INDEX idx_historico_status_data ON historico_clientes_filas(status, data_entrada);
 
 -- Comentários das tabelas
 ALTER TABLE usuarios COMMENT = 'Tabela de usuários (clientes) do sistema Flig';
 ALTER TABLE estabelecimentos COMMENT = 'Tabela de estabelecimentos cadastrados no sistema';
 ALTER TABLE filas COMMENT = 'Tabela de filas virtuais criadas pelos estabelecimentos';
-ALTER TABLE transacoes_pagamento COMMENT = 'Histórico de transações de pagamento para avanço de posições';
+ALTER TABLE transacoes_pagamentos COMMENT = 'Histórico de transações de pagamento para avanço de posições';
 ALTER TABLE historico_clientes_filas COMMENT = 'Histórico de clientes que passaram pelas filas';
 ALTER TABLE relatorios_diarios COMMENT = 'Relatórios diários de performance das filas';
 ALTER TABLE configuracoes_sistema COMMENT = 'Configurações globais do sistema';
@@ -263,6 +263,6 @@ ALTER TABLE logs_sistema COMMENT = 'Logs de eventos e erros do sistema';
 
 -- Verificação de integridade
 SELECT 'Schema criado com sucesso!' as status;
-SELECT COUNT(*) as total_tables FROM information_schema.tables WHERE table_schema = 'fligdb';
+SELECT COUNT(*) as total_tables FROM information_schema.tables WHERE table_schema = 'flig_db';
 SELECT COUNT(*) as total_configs FROM configuracoes_sistema;
 

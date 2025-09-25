@@ -16,6 +16,7 @@ import styles from './QueueComponent.module.css';
 
 export default function QueueComponent({ queueId, establishmentId, onJoinSuccess, onError }) {
   const { user, userType } = useAuth();
+  
   const [queue, setQueue] = useState(null);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -366,6 +367,8 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
           Entrar na Fila
         </button>
       )}
+      
+      
 
       {/* Formulário de Entrada na Fila */}
       {showJoinForm && (

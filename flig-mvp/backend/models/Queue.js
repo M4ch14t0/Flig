@@ -140,7 +140,7 @@ class Queue {
     const clientWithId = { ...clientData, id: clientId, timestamp: new Date().toISOString() };
 
     const position = (await redisService.getQueueSize(this.id)) + 1;
-    await redisService.addClientToQueue(this.id, position, JSON.stringify(clientWithId));
+    await redisService.addClientToQueue(this.id, position, clientWithId);
 
     console.log(`✅ Cliente adicionado à fila ${this.nome}: ${clientData.nome} (Posição: ${position})`);
     return { success: true, clientId, position, estimatedTime: this.calculateEstimatedTime(position) };
@@ -207,6 +207,61 @@ class Queue {
       status: this.status,
       createdAt: this.created_at,
       lastUpdated: this.updated_at
+    };
+  }
+
+  /** Avança cliente na fila */
+  async advanceClient(clientId, positions) {
+    if (this.status !== 'ativa') {
+      throw new Error('Fila não está ativa');
+    }
+
+    if (positions < 1 || positions > this.max_avancos) {
+      throw new Error(`Número de posições deve estar entre 1 e ${this.max_avancos}`);
+    }
+
+    // Buscar clientes atuais
+    const clients = await redisService.getQueueClients(this.id);
+    if (!Array.isArray(clients)) {
+      throw new Error('Erro ao buscar clientes da fila');
+    }
+
+    // Encontrar o cliente
+    const clientIndex = clients.findIndex(client => client.id === clientId);
+    if (clientIndex === -1) {
+      throw new Error('Cliente não encontrado na fila');
+    }
+
+    const client = clients[clientIndex];
+    const oldPosition = clientIndex + 1;
+    const newPosition = Math.max(1, oldPosition - positions);
+
+    // Verificar se pode avançar
+    if (newPosition >= oldPosition) {
+      throw new Error('Não é possível avançar para uma posição igual ou superior à atual');
+    }
+
+    // Reorganizar a fila
+    const newClients = [...clients];
+    newClients.splice(clientIndex, 1); // Remove o cliente da posição atual
+    newClients.splice(newPosition - 1, 0, client); // Insere na nova posição
+
+    // Atualizar posições
+    newClients.forEach((c, index) => {
+      c.position = index + 1;
+    });
+
+    // Salvar no Redis
+    await redisService.setQueueClients(this.id, newClients);
+
+    // Calcular tempo estimado
+    const estimatedTime = (newPosition - 1) * this.tempo_estimado;
+
+    return {
+      oldPosition,
+      newPosition,
+      positionsAdvanced: oldPosition - newPosition,
+      estimatedTime
     };
   }
 }

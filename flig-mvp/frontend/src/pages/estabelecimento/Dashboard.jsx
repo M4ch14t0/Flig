@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FiBarChart2, FiUsers, FiClock, FiTrendingUp, FiHome, FiList, FiCreditCard, FiDollarSign, FiActivity } from 'react-icons/fi';
 import Layout from '../../components/Layout';
 import { api } from '../../services/api';
@@ -14,6 +15,7 @@ const sidebarLinks = [
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   // Estados para dados do dashboard
   const [dashboardData, setDashboardData] = useState({
     totalAtendimentos: 0,
@@ -21,6 +23,8 @@ export default function Dashboard() {
     totalAvanços: 0,
     receitaTotal: 0,
     filasAtivas: 0,
+    filasEncerradas: 0,
+    totalFilas: 0,
     clientesEmFila: 0
   });
   const [filas, setFilas] = useState([]);
@@ -33,23 +37,32 @@ export default function Dashboard() {
       setLoading(true);
       setError(null);
 
+      // Verifica se o usuário está logado
+      if (!user || !user.id) {
+        setError('Usuário não autenticado');
+        setLoading(false);
+        return;
+      }
+
       // Busca estatísticas do estabelecimento
-      const statsResponse = await api.get('/establishments/stats');
-      if (statsResponse.data.success) {
-        const stats = statsResponse.data.data;
+      const statsResponse = await api.get(`/estabelecimentos/${user.id}/estatisticas`);
+      if (statsResponse.data) {
+        const stats = statsResponse.data;
         setDashboardData({
-          totalAtendimentos: stats.totalClientesAtendidos || 0,
-          tempoMedioEspera: Math.round(stats.tempoMedioEstimado || 0),
-          totalAvanços: stats.totalClientesUnicos || 0,
-          receitaTotal: stats.receitaTotal || 0,
-          filasAtivas: stats.filasAtivas || 0,
-          clientesEmFila: stats.totalClientesAtendidos || 0
+          totalAtendimentos: parseInt(stats.total_clientes_atendidos) || 0,
+          tempoMedioEspera: Math.round(parseFloat(stats.tempo_medio_estimado) || 0),
+          totalAvanços: parseInt(stats.total_clientes_atendidos) || 0, // Mesmo valor por enquanto
+          receitaTotal: parseFloat(stats.receita_total) || 0,
+          filasAtivas: parseInt(stats.filas_ativas) || 0,
+          filasEncerradas: parseInt(stats.filas_encerradas) || 0,
+          totalFilas: parseInt(stats.total_filas) || 0,
+          clientesEmFila: parseInt(stats.clientes_atuais) || 0
         });
       }
 
       // Busca filas do estabelecimento
-      const filasResponse = await api.get('/establishments/queues');
-      if (filasResponse.data.success) {
+      const filasResponse = await api.get(`/queues/establishment/${user.id}`);
+      if (filasResponse.data.success && Array.isArray(filasResponse.data.data)) {
         setFilas(filasResponse.data.data);
       }
 
@@ -65,6 +78,16 @@ export default function Dashboard() {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  // Função para ver detalhes da fila
+  const handleVerDetalhes = (filaId) => {
+    navigate(`/estabelecimento/gerenciar-filas/${filaId}`);
+  };
+
+  // Função para gerenciar fila
+  const handleGerenciar = () => {
+    navigate('/estabelecimento/gerenciar-filas');
+  };
 
   return (
     <Layout sidebarLinks={sidebarLinks} userType="estabelecimento">
@@ -152,6 +175,7 @@ export default function Dashboard() {
                   <small>Aguardando atendimento</small>
                 </div>
               </div>
+
             </div>
 
             {/* Seção de Filas */}
@@ -170,8 +194,14 @@ export default function Dashboard() {
                     <div key={fila.id} className={styles.filaCard}>
                       <div className={styles.filaHeader}>
                         <h3>{fila.nome}</h3>
-                        <span className={`${styles.status} ${fila.status === 'ativa' ? styles.active : styles.inactive}`}>
-                          {fila.status === 'ativa' ? 'Ativa' : 'Inativa'}
+                        <span className={`${styles.status} ${
+                          fila.status === 'ativa' ? styles.active : 
+                          fila.status === 'pausada' ? styles.paused : 
+                          styles.inactive
+                        }`}>
+                          {fila.status === 'ativa' ? 'Ativa' : 
+                           fila.status === 'pausada' ? 'Pausada' : 
+                           'Encerrada'}
                         </span>
                       </div>
                       <div className={styles.filaStats}>
@@ -181,16 +211,30 @@ export default function Dashboard() {
                         </div>
                         <div className={styles.filaStat}>
                           <span className={styles.filaStatLabel}>Tempo médio:</span>
-                          <span className={styles.filaStatValue}>{fila.stats?.averageWaitTime || 0}min</span>
+                          <span className={styles.filaStatValue}>{fila.tempo_estimado || 0}min</span>
                         </div>
                         <div className={styles.filaStat}>
                           <span className={styles.filaStatLabel}>Receita:</span>
-                          <span className={styles.filaStatValue}>R$ {Number(fila.stats?.totalRevenue || 0).toFixed(2)}</span>
+                          <span className={styles.filaStatValue}>R$ {Number(fila.receita_total || 0).toFixed(2)}</span>
+                        </div>
+                        <div className={styles.filaStat}>
+                          <span className={styles.filaStatLabel}>Atendidos:</span>
+                          <span className={styles.filaStatValue}>{fila.total_clientes_atendidos || 0}</span>
                         </div>
                       </div>
                       <div className={styles.filaActions}>
-                        <button className={styles.viewButton}>Ver Detalhes</button>
-                        <button className={styles.manageButton}>Gerenciar</button>
+                        <button 
+                          className={styles.viewButton}
+                          onClick={() => handleVerDetalhes(fila.id)}
+                        >
+                          Ver Detalhes
+                        </button>
+                        <button 
+                          className={styles.manageButton}
+                          onClick={handleGerenciar}
+                        >
+                          Gerenciar
+                        </button>
                       </div>
                     </div>
                   ))}

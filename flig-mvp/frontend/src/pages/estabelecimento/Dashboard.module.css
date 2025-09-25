@@ -211,9 +211,14 @@
   color: #721c24;
 }
 
+.status.paused {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
 .filaStats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-bottom: 20px;
 }

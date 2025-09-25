@@ -274,6 +274,23 @@ async function advanceInQueue(req, res) {
       });
     }
 
+    // Busca clientes da fila para verificar se há mais de uma pessoa
+    const clients = await redisService.getQueueClients(queueId);
+    if (!Array.isArray(clients)) {
+      return res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar clientes da fila'
+      });
+    }
+
+    // Verifica se há mais de uma pessoa na fila
+    if (clients.length <= 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Não é possível avançar posições quando há apenas uma pessoa na fila'
+      });
+    }
+
     // Busca a fila
     const queue = await Queue.findById(queueId);
     if (!queue) {
@@ -331,6 +348,86 @@ async function advanceInQueue(req, res) {
 
   } catch (error) {
     console.error('❌ Erro ao avançar cliente na fila:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Erro interno do servidor'
+    });
+  }
+}
+
+/**
+ * Remove cliente da fila
+ * 
+ * DELETE /api/queues/:queueId/leave
+ */
+async function leaveQueue(req, res) {
+  try {
+    const { queueId } = req.params;
+    const { userId, email } = req.user;
+
+    if (!queueId) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID da fila é obrigatório'
+      });
+    }
+
+    // Busca a fila
+    const queue = await Queue.findById(queueId);
+    if (!queue) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fila não encontrada'
+      });
+    }
+
+    // Verifica se a fila está ativa
+    if (queue.status !== 'ativa') {
+      return res.status(400).json({
+        success: false,
+        message: 'Fila não está ativa'
+      });
+    }
+
+    // Busca clientes da fila
+    const clients = await redisService.getQueueClients(queueId);
+    if (!Array.isArray(clients)) {
+      return res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar clientes da fila'
+      });
+    }
+
+    // Encontra o cliente na fila
+    const clientIndex = clients.findIndex(client => client.email === email);
+    if (clientIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Você não está nesta fila'
+      });
+    }
+
+    const client = clients[clientIndex];
+    const position = clientIndex + 1;
+
+    // Remove o cliente da fila usando a função do redisService
+    const result = await redisService.removeClientFromQueue(queueId, client);
+    console.log(`✅ Cliente removido: ${result}`);
+
+    console.log(`✅ Cliente ${email} saiu da fila ${queue.nome} (posição ${position})`);
+
+    res.json({
+      success: true,
+      message: 'Você saiu da fila com sucesso',
+      data: {
+        queueName: queue.nome,
+        previousPosition: position,
+        totalClients: clients.length - 1
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao sair da fila:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Erro interno do servidor'
@@ -655,17 +752,82 @@ async function getQueueStats(req, res) {
   }
 }
 
+/**
+ * Chama o próximo cliente da fila
+ * 
+ * POST /api/queues/:queueId/chamar-proximo
+ */
+async function chamarProximoCliente(req, res) {
+  try {
+    const { queueId } = req.params;
+    
+    // Busca a fila no banco
+    const fila = await Queue.findById(queueId);
+    if (!fila) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fila não encontrada'
+      });
+    }
+    
+    // Verifica se a fila está ativa
+    if (fila.status !== 'ativa') {
+      return res.status(400).json({
+        success: false,
+        message: 'Fila não está ativa'
+      });
+    }
+    
+    // Busca o próximo cliente no Redis
+    const proximoCliente = await redisService.getNextClient(queueId);
+    
+    if (!proximoCliente) {
+      return res.status(404).json({
+        success: false,
+        message: 'Não há clientes na fila'
+      });
+    }
+    
+    // Remove o cliente da fila (chamado)
+    const removed = await redisService.removeClientFromQueue(queueId, proximoCliente);
+    
+    if (!removed) {
+      return res.status(500).json({
+        success: false,
+        message: 'Erro ao remover cliente da fila'
+      });
+    }
+    
+    console.log(`✅ Cliente ${proximoCliente.nome} chamado da fila ${queueId}`);
+    
+    res.json({
+      success: true,
+      message: 'Cliente chamado com sucesso',
+      data: proximoCliente
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao chamar próximo cliente:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+}
+
 module.exports = {
   createQueue,
   getEstablishmentQueues,
   getQueueById,
   joinQueue,
   advanceInQueue,
+  leaveQueue,
   getClientPosition,
   getQueueClients,
   removeClientFromQueue,
   updateQueueStatus,
   closeQueue,
-  getQueueStats
+  getQueueStats,
+  chamarProximoCliente
 };
 

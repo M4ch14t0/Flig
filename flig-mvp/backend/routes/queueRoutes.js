@@ -134,6 +134,19 @@ router.post('/:queueId/advance',
 );
 
 /**
+ * @route DELETE /api/queues/:queueId/leave
+ * @desc Sair da fila
+ * @access Cliente
+ * @params { queueId } - ID da fila
+ */
+router.delete('/:queueId/leave', 
+  authenticateToken,
+  requireUserType('cliente'),
+  sanitizeParams,
+  queueController.leaveQueue
+);
+
+/**
  * @route GET /api/queues/:queueId/position/:clientId
  * @desc Consultar posição do cliente na fila
  * @access Cliente
@@ -182,6 +195,19 @@ router.delete('/:queueId', queueController.closeQueue);
  * @params { queueId } - ID da fila
  */
 router.get('/:queueId/stats', queueController.getQueueStats);
+
+/**
+ * @route POST /api/queues/:queueId/chamar-proximo
+ * @desc Chamar próximo cliente da fila
+ * @access Estabelecimento
+ * @params { queueId } - ID da fila
+ */
+router.post('/:queueId/chamar-proximo', 
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  requireQueueOwnership,
+  queueController.chamarProximoCliente
+);
 
 /**
  * Middleware de tratamento de erros específico para rotas de filas

@@ -322,6 +322,24 @@
   background-color: #c0392b;
 }
 
+.callButton {
+  background-color: #27ae60;
+  color: white;
+}
+
+.callButton:hover {
+  background-color: #229954;
+}
+
+.editButton {
+  background-color: #f39c12;
+  color: white;
+}
+
+.editButton:hover {
+  background-color: #e67e22;
+}
+
 .popupOverlay {
   position: fixed;
   top: 0;

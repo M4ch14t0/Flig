@@ -1,7 +1,8 @@
 // Estabelecimentos.jsx - Lista de estabelecimentos para clientes
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HelpCircle, User, Settings, LogOut, Loader2 } from 'lucide-react';
+import { Loader2, Home, MapPin, List } from 'lucide-react';
+import Layout from '../../../components/Layout';
 import { api } from '../../../services/api';
 import styles from './Estabelecimentos.module.css';
 
@@ -19,6 +20,25 @@ function Estabelecimentos() {
 
   const navigate = useNavigate();
 
+  const sidebarLinks = [
+    {
+      to: '/cliente/home',
+      label: 'Home',
+      icon: <Home size={16} />
+    },
+    {
+      to: '/cliente/estabelecimentos',
+      label: 'Estabelecimentos',
+      icon: <MapPin size={16} />,
+      active: true
+    },
+    {
+      to: '/cliente/minhas-filas',
+      label: 'Minhas Filas',
+      icon: <List size={16} />
+    }
+  ];
+
   // Função para buscar estabelecimentos da API
   const fetchEstabelecimentos = async () => {
     try {
@@ -26,17 +46,17 @@ function Estabelecimentos() {
       setError(null);
       
       // Busca estabelecimentos usando a nova API
-      const response = await api.get('/establishments');
+      const response = await api.get('/estabelecimentos');
       
-      if (response.data.success) {
-        const data = response.data.data;
+      if (response.data && Array.isArray(response.data)) {
+        const data = response.data;
         
         // Para cada estabelecimento, busca suas filas ativas
         const estabelecimentosComFilas = await Promise.all(
           data.map(async (estabelecimento) => {
             try {
-              const filasResponse = await api.get(`/establishments/${estabelecimento.id}/queues`);
-              const filasData = filasResponse.data.success ? filasResponse.data.data : [];
+              const filasResponse = await api.get(`/estabelecimentos/${estabelecimento.id}/filas`);
+              const filasData = Array.isArray(filasResponse.data) ? filasResponse.data : [];
               
               // Calcula total de pessoas em filas ativas
               const totalPessoas = filasData
@@ -122,36 +142,12 @@ function Estabelecimentos() {
   };
 
   return (
-    <div className={styles.wrapper}>
-      {/* Header - Topo da página */}
-      <header className={styles.header}>
-        <div className={styles.logo}>Flig</div>
-        <div className={styles.headerRight}>
-          <Link to="/faq" className={styles.helpIcon}><HelpCircle size={20} /></Link>
-          <div className={styles.userIconWrapper}>
-            <button className={styles.userIcon}><User size={20} /></button>
-            <div className={styles.userPopup}>
-              <p><User size={16} /> <u>Perfil</u></p>
-              <p><Settings size={16} /> <u>Configurações</u></p>
-              <p><LogOut size={16} /> <u>Sair</u></p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Conteúdo principal */}
-      <div className={styles.content}>
-        {/* Sidebar - Menu lateral */}
-        <aside className={styles.sidebar}>
-          <nav className={styles.menu}>
-            <Link to="/cliente/home" className={styles.homeActive}>🏠 Home</Link>
-            <Link to="/cliente/estabelecimentos" className={styles.estabActive}>📍 Estabelecimentos</Link>
-            <Link to="/cliente/minhas-filas" className={styles.filasActive}>👥 Minhas Filas</Link>
-          </nav>
-        </aside>
-
-        {/* Área principal */}
-        <main className={styles.main}>
+    <Layout
+      sidebarLinks={sidebarLinks}
+      userType="cliente"
+      showFooter={false}
+    >
+      <div className={styles.container}>
           <h2 className={styles.pageTitle}>Estabelecimentos</h2>
 
           {/* Barra de busca e filtros */}
@@ -331,9 +327,8 @@ function Estabelecimentos() {
               ›
             </button>
           </div>
-        </main>
       </div>
-    </div>
+    </Layout>
   );
 }
 

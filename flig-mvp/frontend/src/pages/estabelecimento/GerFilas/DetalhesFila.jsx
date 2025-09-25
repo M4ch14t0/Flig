@@ -3,6 +3,7 @@ import { FiUsers, FiClock, FiArrowUpCircle, FiChevronLeft } from 'react-icons/fi
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import { Home, BarChart2, List, CreditCard, Users, Clock, DollarSign } from 'lucide-react';
+import { api } from '../../../services/api';
 import styles from './DetalhesFila.module.css';
 
 export default function DetalhesFila() {
@@ -31,21 +32,15 @@ export default function DetalhesFila() {
       setLoading(true);
       
       // Buscar detalhes da fila
-      const filaResponse = await fetch(`http://localhost:5000/api/queues/${id}`);
-      if (filaResponse.ok) {
-        const filaData = await filaResponse.json();
-        if (filaData.success) {
-          setFila(filaData.data);
-        }
+      const filaResponse = await api.get(`/queues/${id}`);
+      if (filaResponse.data.success) {
+        setFila(filaResponse.data.data);
       }
 
       // Buscar clientes da fila
-      const clientsResponse = await fetch(`http://localhost:5000/api/queues/${id}/clients`);
-      if (clientsResponse.ok) {
-        const clientsData = await clientsResponse.json();
-        if (clientsData.success) {
-          setClients(clientsData.data.clients || []);
-        }
+      const clientsResponse = await api.get(`/queues/${id}/clients`);
+      if (clientsResponse.data.success) {
+        setClients(clientsResponse.data.data.clients || []);
       }
     } catch (err) {
       setError('Erro ao carregar detalhes da fila');

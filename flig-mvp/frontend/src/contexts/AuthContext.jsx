@@ -77,6 +77,7 @@ export const AuthProvider = ({ children }) => {
       const storedEmail = localStorage.getItem('userEmail');
       const storedName = localStorage.getItem('userName');
 
+
       // Verifica se existe token e tipo de usuário, e se o token é válido
       if (token && storedUserType && isValidTokenFormat(token)) {
         // Lista de tipos de usuário válidos
@@ -90,13 +91,15 @@ export const AuthProvider = ({ children }) => {
           setUserType(storedUserType);
 
           // Cria objeto do usuário com dados armazenados
-          setUser({
+          const userData = {
             id: parseInt(localStorage.getItem('userId')) || (storedUserType === 'estabelecimento' ? 8 : 1), // ID do usuário
             email: storedEmail || 'user@example.com', // Email armazenado ou padrão
             name: storedName || 'Usuário', // Nome armazenado ou padrão
             type: storedUserType, // Tipo do usuário
             token, // Token de autenticação
-          });
+          };
+
+          setUser(userData);
         }
       }
     } catch (error) {
@@ -377,6 +380,7 @@ export const AuthProvider = ({ children }) => {
       }
     }
   };
+
 
   /**
    * Objeto com todos os valores do contexto
