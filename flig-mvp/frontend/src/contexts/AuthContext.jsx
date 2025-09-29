@@ -43,19 +43,42 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Função para limpar dados de autenticação
-   * Remove todos os dados do localStorage e reseta os estados
-   * Usada no logout e quando há erros de autenticação
+   * Função para obter chaves específicas do tipo de usuário
    */
-  const clearAuthData = () => {
+  const getUserKeys = (userType) => ({
+    token: `authToken_${userType}`,
+    userType: `userType_${userType}`,
+    email: `userEmail_${userType}`,
+    name: `userName_${userType}`,
+    id: `userId_${userType}`
+  });
+
+  /**
+   * Função para limpar dados de autenticação de um tipo específico
+   * Remove dados do localStorage para o tipo de usuário especificado
+   */
+  const clearAuthData = (userType = null) => {
     try {
-      // Remove todos os dados de autenticação do localStorage
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userType');
-      localStorage.removeItem('userEmail');
-      localStorage.removeItem('userName');
+      if (userType) {
+        // Limpa dados de um tipo específico
+        const keys = getUserKeys(userType);
+        localStorage.removeItem(keys.token);
+        localStorage.removeItem(keys.userType);
+        localStorage.removeItem(keys.email);
+        localStorage.removeItem(keys.name);
+        localStorage.removeItem(keys.id);
+      } else {
+        // Limpa dados de ambos os tipos (compatibilidade)
+        ['cliente', 'estabelecimento'].forEach(type => {
+          const keys = getUserKeys(type);
+          localStorage.removeItem(keys.token);
+          localStorage.removeItem(keys.userType);
+          localStorage.removeItem(keys.email);
+          localStorage.removeItem(keys.name);
+          localStorage.removeItem(keys.id);
+        });
+      }
     } catch (error) {
-      // Se houver erro ao acessar localStorage (ex: modo privado), loga o erro
       console.error('Erro ao limpar localStorage:', error);
     }
 
@@ -69,46 +92,110 @@ export const AuthProvider = ({ children }) => {
    * Verifica se há um usuário logado ao carregar a aplicação
    * Recupera dados do localStorage e valida a sessão
    */
-  useEffect(() => {
+  // Função para carregar dados de autenticação
+  const loadAuthData = () => {
     try {
-      // Busca dados de autenticação armazenados no localStorage
-      const token = localStorage.getItem('authToken');
-      const storedUserType = localStorage.getItem('userType');
-      const storedEmail = localStorage.getItem('userEmail');
-      const storedName = localStorage.getItem('userName');
+      // Detecta o tipo de usuário baseado na URL atual
+      const currentPath = window.location.pathname;
+      let expectedUserType = null;
+      
+      if (currentPath.includes('/cliente/')) {
+        expectedUserType = 'cliente';
+      } else if (currentPath.includes('/estabelecimento/')) {
+        expectedUserType = 'estabelecimento';
+      }
 
+      // Se não conseguiu detectar pela URL, tenta detectar pelos dados existentes
+      if (!expectedUserType) {
+        // Verifica se há dados de cliente
+        const clienteKeys = getUserKeys('cliente');
+        const clienteToken = localStorage.getItem(clienteKeys.token);
+        const clienteType = localStorage.getItem(clienteKeys.userType);
+        
+        // Verifica se há dados de estabelecimento
+        const estabKeys = getUserKeys('estabelecimento');
+        const estabToken = localStorage.getItem(estabKeys.token);
+        const estabType = localStorage.getItem(estabKeys.userType);
+        
+        // Prioriza o tipo que tem token válido
+        if (clienteToken && clienteType && isValidTokenFormat(clienteToken)) {
+          expectedUserType = 'cliente';
+        } else if (estabToken && estabType && isValidTokenFormat(estabToken)) {
+          expectedUserType = 'estabelecimento';
+        }
+      }
 
-      // Verifica se existe token e tipo de usuário, e se o token é válido
-      if (token && storedUserType && isValidTokenFormat(token)) {
-        // Lista de tipos de usuário válidos
-        const validTypes = ['cliente', 'estabelecimento'];
+      if (expectedUserType) {
+        const keys = getUserKeys(expectedUserType);
+        const token = localStorage.getItem(keys.token);
+        const storedUserType = localStorage.getItem(keys.userType);
+        const storedEmail = localStorage.getItem(keys.email);
+        const storedName = localStorage.getItem(keys.name);
+        const storedId = localStorage.getItem(keys.id);
 
-        // Se o tipo armazenado não for válido, limpa os dados
-        if (!validTypes.includes(storedUserType)) {
-          clearAuthData();
-        } else {
+        // Verifica se existe token e tipo de usuário, e se o token é válido
+        if (token && storedUserType && isValidTokenFormat(token)) {
           // Define o tipo de usuário no estado
           setUserType(storedUserType);
 
           // Cria objeto do usuário com dados armazenados
           const userData = {
-            id: parseInt(localStorage.getItem('userId')) || (storedUserType === 'estabelecimento' ? 8 : 1), // ID do usuário
-            email: storedEmail || 'user@example.com', // Email armazenado ou padrão
-            name: storedName || 'Usuário', // Nome armazenado ou padrão
-            type: storedUserType, // Tipo do usuário
-            token, // Token de autenticação
+            id: parseInt(storedId) || (storedUserType === 'estabelecimento' ? 8 : 1),
+            email: storedEmail || 'user@example.com',
+            name: storedName || 'Usuário',
+            type: storedUserType,
+            token,
           };
 
+          // Define o usuário no estado
           setUser(userData);
+        } else {
+          // Se não há dados válidos para este tipo, limpa apenas este tipo
+          clearAuthData(expectedUserType);
         }
+      } else {
+        // Se não há tipo detectado, limpa tudo
+        clearAuthData();
       }
     } catch (error) {
-      // Se houver erro ao acessar localStorage, loga o erro
-      console.error('Erro ao acessar localStorage:', error);
+      console.error('Erro ao verificar autenticação:', error);
+      clearAuthData();
     } finally {
-      // Sempre define loading como false, independente do resultado
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    // Carrega dados iniciais
+    loadAuthData();
+
+    // Listener para mudanças no localStorage (sincronização entre abas)
+    const handleStorageChange = (e) => {
+      if (e.key && e.key.startsWith('authToken_')) {
+        // Recarrega dados quando há mudança nos tokens
+        loadAuthData();
+      }
+    };
+
+    // Listener para eventos customizados de login/logout
+    const handleAuthChange = (e) => {
+      const { type, action } = e.detail || {};
+      
+      // Só recarrega se for um evento de logout ou se for um login de tipo diferente
+      if (action === 'logout' || (action === 'login' && type !== userType)) {
+        loadAuthData();
+      }
+    };
+
+    // Adiciona listeners
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('authChange', handleAuthChange);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authChange', handleAuthChange);
+    };
   }, []); // Array vazio = executa apenas uma vez ao montar
 
   /**
@@ -125,6 +212,9 @@ export const AuthProvider = ({ children }) => {
     if (!validTypes.includes(type)) {
       return { success: false, error: 'Tipo de usuário inválido' };
     }
+
+    // Limpa dados de autenticação do tipo específico antes de fazer novo login
+    clearAuthData(type);
 
     // ========================================
     // MODO DE DESENVOLVIMENTO (MOCK)
@@ -163,14 +253,20 @@ export const AuthProvider = ({ children }) => {
         };
 
         // Armazena dados no localStorage para persistência
-        localStorage.setItem('authToken', mockToken);
-        localStorage.setItem('userType', type);
-        localStorage.setItem('userEmail', mockUser.email);
-        localStorage.setItem('userName', mockUser.name);
+        // Armazena dados no localStorage usando chaves específicas do tipo
+        const keys = getUserKeys(type);
+        localStorage.setItem(keys.token, mockToken);
+        localStorage.setItem(keys.userType, type);
+        localStorage.setItem(keys.email, mockUser.email);
+        localStorage.setItem(keys.name, mockUser.name);
+        localStorage.setItem(keys.id, mockUser.id);
 
         // Atualiza os estados com dados do usuário logado
         setUser(mockUser);
         setUserType(type);
+
+        // Dispara evento para sincronizar com outras abas
+        window.dispatchEvent(new CustomEvent('authChange', { detail: { type, action: 'login' } }));
 
         // Retorna sucesso
         return { success: true };
@@ -200,11 +296,13 @@ export const AuthProvider = ({ children }) => {
           const { token, user } = response.data.data;
 
           // Armazena dados no localStorage
-          localStorage.setItem('authToken', token);
-          localStorage.setItem('userType', user.userType);
-          localStorage.setItem('userEmail', user.email_usuario || user.email_empresa);
-          localStorage.setItem('userName', user.nome_usuario || user.nome_empresa);
-          localStorage.setItem('userId', user.id);
+        // Armazena dados no localStorage usando chaves específicas do tipo
+        const keys = getUserKeys(user.userType);
+        localStorage.setItem(keys.token, token);
+        localStorage.setItem(keys.userType, user.userType);
+        localStorage.setItem(keys.email, user.email_usuario || user.email_empresa);
+        localStorage.setItem(keys.name, user.nome_usuario || user.nome_empresa);
+        localStorage.setItem(keys.id, user.id);
 
           // Atualiza os estados
           setUser({
@@ -215,6 +313,9 @@ export const AuthProvider = ({ children }) => {
             token
           });
           setUserType(user.userType);
+
+          // Dispara evento para sincronizar com outras abas
+          window.dispatchEvent(new CustomEvent('authChange', { detail: { type: user.userType, action: 'login' } }));
 
           return { success: true };
         } else {
@@ -248,6 +349,8 @@ export const AuthProvider = ({ children }) => {
       } finally {
         // Sempre limpa os dados de autenticação
         clearAuthData();
+        // Dispara evento para sincronizar com outras abas
+        window.dispatchEvent(new CustomEvent('authChange', { detail: { action: 'logout' } }));
       }
     }
 
@@ -319,10 +422,13 @@ export const AuthProvider = ({ children }) => {
         };
 
         // Armazena dados no localStorage para persistência
-        localStorage.setItem('authToken', mockToken);
-        localStorage.setItem('userType', type);
-        localStorage.setItem('userEmail', mockUser.email);
-        localStorage.setItem('userName', mockUser.name);
+        // Armazena dados no localStorage usando chaves específicas do tipo
+        const keys = getUserKeys(type);
+        localStorage.setItem(keys.token, mockToken);
+        localStorage.setItem(keys.userType, type);
+        localStorage.setItem(keys.email, mockUser.email);
+        localStorage.setItem(keys.name, mockUser.name);
+        localStorage.setItem(keys.id, mockUser.id);
 
         // Atualiza os estados com dados do usuário registrado
         setUser(mockUser);
@@ -351,11 +457,13 @@ export const AuthProvider = ({ children }) => {
           const { token, user } = response.data.data;
 
           // Armazena dados no localStorage
-          localStorage.setItem('authToken', token);
-          localStorage.setItem('userType', user.userType);
-          localStorage.setItem('userEmail', user.email_usuario || user.email_empresa);
-          localStorage.setItem('userName', user.nome_usuario || user.nome_empresa);
-          localStorage.setItem('userId', user.id);
+        // Armazena dados no localStorage usando chaves específicas do tipo
+        const keys = getUserKeys(user.userType);
+        localStorage.setItem(keys.token, token);
+        localStorage.setItem(keys.userType, user.userType);
+        localStorage.setItem(keys.email, user.email_usuario || user.email_empresa);
+        localStorage.setItem(keys.name, user.nome_usuario || user.nome_empresa);
+        localStorage.setItem(keys.id, user.id);
 
           // Atualiza os estados
           setUser({
@@ -366,6 +474,9 @@ export const AuthProvider = ({ children }) => {
             token
           });
           setUserType(user.userType);
+
+          // Dispara evento para sincronizar com outras abas
+          window.dispatchEvent(new CustomEvent('authChange', { detail: { type: user.userType, action: 'login' } }));
 
           return { success: true };
         } else {

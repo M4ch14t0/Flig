@@ -112,7 +112,10 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
       const response = await api.post(`/queues/${queueId}/advance`, {
         clientId: clientPosition.id,
         positions: advanceForm.positions,
-        paymentData: advanceForm
+        paymentData: {
+          paymentMethod: advanceForm.paymentMethod,
+          cardData: advanceForm.cardData
+        }
       });
 
       if (response.data.success) {

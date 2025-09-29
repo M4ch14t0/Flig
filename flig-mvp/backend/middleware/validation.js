@@ -253,7 +253,7 @@ function validatePayment(req, res, next) {
   const { clientId, positions, paymentData } = req.body;
   const errors = [];
 
-  if (!clientId || typeof clientId !== 'string') {
+  if (!clientId || (typeof clientId !== 'string' && typeof clientId !== 'number')) {
     errors.push('ID do cliente é obrigatório');
   }
 

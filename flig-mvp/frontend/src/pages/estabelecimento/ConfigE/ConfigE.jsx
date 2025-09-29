@@ -15,7 +15,7 @@ export default function ConfigE() {
     <Layout sidebarLinks={sidebarLinks} userType="estabelecimento" showFooter={false}>
       <div className="configE-container">
         <header className="configE-header">
-          <img src="/logo-flig.svg" alt="Logo Flig" className="configE-logo" />
+          <img src="/assets/logos/flig-logo.svg" alt="Logo Flig" className="configE-logo" />
         </header>
 
         <div className="configE-content">

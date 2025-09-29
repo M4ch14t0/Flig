@@ -24,10 +24,35 @@ export const api = axios.create({
 // Interceptor para adicionar token em todas as requisições
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Detecta o tipo de usuário baseado na URL da requisição
+    const url = config.url || '';
+    let userType = null;
+    
+    if (url.includes('/users/') || url.includes('/cliente/')) {
+      userType = 'cliente';
+    } else if (url.includes('/establishments/') || url.includes('/estabelecimento/')) {
+      userType = 'estabelecimento';
     }
+    
+    // Se não conseguiu detectar pela URL, tenta detectar pelos dados existentes
+    if (!userType) {
+      const clienteToken = localStorage.getItem('authToken_cliente');
+      const estabToken = localStorage.getItem('authToken_estabelecimento');
+      
+      if (clienteToken) {
+        userType = 'cliente';
+      } else if (estabToken) {
+        userType = 'estabelecimento';
+      }
+    }
+    
+    if (userType) {
+      const token = localStorage.getItem(`authToken_${userType}`);
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    
     return config;
   },
   (error) => {
@@ -41,17 +66,48 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Se receber 401 (não autorizado), limpa os dados de autenticação
+    // Se receber 401 (não autorizado), verifica se é um problema de token inválido
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userType');
-      localStorage.removeItem('userEmail');
-      localStorage.removeItem('userName');
+      const errorMessage = error.response?.data?.message || '';
+      
+      // Só limpa os dados se for um problema de token inválido ou expirado
+      if (errorMessage.includes('Token inválido') || 
+          errorMessage.includes('Token expirado') ||
+          errorMessage.includes('Token não fornecido')) {
+        
+        // Detecta o tipo de usuário baseado na URL da requisição
+        const url = error.config?.url || '';
+        let userType = null;
+        
+        if (url.includes('/users/') || url.includes('/cliente/')) {
+          userType = 'cliente';
+        } else if (url.includes('/establishments/') || url.includes('/estabelecimento/')) {
+          userType = 'estabelecimento';
+        }
+        
+        // Se conseguiu detectar o tipo, limpa apenas esse tipo
+        if (userType) {
+          localStorage.removeItem(`authToken_${userType}`);
+          localStorage.removeItem(`userType_${userType}`);
+          localStorage.removeItem(`userEmail_${userType}`);
+          localStorage.removeItem(`userName_${userType}`);
+          localStorage.removeItem(`userId_${userType}`);
+        } else {
+          // Se não conseguiu detectar, limpa ambos os tipos
+          ['cliente', 'estabelecimento'].forEach(type => {
+            localStorage.removeItem(`authToken_${type}`);
+            localStorage.removeItem(`userType_${type}`);
+            localStorage.removeItem(`userEmail_${type}`);
+            localStorage.removeItem(`userName_${type}`);
+            localStorage.removeItem(`userId_${type}`);
+          });
+        }
 
-      // Redireciona para login se estiver em uma página protegida
-      if (window.location.pathname.includes('/cliente/') ||
-          window.location.pathname.includes('/estabelecimento/')) {
-        window.location.href = '/escolha-login';
+        // Redireciona para login se estiver em uma página protegida
+        if (window.location.pathname.includes('/cliente/') ||
+            window.location.pathname.includes('/estabelecimento/')) {
+          window.location.href = '/escolha-login';
+        }
       }
     }
 

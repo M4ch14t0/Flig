@@ -67,20 +67,51 @@ app.get("/api/usuarios", (req, res) => {
 });
 
 // Rota para buscar filas de um estabelecimento
-app.get("/api/estabelecimentos/:id/filas", (req, res) => {
+app.get("/api/estabelecimentos/:id/filas", async (req, res) => {
   const estabelecimentoId = req.params.id;
   
-  connection.query(
-    "SELECT * FROM filas WHERE estabelecimento_id = ? AND status = 'ativa' ORDER BY created_at DESC",
-    [estabelecimentoId],
-    (err, results) => {
-      if (err) {
-        console.error("Erro ao buscar filas:", err);
-        return res.status(500).json({ error: "Erro no servidor" });
-      }
-      res.json(results);
-    }
-  );
+  try {
+    // Buscar filas do estabelecimento
+    const filas = await new Promise((resolve, reject) => {
+      connection.query(
+        "SELECT * FROM filas WHERE estabelecimento_id = ? AND status = 'ativa' ORDER BY created_at DESC",
+        [estabelecimentoId],
+        (err, results) => {
+          if (err) reject(err);
+          else resolve(results);
+        }
+      );
+    });
+
+    // Para cada fila, buscar o número de clientes no Redis
+    const redisService = require('./services/redis');
+    const filasComStats = await Promise.all(
+      filas.map(async (fila) => {
+        try {
+          const totalClients = await redisService.getQueueSize(fila.id);
+          return {
+            ...fila,
+            stats: {
+              totalClients: totalClients || 0
+            }
+          };
+        } catch (error) {
+          console.error(`Erro ao buscar stats da fila ${fila.id}:`, error);
+          return {
+            ...fila,
+            stats: {
+              totalClients: 0
+            }
+          };
+        }
+      })
+    );
+
+    res.json(filasComStats);
+  } catch (err) {
+    console.error("Erro ao buscar filas:", err);
+    res.status(500).json({ error: "Erro no servidor" });
+  }
 });
 
 // COMENTADO TEMPORARIAMENTE - Pode estar conflitando com establishmentRoutes

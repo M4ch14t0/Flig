@@ -162,28 +162,25 @@ async function getQueueClients(queueId, start = 0, stop = -1) {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
 
-    // Tentar diferentes formatos de resposta do Redis
-    let rawClients;
-    try {
-      rawClients = await client.zRange(queueKey, start, stop, { WITHSCORES: true });
-    } catch (err) {
-      // Fallback para versões mais antigas
-      rawClients = await client.zRangeWithScores(queueKey, start, stop);
-    }
+    // Usar zRangeWithScores para obter todos os clientes com scores
+    const rawClients = await client.zRangeWithScores(queueKey, start, stop);
 
     const clients = [];
 
-    // O formato pode variar dependendo da versão do Redis
     if (Array.isArray(rawClients)) {
-      for (let i = 0; i < rawClients.length; i += 2) {
-        const value = rawClients[i];
-        const score = Number(rawClients[i + 1]);
-        
+      // zRangeWithScores retorna objetos com { value, score }
+      for (const item of rawClients) {
         try {
+          const value = item.value || item;
+          const score = item.score || (rawClients.indexOf(item) + 1);
+          
           const clientObj = JSON.parse(value);
-          clients.push({ ...clientObj, position: score || 1 });
+          clients.push({ 
+            ...clientObj, 
+            position: Number(score) || 1 
+          });
         } catch (err) {
-          console.warn('Cliente inválido ignorado:', value);
+          console.warn('Cliente inválido ignorado:', item);
           continue;
         }
       }

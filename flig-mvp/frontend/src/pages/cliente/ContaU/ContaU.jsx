@@ -55,7 +55,7 @@ export default function ContaU() {
   return (
     <div className={styles['contaU-container']}>
       <header className={styles['contaU-header']}>
-        <img src="/logo-flig.svg" alt="Logo Flig" className={styles['contaU-logo']} />
+        <img src="/assets/logos/flig-logo.svg" alt="Logo Flig" className={styles['contaU-logo']} />
         <div className={styles['contaU-icons']}>
           <button onClick={() => navigate('/faq') }><HelpCircle /></button>
           <button onClick={() => navigate('/cliente/perfil') }><User /></button>

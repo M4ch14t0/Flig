@@ -8,10 +8,6 @@ function Webpage() {
     <div className={styles.welcome}>
       {/* NAVBAR */}
       <nav className={styles.navbar}>
-        <div className={styles.logo} onClick={() => navigate('/')} style={{cursor: 'pointer'}}>
-          <span className={styles.highlight}>F</span>lig
-        </div>
-
         <div className={styles.navdivision}>
           <ul className={styles.navLinks}>
             <li>
@@ -42,7 +38,12 @@ function Webpage() {
           </div>
         </div>
 
-        <div className={styles.navUnderline}></div>
+        <div className={styles.logoAndLine}>
+          <div className={styles.logo} onClick={() => navigate('/')} style={{cursor: 'pointer'}}>
+            <img src="/assets/logos/flig-logo.svg" alt="Flig" className={styles.logoImg} />
+          </div>
+          <div className={styles.navUnderline}></div>
+        </div>
       </nav>
 
       {/* HEADER */}
@@ -66,7 +67,7 @@ function Webpage() {
         </div>
 
         <div className={styles.headerImage}>
-          <img src="/running-illustration.svg" alt="Ícone de corrida" />
+          <img src="/assets/illustrations/running-man.png" alt="Ícone de corrida" />
         </div>
       </header>
 
@@ -184,9 +185,9 @@ function Webpage() {
         <div className={styles.footerContainer}>
           <div className={styles.footerColumn}>
             <img
-              src="/logo-footer.svg"
+              src="/assets/logos/flig-logo.svg"
               alt="Logo Flig"
-              style={{ width: '80px' }}
+              style={{ width: '95px' }}
             />
             <p>
               <strong>FligPTI@gmail.com</strong>

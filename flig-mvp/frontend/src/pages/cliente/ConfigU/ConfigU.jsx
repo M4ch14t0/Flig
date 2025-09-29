@@ -9,7 +9,7 @@ export default function ConfigU() {
   return (
     <div className="configU-container">
       <header className="configU-header">
-        <img src="/logo-flig.svg" alt="Logo Flig" className="configU-logo" />
+        <img src="/assets/logos/flig-logo.svg" alt="Logo Flig" className="configU-logo" />
       </header>
 
       <div className="configU-content">

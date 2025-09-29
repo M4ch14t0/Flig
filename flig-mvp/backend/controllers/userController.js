@@ -249,6 +249,7 @@ async function getActiveQueues(req, res) {
           f.nome as fila_nome,
           f.tempo_estimado,
           f.valor_avancos,
+          f.max_avancos,
           e.nome_empresa as estabelecimento_nome,
           e.endereco_empresa,
           e.telefone_empresa
@@ -272,10 +273,12 @@ async function getActiveQueues(req, res) {
         
         if (userInQueue) {
           userQueues.push({
+            id: queue.queue_id, // Usar 'id' em vez de 'queue_id' para compatibilidade com frontend
             queue_id: queue.queue_id,
             fila_nome: queue.fila_nome,
             tempo_estimado: queue.tempo_estimado,
             valor_avancos: queue.valor_avancos,
+            max_avancos: queue.max_avancos,
             estabelecimento_nome: queue.estabelecimento_nome,
             endereco_empresa: queue.endereco_empresa,
             telefone_empresa: queue.telefone_empresa,
