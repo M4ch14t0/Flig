@@ -115,7 +115,7 @@ export default function CadastroU() {
       {/* Lado esquerdo */}
       <div className="cadastro-left">
         <div className="cadastro-logo">
-          <img src="/logo-flig.svg" alt="Logo FLIG" className="cadastro-logo-img" />
+          <img src="/assets/logos/flig-logo.svg" alt="Logo FLIG" className="cadastro-logo-img" />
           <p className="cadastro-slogan">Soluções de Agilidade</p>
         </div>
         <div className="cadastro-help">

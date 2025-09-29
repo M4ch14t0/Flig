@@ -102,7 +102,7 @@ export default function LoginU() {
       {/* Lado direito */}
       <div className="login-right">
         <div className="login-logo">
-          <img src="/logo-flig.svg" alt="Logo FLIG" className="login-logo-img" />
+          <img src="/assets/logos/flig-logo.svg" alt="Logo FLIG" className="login-logo-img" />
           <p className="login-slogan">Soluções de Agilidade</p>
         </div>
 

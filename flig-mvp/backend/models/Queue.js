@@ -151,21 +151,11 @@ class Queue {
     let clients = await redisService.getQueueClients(this.id);
     if (!Array.isArray(clients)) clients = [];
 
-    return clients.map((entry, idx) => {
-      let clientDataStr, score;
-      if (Array.isArray(entry) && entry.length === 2) {
-        [clientDataStr, score] = entry;
-      } else {
-        clientDataStr = entry;
-        score = idx + 1;
-      }
-
-      const clientInfo = typeof clientDataStr === 'string' ? JSON.parse(clientDataStr) : clientDataStr;
-      score = Number(score) || idx + 1;
-
+    // Os clientes já vêm processados do redisService.getQueueClients
+    return clients.map(client => {
       return isEstablishment
-        ? { id: clientInfo.id, nome: clientInfo.nome, telefone: clientInfo.telefone, email: clientInfo.email, position: score, timestamp: clientInfo.timestamp }
-        : { id: clientInfo.id, nome: clientInfo.nome, position: score, timestamp: clientInfo.timestamp };
+        ? { id: client.id, nome: client.nome, telefone: client.telefone, email: client.email, position: client.position, timestamp: client.timestamp }
+        : { id: client.id, nome: client.nome, position: client.position, timestamp: client.timestamp };
     }).sort((a, b) => a.position - b.position);
   }
 
@@ -226,8 +216,9 @@ class Queue {
       throw new Error('Erro ao buscar clientes da fila');
     }
 
-    // Encontrar o cliente
-    const clientIndex = clients.findIndex(client => client.id === clientId);
+    // Encontrar o cliente (convertendo clientId para número se necessário)
+    const clientIdNum = typeof clientId === 'string' ? parseInt(clientId, 10) : clientId;
+    const clientIndex = clients.findIndex(client => client.id === clientIdNum);
     if (clientIndex === -1) {
       throw new Error('Cliente não encontrado na fila');
     }

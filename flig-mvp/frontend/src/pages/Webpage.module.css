@@ -28,7 +28,20 @@ body::-webkit-scrollbar {
   font-size: 32px;
   font-weight: bold;
   color: white;
-  margin-bottom: 8px;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+.logoImg {
+  height: 120px;
+  width: auto;
+}
+
+.logoAndLine {
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .navdivision {
@@ -40,9 +53,9 @@ body::-webkit-scrollbar {
 }
 
 .navUnderline{
-  width: 87%;
+  flex: 1;
   border-bottom: 1px solid #d9d9d9;
-  margin-left: 205px;
+  margin-left: 20px;
 }
 
 .navLinks {
@@ -107,7 +120,7 @@ body::-webkit-scrollbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 200px 150px 150px 150px;
+  padding: 20px 150px 35px 150px;
   width: 100%;
   flex-wrap: wrap;
 }

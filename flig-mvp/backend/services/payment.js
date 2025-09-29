@@ -45,8 +45,9 @@ async function processPayment(paymentData) {
     // Simula delay de processamento (1-3 segundos)
     await simulateProcessingDelay();
 
-    // Simula taxa de sucesso de 95%
-    const successRate = 0.95;
+    // Simula taxa de sucesso de 100% para desenvolvimento/testes
+    // Em produção, pode ser reduzida para simular falhas reais
+    const successRate = 1.0; // 100% de sucesso para testes
     const isSuccessful = Math.random() < successRate;
 
     if (!isSuccessful) {
@@ -348,23 +349,25 @@ async function confirmPayment(transactionId) {
 
 /**
  * Calcula valor do avanço baseado no número de posições
+ * Sistema de juros compostos: R$ 10,00 inicial + 15% a cada posição
  * 
  * @param {number} positions - Número de posições
- * @param {number} basePrice - Preço base por posição
+ * @param {number} basePrice - Preço base por posição (ignorado, usando sistema fixo)
  * @returns {number} - Valor total
  */
 function calculateAdvancePrice(positions, basePrice = 2.00) {
-  // Preço progressivo: primeira posição mais barata
-  if (positions === 1) return basePrice;
-  if (positions === 2) return basePrice * 1.5;
-  if (positions === 3) return basePrice * 2;
-  if (positions === 4) return basePrice * 2.5;
-  if (positions === 5) return basePrice * 3;
-  if (positions === 6) return basePrice * 3.5;
-  if (positions === 7) return basePrice * 4;
-  if (positions === 8) return basePrice * 4.5;
+  const initialPrice = 10.00; // R$ 10,00 inicial
+  const interestRate = 0.15; // 15% de juros
   
-  return basePrice * positions;
+  if (positions <= 0) return 0;
+  if (positions === 1) return initialPrice;
+  
+  // Juros compostos: P * (1 + r)^n
+  // Onde P = preço inicial, r = taxa de juros, n = número de posições - 1
+  const totalPrice = initialPrice * Math.pow(1 + interestRate, positions - 1);
+  
+  // Arredonda para 2 casas decimais
+  return Math.round(totalPrice * 100) / 100;
 }
 
 module.exports = {

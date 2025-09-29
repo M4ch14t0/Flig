@@ -79,7 +79,7 @@ export default function Layout({
         <header className={styles.header}>
           {/* Logo clicável que leva para página inicial */}
           <div className={styles.logo} onClick={handleHomeClick}>
-            <img src="/logo-flig.svg" alt="Flig" className={styles.logoImg} />
+            <img src="/assets/logos/flig-logo.svg" alt="Flig" className={styles.logoImg} />
           </div>
 
           {/* Área direita do header com ícones e menu */}
@@ -151,7 +151,7 @@ export default function Layout({
           <div className={styles.footerContainer}>
             {/* Coluna 1: Logo e informações de contato */}
             <div className={styles.footerColumn}>
-              <img src="/logo-footer.svg" alt="Logo Flig" style={{ width: '80px' }} />
+              <img src="/assets/logos/flig-logo.svg" alt="Logo Flig" style={{ width: '95px' }} />
               <p><strong>FligPTI@gmail.com</strong></p>
               <div>
                 {/* Redes sociais */}

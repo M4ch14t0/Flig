@@ -2,25 +2,217 @@
 
 /* Container principal */
 .container {
-  padding: 32px;
-  background-color: #f4f4f4;
+  background: #1F1F1F !important;
   min-height: 100vh;
+  padding: 60px 80px;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
-/* Título da página */
-.pageTitle {
-  font-size: 28px;
+/* Container das filas */
+.filasContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+}
+
+/* Card completo da fila */
+.filaCard {
+  display: flex;
+  align-items: stretch;
+  gap: 50px;
+  width: 100%;
+  background: transparent;
+  border-radius: 20px;
+  padding: 30px;
+  position: relative;
+  margin-bottom: 40px;
+  min-height: 240px;
+}
+
+/* Área da imagem dentro do card */
+.filaImageArea {
+  width: 320px;
+  background: #C4C4C4;
+  border-radius: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #666;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Informações da fila */
+.filaInfo {
+  color: #ffffff;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.filaTitle {
+  font-size: 36px;
   font-weight: bold;
-  color: #333;
-  margin-bottom: 24px;
+  margin: 0 0 24px 0;
+  color: #fff;
+  letter-spacing: -0.5px;
 }
 
-/* Estados de loading e erro */
+.filaDetails {
+  margin-bottom: 12px;
+  font-size: 18px;
+  color: #bdc3c7;
+  font-weight: 400;
+}
+
+.filaPosition {
+  font-size: 18px;
+  color: #bdc3c7;
+  font-weight: 400;
+}
+
+/* Botões de ação */
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-self: flex-start;
+}
+
+.sairBtn {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  color: #bdc3c7;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+  min-width: 80px;
+}
+
+.sairBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: #fff;
+}
+
+.avanBtn {
+  padding: 12px 20px;
+  background: #152E60;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s;
+  min-width: 140px;
+}
+
+.avanBtn:hover {
+  background: #1a3570;
+}
+
+/* Estados de loading, erro e vazio */
 .loading {
   text-align: center;
-  padding: 40px;
-  font-size: 18px;
-  color: #666;
+  color: #fff;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #152E60;
+  border-top: 4px solid #fff;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+}
+
+.error {
+  text-align: center;
+  color: #e74c3c;
+}
+
+.errorTitle {
+  color: #e74c3c;
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.errorMessage {
+  margin-bottom: 30px;
+  font-size: 16px;
+}
+
+.retryBtn {
+  padding: 12px 24px;
+  background: #152E60;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16;
+  transition: all 0.3s;
+}
+
+.retryBtn:hover {
+  background: #1a3570;
+}
+
+/* Estado vazio */
+.emptyState {
+  text-align: center;
+  color: #0099ff;
+}
+
+.emptyIcon {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.emptyTitle {
+  color: #fff;
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+.emptyMessage {
+  margin-bottom: 30px;
+  font-size: 16px;
+}
+
+.exploreBtn {
+  padding: 12px 24px;
+  background: #152E60;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.exploreBtn:hover {
+  background: #1a3570;
 }
 
 .error {
@@ -72,7 +264,7 @@
 
 /* Card da fila */
 .filaCard {
-  background-color: white;
+  background-color: #272626;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -229,5 +421,257 @@
   
   .sairBtn {
     align-self: flex-end;
+  }
+}
+
+/* Popup de Avançar Posições */
+.popupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.popupContent {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.popupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 24px;
+}
+
+.popupTitle {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.popupBody {
+  padding: 0 24px 24px 24px;
+}
+
+.queueInfo {
+  margin-bottom: 32px;
+}
+
+.queueName {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.queueDetails {
+  color: #666;
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.queueStats {
+  color: #888;
+  margin: 0;
+  font-size: 14px;
+}
+
+.advanceSelector {
+  margin-bottom: 32px;
+}
+
+.selectorLabel {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.positionControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.positionBtn {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #007bff;
+  background: white;
+  color: #007bff;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.positionBtn:hover:not(:disabled) {
+  background: #007bff;
+  color: white;
+}
+
+.positionBtn:disabled {
+  border-color: #ccc;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.positionValue {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+  min-width: 60px;
+  text-align: center;
+}
+
+.maxAdvanceInfo {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.limitDetails {
+  display: block;
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.paymentInfo {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.paymentSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.paymentRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #666;
+  font-size: 16px;
+}
+
+.paymentTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.popupFooter {
+  display: flex;
+  gap: 12px;
+  padding: 0 24px 24px 24px;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 12px 24px;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  color: #666;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelBtn:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+.confirmBtn {
+  flex: 2;
+  padding: 12px 24px;
+  background: #007bff;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.confirmBtn:hover {
+  background: #0056b3;
+}
+
+/* Responsividade do Popup */
+@media (max-width: 768px) {
+  .popupContent {
+    margin: 20px;
+    max-width: none;
+  }
+
+  .popupHeader,
+  .popupBody,
+  .popupFooter {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .positionControls {
+    gap: 16px;
+  }
+
+  .positionValue {
+    font-size: 28px;
   }
 }
