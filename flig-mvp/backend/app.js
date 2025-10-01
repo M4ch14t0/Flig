@@ -15,11 +15,31 @@ if (!TOKEN) {
 }
 
 // Configuração CORS mais permissiva para desenvolvimento
+const defaultCorsOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+];
+
+// Permitir configuração via variável de ambiente (suporta múltiplas origens separadas por vírgula)
+const envCorsOrigin = process.env.CORS_ORIGIN;
+const configuredOrigins = envCorsOrigin
+  ? envCorsOrigin.split(',').map((o) => o.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = [...new Set([...defaultCorsOrigins, ...configuredOrigins])];
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: function (origin, callback) {
+    // Permitir requisições sem origin (ex.: ferramentas de teste, curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(express.json());
 
