@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
    * Função para obter chaves específicas do tipo de usuário
    */
   const getUserKeys = (userType) => ({
-    token: `authToken_${userType}`,
+    token: `token_${userType}`,
     userType: `userType_${userType}`,
     email: `userEmail_${userType}`,
     name: `userName_${userType}`,
@@ -213,8 +213,7 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: 'Tipo de usuário inválido' };
     }
 
-    // Limpa dados de autenticação do tipo específico antes de fazer novo login
-    clearAuthData(type);
+    // Não limpa dados - permite múltiplas sessões simultâneas
 
     // ========================================
     // MODO DE DESENVOLVIMENTO (MOCK)
@@ -235,9 +234,12 @@ export const AuthProvider = ({ children }) => {
           return { success: false, error: 'Email inválido' };
         }
 
-        // Valida se a senha tem pelo menos 6 caracteres
-        if (credentials.password.length < 6) {
-          return { success: false, error: 'A senha deve ter pelo menos 6 caracteres' };
+        // Valida se a senha tem pelo menos 8 caracteres e complexidade
+        if (credentials.password.length < 8) {
+          return { success: false, error: 'A senha deve ter pelo menos 8 caracteres' };
+        }
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(credentials.password)) {
+          return { success: false, error: 'A senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número' };
         }
 
         // Gera token mock único usando timestamp e string aleatória
@@ -404,9 +406,12 @@ export const AuthProvider = ({ children }) => {
           return { success: false, error: 'Email inválido' };
         }
 
-        // Valida se a senha tem pelo menos 6 caracteres
-        if (userData.password.length < 6) {
-          return { success: false, error: 'A senha deve ter pelo menos 6 caracteres' };
+        // Valida se a senha tem pelo menos 8 caracteres e complexidade
+        if (userData.password.length < 8) {
+          return { success: false, error: 'A senha deve ter pelo menos 8 caracteres' };
+        }
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(userData.password)) {
+          return { success: false, error: 'A senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número' };
         }
 
         // Gera token mock único usando timestamp e string aleatória

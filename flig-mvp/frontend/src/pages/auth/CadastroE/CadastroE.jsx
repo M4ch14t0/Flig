@@ -6,9 +6,9 @@ import styles from './CadastroE.module.css';
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
-/*function validateCNPJ(cnpj) {
+function validateCNPJ(cnpj) {
   return /^\d{14}$/.test(cnpj.replace(/\D/g, ''));
-}*/
+}
 
 export default function CadastroE() {
   const navigate = useNavigate();
@@ -52,12 +52,14 @@ export default function CadastroE() {
   // Buscar dados do CNPJ (via backend)
   useEffect(() => {
     if (form.cnpj.length === 14) {
-      fetch(`http://localhost:5000/api/cnpj/${form.cnpj}`)
+      fetch(`https://open.cnpja.com/office/${form.cnpj}`)
         .then((res) => res.json())
         .then((data) => {
-          console.log('Dados do backend:', data);
-          if (data.valid && data.company_name) {
-            setForm(prev => ({ ...prev, razao: data.company_name }));
+          console.log('Dados da CNPJá:', data);
+  
+          // A API do CNPJá retorna dados dentro de "company"
+          if (data && data.company && data.company.name) {
+            setForm(prev => ({ ...prev, razao: data.company.name }));
             setCnpjValido(true);
           } else {
             setCnpjValido(false);
@@ -71,6 +73,7 @@ export default function CadastroE() {
       setCnpjValido(true);
     }
   }, [form.cnpj]);
+  
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -98,7 +101,8 @@ export default function CadastroE() {
     if (!form.cep) newErrors.cep = 'CEP obrigatório';
     if (!form.endereco) newErrors.endereco = 'Endereço obrigatório';
     if (!form.senha) newErrors.senha = 'Senha obrigatória';
-    else if (form.senha.length < 6) newErrors.senha = 'Mínimo 6 caracteres';
+    else if (form.senha.length < 8) newErrors.senha = 'Mínimo 8 caracteres';
+    else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(form.senha)) newErrors.senha = 'Deve conter maiúscula, minúscula e número';
     if (form.senha2 !== form.senha) newErrors.senha2 = 'Senhas não coincidem';
     return newErrors;
   }
@@ -116,15 +120,16 @@ export default function CadastroE() {
       cnpj: form.cnpj,
       cep_empresa: form.cep,
       endereco_empresa: form.endereco,
-      bairro_empresa: form.bairro,
-      cidade_empresa: form.cidade,
-      uf_empresa: form.uf,
+      telefone_empresa: form.telefone || '',
       email_empresa: form.email,
-      senha_empresa: form.senha
+      senha_empresa: form.senha,
+      descricao: form.descricao || '',
+      categoria: form.categoria || '',
+      horario_funcionamento: form.horario || ''
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/empresa', {
+      const response = await fetch('http://localhost:5000/api/auth/register/establishment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

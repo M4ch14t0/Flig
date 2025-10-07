@@ -3,6 +3,7 @@ const cors = require("cors");
 const connection = require("./config/db");
 const redisService = require("./services/redis");
 const Queue = require("./models/Queue");
+const { generalLimiter, authLimiter, queueLimiter, cnpjLimiter, paymentLimiter, notificationLimiter } = require("./middleware/rateLimiting");
 require('dotenv').config();
 
 const app = express();
@@ -49,6 +50,9 @@ const queueRoutes = require('./routes/queueRoutes');
 const userRoutes = require('./routes/userRoutes');
 const establishmentRoutes = require('./routes/establishmentRoutes');
 
+// Aplicar rate limiting geral
+app.use(generalLimiter);
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ 
@@ -58,9 +62,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Usar rotas
-app.use('/api/auth', authRoutes);
-app.use('/api/queues', queueRoutes);
+// Usar rotas com rate limiting específico
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/queues', queueLimiter, queueRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/establishments', establishmentRoutes);
 
@@ -232,7 +236,7 @@ app.get("/api/filas/:id/posicao/:clientId", (req, res) => {
 });
 
 // Rota para buscar estatísticas de uma fila
-app.get("/api/filas/:id/estatisticas", (req, res) => {
+app.get("/api/filas/:id/estatisticas", queueLimiter, (req, res) => {
   const filaId = req.params.id;
   
   Queue.getQueueStats(filaId)
@@ -246,7 +250,7 @@ app.get("/api/filas/:id/estatisticas", (req, res) => {
 });
 
 // Rota para buscar estatísticas de um estabelecimento
-app.get("/api/estabelecimentos/:id/estatisticas", async (req, res) => {
+app.get("/api/estabelecimentos/:id/estatisticas", queueLimiter, async (req, res) => {
   const estabelecimentoId = req.params.id;
   
   try {
@@ -315,7 +319,7 @@ app.get("/api/estabelecimentos/:id/estatisticas", async (req, res) => {
 
 
 // Rota para buscar relatórios de um estabelecimento
-app.get("/api/estabelecimentos/:id/relatorios", (req, res) => {
+app.get("/api/estabelecimentos/:id/relatorios", queueLimiter, (req, res) => {
   const estabelecimentoId = req.params.id;
   const { periodo = '7' } = req.query; // padrão: últimos 7 dias
   

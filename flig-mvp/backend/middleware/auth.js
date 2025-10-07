@@ -9,6 +9,7 @@
  */
 
 const jwt = require('jsonwebtoken');
+const tokenBlacklist = require('../services/tokenBlacklist');
 
 // Configurações JWT
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -23,7 +24,7 @@ if (!JWT_SECRET) {
  * Verifica se o token JWT é válido e extrai informações do usuário
  * Adiciona req.user com dados do usuário autenticado
  */
-function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next) {
   try {
     // Obtém o token do header Authorization
     const authHeader = req.headers['authorization'];
@@ -37,12 +38,23 @@ function authenticateToken(req, res, next) {
     }
 
     // Verifica e decodifica o token
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    jwt.verify(token, JWT_SECRET, async (err, decoded) => {
       if (err) {
         console.error('❌ Token inválido:', err.message);
         return res.status(401).json({
           success: false,
           message: 'Token inválido ou expirado'
+        });
+      }
+
+      // Verifica se o token está na blacklist
+      const isBlacklisted = await tokenBlacklist.isTokenBlacklisted(token);
+
+      if (isBlacklisted) {
+        console.error('❌ Token na blacklist - logout realizado');
+        return res.status(401).json({
+          success: false,
+          message: 'Token inválido - sessão expirada'
         });
       }
 
