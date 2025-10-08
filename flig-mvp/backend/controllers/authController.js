@@ -12,6 +12,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const connection = require('../config/db');
 const cryptoUtils = require('../utils/crypto');
+const tokenBlacklist = require('../services/tokenBlacklist');
 
 /**
  * Valida CPF usando algoritmo oficial
@@ -583,9 +584,17 @@ async function getCurrentUser(req, res) {
  */
 async function logout(req, res) {
   try {
-    // Em uma implementação mais robusta, você adicionaria o token a uma blacklist
-    // Por enquanto, apenas retornamos sucesso
-    console.log(`✅ Logout realizado: User ID ${req.user.userId}`);
+    const { userId, userType } = req.user;
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token) {
+      // Adiciona token à blacklist para invalidá-lo
+      await tokenBlacklist.addToBlacklist(token);
+      console.log(`✅ Token invalidado na blacklist: ${userType} ID ${userId}`);
+    }
+    
+    console.log(`✅ Logout realizado: ${userType} ID ${userId}`);
     
     res.json({
       success: true,

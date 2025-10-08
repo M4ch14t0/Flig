@@ -21,6 +21,7 @@ const {
   validateLogin,
   rateLimit 
 } = require('../middleware/validation');
+const cnpjValidation = require('../services/cnpjValidation');
 
 /**
  * @route POST /api/auth/register/user
@@ -110,6 +111,44 @@ router.post('/refresh',
         token: req.headers['authorization'].split(' ')[1]
       }
     });
+  }
+);
+
+/**
+ * @route POST /api/auth/validate-cnpj
+ * @desc Valida CNPJ usando API CNPJá
+ * @access Public (com rate limiting)
+ * @body { cnpj }
+ */
+router.post('/validate-cnpj',
+  rateLimit(60000, 10), // 10 tentativas por minuto
+  async (req, res) => {
+    try {
+      const { cnpj } = req.body;
+
+      if (!cnpj) {
+        return res.status(400).json({
+          success: false,
+          message: 'CNPJ é obrigatório'
+        });
+      }
+
+      const result = await cnpjValidation.validateCNPJWithAPI(cnpj);
+      
+      res.json({
+        success: result.valid,
+        message: result.message,
+        data: result.data,
+        warning: result.warning
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao validar CNPJ:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao validar CNPJ'
+      });
+    }
   }
 );
 

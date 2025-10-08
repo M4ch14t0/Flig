@@ -77,8 +77,10 @@ function validateUserRegistration(req, res, next) {
   }
 
   // Validação da senha
-  if (!senha_usuario || senha_usuario.length < 6) {
-    errors.push('Senha deve ter pelo menos 6 caracteres');
+  if (!senha_usuario || senha_usuario.length < 8) {
+    errors.push('Senha deve ter pelo menos 8 caracteres');
+  } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(senha_usuario)) {
+    errors.push('Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número');
   }
 
   if (errors.length > 0) {
@@ -120,8 +122,10 @@ function validateEstablishmentRegistration(req, res, next) {
   }
 
   // Validação da senha
-  if (!senha_empresa || senha_empresa.length < 6) {
-    errors.push('Senha deve ter pelo menos 6 caracteres');
+  if (!senha_empresa || senha_empresa.length < 8) {
+    errors.push('Senha deve ter pelo menos 8 caracteres');
+  } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(senha_empresa)) {
+    errors.push('Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número');
   }
 
   if (errors.length > 0) {

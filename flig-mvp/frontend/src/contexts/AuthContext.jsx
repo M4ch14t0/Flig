@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
    * Função para obter chaves específicas do tipo de usuário
    */
   const getUserKeys = (userType) => ({
-    token: `authToken_${userType}`,
+    token: `token_${userType}`,
     userType: `userType_${userType}`,
     email: `userEmail_${userType}`,
     name: `userName_${userType}`,
@@ -95,14 +95,18 @@ export const AuthProvider = ({ children }) => {
   // Função para carregar dados de autenticação
   const loadAuthData = () => {
     try {
+      console.log('🔄 Carregando dados de autenticação...');
+      
       // Detecta o tipo de usuário baseado na URL atual
       const currentPath = window.location.pathname;
       let expectedUserType = null;
       
       if (currentPath.includes('/cliente/')) {
         expectedUserType = 'cliente';
+        console.log('📍 Detectado: página de cliente');
       } else if (currentPath.includes('/estabelecimento/')) {
         expectedUserType = 'estabelecimento';
+        console.log('📍 Detectado: página de estabelecimento');
       }
 
       // Se não conseguiu detectar pela URL, tenta detectar pelos dados existentes
@@ -133,6 +137,14 @@ export const AuthProvider = ({ children }) => {
         const storedName = localStorage.getItem(keys.name);
         const storedId = localStorage.getItem(keys.id);
 
+        console.log(`🔍 Verificando dados para ${expectedUserType}:`, {
+          hasToken: !!token,
+          hasUserType: !!storedUserType,
+          hasEmail: !!storedEmail,
+          hasName: !!storedName,
+          hasId: !!storedId
+        });
+
         // Verifica se existe token e tipo de usuário, e se o token é válido
         if (token && storedUserType && isValidTokenFormat(token)) {
           // Define o tipo de usuário no estado
@@ -147,15 +159,18 @@ export const AuthProvider = ({ children }) => {
             token,
           };
 
+          console.log('✅ Usuário autenticado:', userData.name, userData.email);
+
           // Define o usuário no estado
           setUser(userData);
         } else {
+          console.warn('⚠️ Dados inválidos, limpando autenticação');
           // Se não há dados válidos para este tipo, limpa apenas este tipo
           clearAuthData(expectedUserType);
         }
       } else {
-        // Se não há tipo detectado, limpa tudo
-        clearAuthData();
+        console.log('📄 Página pública, sem autenticação necessária');
+        // Se não há tipo detectado, não limpa nada (pode estar em página pública)
       }
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error);
@@ -171,7 +186,7 @@ export const AuthProvider = ({ children }) => {
 
     // Listener para mudanças no localStorage (sincronização entre abas)
     const handleStorageChange = (e) => {
-      if (e.key && e.key.startsWith('authToken_')) {
+      if (e.key && (e.key.startsWith('token_') || e.key.startsWith('userType_'))) {
         // Recarrega dados quando há mudança nos tokens
         loadAuthData();
       }
@@ -213,7 +228,7 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: 'Tipo de usuário inválido' };
     }
 
-    // Limpa dados de autenticação do tipo específico antes de fazer novo login
+    // Limpa dados do tipo específico para evitar corrupção de estado
     clearAuthData(type);
 
     // ========================================
@@ -235,9 +250,12 @@ export const AuthProvider = ({ children }) => {
           return { success: false, error: 'Email inválido' };
         }
 
-        // Valida se a senha tem pelo menos 6 caracteres
-        if (credentials.password.length < 6) {
-          return { success: false, error: 'A senha deve ter pelo menos 6 caracteres' };
+        // Valida se a senha tem pelo menos 8 caracteres e complexidade
+        if (credentials.password.length < 8) {
+          return { success: false, error: 'A senha deve ter pelo menos 8 caracteres' };
+        }
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(credentials.password)) {
+          return { success: false, error: 'A senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número' };
         }
 
         // Gera token mock único usando timestamp e string aleatória
@@ -295,14 +313,26 @@ export const AuthProvider = ({ children }) => {
         if (response.data.success) {
           const { token, user } = response.data.data;
 
+          console.log('📥 Dados recebidos do backend no login:', user);
+
           // Armazena dados no localStorage
         // Armazena dados no localStorage usando chaves específicas do tipo
         const keys = getUserKeys(user.userType);
+        const userName = user.nome_usuario || user.nome_empresa;
+        const userEmail = user.email_usuario || user.email_empresa;
+        
         localStorage.setItem(keys.token, token);
         localStorage.setItem(keys.userType, user.userType);
-        localStorage.setItem(keys.email, user.email_usuario || user.email_empresa);
-        localStorage.setItem(keys.name, user.nome_usuario || user.nome_empresa);
+        localStorage.setItem(keys.email, userEmail);
+        localStorage.setItem(keys.name, userName);
         localStorage.setItem(keys.id, user.id);
+        
+        console.log('💾 Dados salvos no localStorage (login):', {
+          name: userName,
+          email: userEmail,
+          type: user.userType,
+          id: user.id
+        });
 
           // Atualiza os estados
           setUser({
@@ -404,9 +434,12 @@ export const AuthProvider = ({ children }) => {
           return { success: false, error: 'Email inválido' };
         }
 
-        // Valida se a senha tem pelo menos 6 caracteres
-        if (userData.password.length < 6) {
-          return { success: false, error: 'A senha deve ter pelo menos 6 caracteres' };
+        // Valida se a senha tem pelo menos 8 caracteres e complexidade
+        if (userData.password.length < 8) {
+          return { success: false, error: 'A senha deve ter pelo menos 8 caracteres' };
+        }
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(userData.password)) {
+          return { success: false, error: 'A senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número' };
         }
 
         // Gera token mock único usando timestamp e string aleatória
@@ -456,14 +489,26 @@ export const AuthProvider = ({ children }) => {
         if (response.data.success) {
           const { token, user } = response.data.data;
 
+          console.log('📥 Dados recebidos do backend no registro:', user);
+
           // Armazena dados no localStorage
         // Armazena dados no localStorage usando chaves específicas do tipo
         const keys = getUserKeys(user.userType);
+        const userName = user.nome_usuario || user.nome_empresa;
+        const userEmail = user.email_usuario || user.email_empresa;
+        
         localStorage.setItem(keys.token, token);
         localStorage.setItem(keys.userType, user.userType);
-        localStorage.setItem(keys.email, user.email_usuario || user.email_empresa);
-        localStorage.setItem(keys.name, user.nome_usuario || user.nome_empresa);
+        localStorage.setItem(keys.email, userEmail);
+        localStorage.setItem(keys.name, userName);
         localStorage.setItem(keys.id, user.id);
+        
+        console.log('💾 Dados salvos no localStorage (registro):', {
+          name: userName,
+          email: userEmail,
+          type: user.userType,
+          id: user.id
+        });
 
           // Atualiza os estados
           setUser({

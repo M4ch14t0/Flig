@@ -26,9 +26,9 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [showAdvanceForm, setShowAdvanceForm] = useState(false);
   const [joinForm, setJoinForm] = useState({
-    nome: '',
-    telefone: '',
-    email: ''
+    nome: user?.name || '',
+    telefone: user?.telefone || '',
+    email: user?.email || ''
   });
   const [advanceForm, setAdvanceForm] = useState({
     positions: 1,
@@ -41,6 +41,17 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
       holderName: ''
     }
   });
+
+  // Preenche dados do usuário automaticamente
+  useEffect(() => {
+    if (user && userType === 'cliente') {
+      setJoinForm({
+        nome: user.name || '',
+        telefone: user.telefone || '',
+        email: user.email || ''
+      });
+    }
+  }, [user, userType]);
 
   // Carrega dados da fila
   useEffect(() => {
