@@ -52,21 +52,29 @@ export default function CadastroE() {
   // Buscar dados do CNPJ (via backend)
   useEffect(() => {
     if (form.cnpj.length === 14) {
-      fetch(`https://open.cnpja.com/office/${form.cnpj}`)
+      fetch('http://localhost:5000/api/auth/validate-cnpj', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cnpj: form.cnpj })
+      })
         .then((res) => res.json())
         .then((data) => {
-          console.log('Dados da CNPJá:', data);
+          console.log('Validação de CNPJ:', data);
   
-          // A API do CNPJá retorna dados dentro de "company"
-          if (data && data.company && data.company.name) {
-            setForm(prev => ({ ...prev, razao: data.company.name }));
+          if (data.success && data.data && data.data.razao_social) {
+            setForm(prev => ({ ...prev, razao: data.data.razao_social }));
+            setCnpjValido(true);
+          } else if (data.success) {
+            // CNPJ válido mas sem dados da API
             setCnpjValido(true);
           } else {
             setCnpjValido(false);
           }
         })
         .catch((err) => {
-          console.error('Erro ao buscar CNPJ:', err);
+          console.error('Erro ao validar CNPJ:', err);
           setCnpjValido(false);
         });
     } else {

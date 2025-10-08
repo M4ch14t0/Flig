@@ -12,15 +12,15 @@ const rateLimit = require('express-rate-limit');
 
 /**
  * Rate limiter geral para todas as rotas
- * 100 requisições por 15 minutos por IP
+ * 100 requisições por 5 minutos por IP
  */
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
+  windowMs: 5 * 60 * 1000, // 5 minutos
   max: 100, // máximo 100 requisições por IP
   message: {
     success: false,
-    message: 'Muitas requisições. Tente novamente em 15 minutos.',
-    retryAfter: '15 minutos'
+    message: 'Muitas requisições. Tente novamente em 5 minutos.',
+    retryAfter: '5 minutos'
   },
   standardHeaders: true, // Retorna rate limit info nos headers
   legacyHeaders: false, // Desabilita headers X-RateLimit-*
@@ -28,23 +28,23 @@ const generalLimiter = rateLimit({
     console.log(`🚫 Rate limit excedido para IP: ${req.ip}`);
     res.status(429).json({
       success: false,
-      message: 'Muitas requisições. Tente novamente em 15 minutos.',
-      retryAfter: '15 minutos'
+      message: 'Muitas requisições. Tente novamente em 5 minutos.',
+      retryAfter: '5 minutos'
     });
   }
 });
 
 /**
  * Rate limiter para autenticação (login/registro)
- * 5 tentativas por 15 minutos por IP
+ * 5 tentativas por 5 minutos por IP
  */
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
+  windowMs: 5 * 60 * 1000, // 5 minutos
   max: 5, // máximo 5 tentativas de login por IP
   message: {
     success: false,
-    message: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
-    retryAfter: '15 minutos'
+    message: 'Muitas tentativas de login. Tente novamente em 5 minutos.',
+    retryAfter: '5 minutos'
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -52,8 +52,8 @@ const authLimiter = rateLimit({
     console.log(`🚫 Rate limit de autenticação excedido para IP: ${req.ip}`);
     res.status(429).json({
       success: false,
-      message: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
-      retryAfter: '15 minutos'
+      message: 'Muitas tentativas de login. Tente novamente em 5 minutos.',
+      retryAfter: '5 minutos'
     });
   }
 });

@@ -69,6 +69,7 @@ async function removeFromBlacklist(token) {
 
 /**
  * Obtém estatísticas da blacklist
+ * CORRIGIDO: Usa SCAN em vez de KEYS para não bloquear o Redis
  * @returns {Object} - Estatísticas da blacklist
  */
 async function getBlacklistStats() {
@@ -76,10 +77,22 @@ async function getBlacklistStats() {
     const client = await redisService.getRedisClient();
     const pattern = 'flig:blacklist:*';
     
-    const keys = await client.keys(pattern);
+    // Usa SCAN em vez de KEYS para não bloquear o Redis
+    let cursor = 0;
+    let totalKeys = 0;
+    
+    do {
+      const result = await client.scan(cursor, {
+        MATCH: pattern,
+        COUNT: 100
+      });
+      
+      cursor = result.cursor;
+      totalKeys += result.keys.length;
+    } while (cursor !== 0);
     
     return {
-      totalBlacklistedTokens: keys.length
+      totalBlacklistedTokens: totalKeys
     };
   } catch (error) {
     console.error('❌ Erro ao obter estatísticas da blacklist:', error);

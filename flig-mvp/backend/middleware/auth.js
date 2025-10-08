@@ -37,7 +37,7 @@ async function authenticateToken(req, res, next) {
       });
     }
 
-    // Verifica e decodifica o token
+    // Verifica e decodifica o token (usando Promise para async/await correto)
     jwt.verify(token, JWT_SECRET, async (err, decoded) => {
       if (err) {
         console.error('❌ Token inválido:', err.message);
@@ -47,26 +47,38 @@ async function authenticateToken(req, res, next) {
         });
       }
 
-      // Verifica se o token está na blacklist
-      const isBlacklisted = await tokenBlacklist.isTokenBlacklisted(token);
+      try {
+        // Verifica se o token está na blacklist (CORRIGIDO: dentro do try-catch)
+        const isBlacklisted = await tokenBlacklist.isTokenBlacklisted(token);
 
-      if (isBlacklisted) {
-        console.error('❌ Token na blacklist - logout realizado');
-        return res.status(401).json({
-          success: false,
-          message: 'Token inválido - sessão expirada'
-        });
+        if (isBlacklisted) {
+          console.error('❌ Token na blacklist - logout realizado');
+          return res.status(401).json({
+            success: false,
+            message: 'Token inválido - sessão expirada'
+          });
+        }
+
+        // Adiciona dados do usuário ao objeto req
+        req.user = {
+          userId: decoded.userId,
+          email: decoded.email,
+          userType: decoded.userType
+        };
+        
+        console.log(`✅ Token válido: ${decoded.userType} ID ${decoded.userId}`);
+        next();
+      } catch (blacklistError) {
+        console.error('❌ Erro ao verificar blacklist:', blacklistError);
+        // Em caso de erro na blacklist, permite o acesso (fail-open)
+        // Alternativa: fail-closed (rejeitar em caso de erro)
+        req.user = {
+          userId: decoded.userId,
+          email: decoded.email,
+          userType: decoded.userType
+        };
+        next();
       }
-
-      // Adiciona dados do usuário ao objeto req
-      req.user = {
-        userId: decoded.userId,
-        email: decoded.email,
-        userType: decoded.userType
-      };
-      
-      console.log(`✅ Token válido: ${decoded.userType} ID ${decoded.userId}`);
-      next();
     });
 
   } catch (error) {

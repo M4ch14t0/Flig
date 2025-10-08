@@ -30,27 +30,42 @@ api.interceptors.request.use(
     
     if (url.includes('/users/') || url.includes('/cliente/')) {
       userType = 'cliente';
-    } else if (url.includes('/establishments/') || url.includes('/estabelecimento/')) {
+    } else if (url.includes('/establishments/') || url.includes('/estabelecimento/') || url.includes('/queues/establishment')) {
       userType = 'estabelecimento';
     }
     
-    // Se não conseguiu detectar pela URL, tenta detectar pelos dados existentes
+    // Se não conseguiu detectar pela URL, tenta detectar pela página atual
     if (!userType) {
-      const clienteToken = localStorage.getItem('authToken_cliente');
-      const estabToken = localStorage.getItem('authToken_estabelecimento');
-      
-      if (clienteToken) {
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/cliente/')) {
         userType = 'cliente';
-      } else if (estabToken) {
+      } else if (currentPath.includes('/estabelecimento/')) {
         userType = 'estabelecimento';
       }
     }
     
+    // Se ainda não conseguiu detectar, tenta detectar pelos dados existentes
+    if (!userType) {
+      const clienteToken = localStorage.getItem('token_cliente');
+      const estabToken = localStorage.getItem('token_estabelecimento');
+      
+      if (estabToken) {
+        userType = 'estabelecimento';
+      } else if (clienteToken) {
+        userType = 'cliente';
+      }
+    }
+    
     if (userType) {
-      const token = localStorage.getItem(`authToken_${userType}`);
+      const token = localStorage.getItem(`token_${userType}`);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.log(`🔑 Token adicionado para ${userType}:`, token.substring(0, 20) + '...');
+      } else {
+        console.warn(`⚠️ Token não encontrado para ${userType}`);
       }
+    } else {
+      console.warn('⚠️ Tipo de usuário não detectado para a requisição:', url);
     }
     
     return config;
@@ -87,7 +102,7 @@ api.interceptors.response.use(
         
         // Se conseguiu detectar o tipo, limpa apenas esse tipo
         if (userType) {
-          localStorage.removeItem(`authToken_${userType}`);
+          localStorage.removeItem(`token_${userType}`);
           localStorage.removeItem(`userType_${userType}`);
           localStorage.removeItem(`userEmail_${userType}`);
           localStorage.removeItem(`userName_${userType}`);
@@ -95,7 +110,7 @@ api.interceptors.response.use(
         } else {
           // Se não conseguiu detectar, limpa ambos os tipos
           ['cliente', 'estabelecimento'].forEach(type => {
-            localStorage.removeItem(`authToken_${type}`);
+            localStorage.removeItem(`token_${type}`);
             localStorage.removeItem(`userType_${type}`);
             localStorage.removeItem(`userEmail_${type}`);
             localStorage.removeItem(`userName_${type}`);
@@ -289,3 +304,4 @@ export const deleteQueue = async (queueId) => {
 // EXPORT DEFAULT
 // ========================================
 export default api;
+

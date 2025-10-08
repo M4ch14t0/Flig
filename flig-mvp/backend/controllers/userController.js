@@ -241,6 +241,8 @@ async function getActiveQueues(req, res) {
     const { userId, email } = req.user;
     const redisService = require('../services/redis');
     
+    console.log(`🔍 Buscando filas ativas para usuário: ID ${userId}, Email: ${email}`);
+    
     // Buscar todas as filas ativas
     const allQueues = await new Promise((resolve, reject) => {
       connection.query(
@@ -265,13 +267,18 @@ async function getActiveQueues(req, res) {
     
     const userQueues = [];
     
+    console.log(`📊 Total de filas ativas: ${allQueues.length}`);
+    
     // Verificar cada fila para ver se o usuário está nela
     for (const queue of allQueues) {
       try {
         const clients = await redisService.getQueueClients(queue.queue_id);
+        console.log(`🔍 Fila ${queue.fila_nome}: ${clients.length} clientes`);
+        
         const userInQueue = clients.find(client => client.email === email);
         
         if (userInQueue) {
+          console.log(`✅ Usuário encontrado na fila ${queue.fila_nome} - Posição: ${userInQueue.position}`);
           userQueues.push({
             id: queue.queue_id, // Usar 'id' em vez de 'queue_id' para compatibilidade com frontend
             queue_id: queue.queue_id,
@@ -292,6 +299,8 @@ async function getActiveQueues(req, res) {
         console.warn(`Erro ao verificar fila ${queue.queue_id}:`, err);
       }
     }
+
+    console.log(`✅ Total de filas do usuário: ${userQueues.length}`);
 
     res.json({
       success: true,
