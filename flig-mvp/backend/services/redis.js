@@ -11,9 +11,9 @@ const redis = require('redis');
 
 // Configuração do Redis
 const REDIS_CONFIG = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || null,
+  host: process.env.REDISHOST || process.env.REDIS_HOST || 'localhost',
+  port: process.env.REDISPORT || process.env.REDIS_PORT || 6379,
+  password: process.env.REDISPASSWORD || process.env.REDIS_PASSWORD || null,
   db: process.env.REDIS_DB || 0,
   retryDelayOnFailover: 100,
   maxRetriesPerRequest: 3
