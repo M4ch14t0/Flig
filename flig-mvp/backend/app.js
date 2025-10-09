@@ -65,6 +65,15 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Health check endpoint (compatibility with Railway)
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'Backend is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Usar rotas com rate limiting específico
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/queues', queueLimiter, queueRoutes);
