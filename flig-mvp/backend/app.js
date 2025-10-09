@@ -59,6 +59,13 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Middleware de debug para todas as requisições
+app.use((req, res, next) => {
+  console.log(`🔍 ${req.method} ${req.originalUrl} - Headers:`, req.headers);
+  console.log(`🔍 Body:`, req.body);
+  next();
+});
+
 // Importar rotas
 const authRoutes = require('./routes/authRoutes');
 const queueRoutes = require('./routes/queueRoutes');
