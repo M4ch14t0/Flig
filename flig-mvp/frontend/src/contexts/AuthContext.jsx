@@ -482,7 +482,7 @@ export const AuthProvider = ({ children }) => {
     else {
       try {
         // Chama a API real do backend para registro
-        const endpoint = type === 'cliente' ? '/auth/register/user' : '/auth/register/establishment';
+        const endpoint = type === 'cliente' ? '/api/auth/register/user' : '/api/auth/register/establishment';
         
         const response = await api.post(endpoint, userData);
 

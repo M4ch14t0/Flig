@@ -194,9 +194,9 @@ export const loginUser = async (credentials, userType) => {
  */
 export const registerUser = async (userData, userType) => {
   if (userType === 'cliente') {
-    return api.post('/auth/register/user', userData);
+    return api.post('/api/auth/register/user', userData);
   } else {
-    return api.post('/auth/register/establishment', userData);
+    return api.post('/api/auth/register/establishment', userData);
   }
 };
 
