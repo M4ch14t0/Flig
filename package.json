@@ -1,0 +1,38 @@
+{
+  "name": "flig-mvp",
+  "version": "1.0.0",
+  "description": "Flig MVP - Sistema de Filas Virtuais Inteligentes",
+  "main": "flig-mvp/backend/server.js",
+  "scripts": {
+    "start": "cd flig-mvp/backend && npm start",
+    "dev": "cd flig-mvp/backend && npm run dev",
+    "build": "cd flig-mvp/frontend && npm run build",
+    "install:backend": "cd flig-mvp/backend && npm install",
+    "install:frontend": "cd flig-mvp/frontend && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "setup": "npm run install:all"
+  },
+  "keywords": [
+    "filas",
+    "queue",
+    "sistema",
+    "nodejs",
+    "express",
+    "react",
+    "railway"
+  ],
+  "author": "Flig Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seu-usuario/flig.git"
+  },
+  "bugs": {
+    "url": "https://github.com/seu-usuario/flig/issues"
+  },
+  "homepage": "https://github.com/seu-usuario/flig#readme"
+}
