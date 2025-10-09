@@ -52,7 +52,7 @@ export default function CadastroE() {
   // Buscar dados do CNPJ (via backend)
   useEffect(() => {
     if (form.cnpj.length === 14) {
-      fetch(`${import.meta.env.VITE_API_URL}/auth/validate-cnpj`, {
+      fetch(`${import.meta.env.VITE_API_URL}/api/auth/validate-cnpj`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
