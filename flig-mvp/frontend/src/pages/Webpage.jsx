@@ -91,22 +91,22 @@ function Webpage() {
         <h2>Nossa Equipe</h2>
         <div className={styles.team}>
           <div className={styles.member}>
-            <img src="/equipe/rafael.jpg" alt="Rafael Matos" />
+            <img src="/assets/team/Rafael.JPG" alt="Rafael Matos" />
             <p className={styles.name}>Rafael Matos</p>
             <p className={styles.role}>Desenvolvedor, Programador</p>
           </div>
           <div className={styles.member}>
-            <img src="/equipe/guilherme.jpg" alt="Guilherme Correia" />
+            <img src="/assets/team/Guilherme.JPG" alt="Guilherme Correia" />
             <p className={styles.name}>Guilherme Correia</p>
             <p className={styles.role}>Desenvolvedor, Analista de dados</p>
           </div>
           <div className={styles.member}>
-            <img src="/equipe/gabriela.jpg" alt="Gabriela Almeida" />
+            <img src="/assets/team/Gabriela.JPG" alt="Gabriela Almeida" />
             <p className={styles.name}>Gabriela Almeida</p>
             <p className={styles.role}>Desenvolvedora, Designer</p>
           </div>
           <div className={styles.member}>
-            <img src="/equipe/nicolas.jpg" alt="Nicolas Rocha" />
+            <img src="/assets/team/Nicolas.JPG" alt="Nicolas Rocha" />
             <p className={styles.name}>Nicolas Rocha</p>
             <p className={styles.role}>Desenvolvedor, Financeiro</p>
           </div>
