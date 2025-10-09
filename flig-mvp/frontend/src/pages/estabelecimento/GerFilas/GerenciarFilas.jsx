@@ -54,7 +54,7 @@ function GerenciarFilas() {
         return;
       }
       
-      const response = await api.get(`/queues/establishment/${user.id}`);
+      const response = await api.get(`/api/queues/establishment/${user.id}`);
       const data = response.data;
       setFilas(data.success && Array.isArray(data.data) ? data.data : []);
     } catch (error) {
@@ -92,7 +92,7 @@ function GerenciarFilas() {
       let response;
       if (editMode && filaEditando) {
         // Modo de edição
-        response = await api.put(`/queues/${filaEditando.id}`, payload);
+        response = await api.put(`/api/queues/${filaEditando.id}`, payload);
         if (response.data.success) {
           alert('Fila atualizada com sucesso!');
         } else {
@@ -101,7 +101,7 @@ function GerenciarFilas() {
         }
       } else {
         // Modo de criação
-        response = await api.post('/queues', payload);
+        response = await api.post('/api/queues', payload);
         if (response.data.success) {
           alert('Fila criada com sucesso!');
         } else {
@@ -132,7 +132,7 @@ function GerenciarFilas() {
 
   const handleStatusChange = async (filaId, novoStatus) => {
     try {
-      const response = await api.put(`/queues/${filaId}/status`, { status: novoStatus });
+      const response = await api.put(`/api/queues/${filaId}/status`, { status: novoStatus });
 
       alert(`Fila ${novoStatus === 'pausada' ? 'pausada' : 'reativada'} com sucesso!`);
       fetchFilas();
@@ -144,7 +144,7 @@ function GerenciarFilas() {
 
   const handleChamarProximo = async (filaId) => {
     try {
-      const response = await api.post(`/queues/${filaId}/chamar-proximo`);
+      const response = await api.post(`/api/queues/${filaId}/chamar-proximo`);
       
       if (response.data.success) {
         const cliente = response.data.data;
@@ -180,7 +180,7 @@ function GerenciarFilas() {
     }
 
     try {
-      const response = await api.delete(`/queues/${filaId}`);
+      const response = await api.delete(`/api/queues/${filaId}`);
 
       alert('Fila encerrada com sucesso!');
       fetchFilas();
