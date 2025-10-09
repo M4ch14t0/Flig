@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import AppRoutes from './routes/AppRoutes';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
+import { ThemeProvider } from './contexts/ThemeContext.jsx';
 import './styles/index.css';
 
 /**
@@ -38,11 +39,18 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       */}
       <AuthProvider>
         {/*
-          AppRoutes - Sistema de roteamento principal
-          Define todas as rotas disponíveis e suas proteções
-          Organiza rotas por tipo de acesso (público, cliente, estabelecimento)
+          ThemeProvider - Contexto de tema global
+          Fornece funcionalidade de alternância entre tema claro e escuro
+          Gerencia persistência do tema no localStorage
         */}
-        <AppRoutes />
+        <ThemeProvider>
+          {/*
+            AppRoutes - Sistema de roteamento principal
+            Define todas as rotas disponíveis e suas proteções
+            Organiza rotas por tipo de acesso (público, cliente, estabelecimento)
+          */}
+          <AppRoutes />
+        </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>

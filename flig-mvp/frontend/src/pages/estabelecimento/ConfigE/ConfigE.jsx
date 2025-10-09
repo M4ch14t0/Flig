@@ -1,9 +1,12 @@
 import React from 'react';
 import Layout from '../../../components/Layout';
 import { Home, BarChart2, List, CreditCard } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
 import './ConfigE.css';
 
 export default function ConfigE() {
+  const { theme, toggleTheme, isDark } = useTheme();
+  
   const sidebarLinks = [
     { to: '/estabelecimento/home', label: 'Home', icon: <Home size={16} /> },
     { to: '/estabelecimento/dashboard', label: 'Dashboard', icon: <BarChart2 size={16} /> },
@@ -31,7 +34,11 @@ export default function ConfigE() {
               <div className="configE-switch-group">
                 <span>Escuro</span>
                 <label className="switch">
-                  <input type="checkbox" />
+                  <input 
+                    type="checkbox" 
+                    checked={isDark}
+                    onChange={toggleTheme}
+                  />
                   <span className="slider"></span>
                 </label>
                 <span>Claro</span>

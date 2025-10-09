@@ -2,7 +2,9 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #f4f4f4;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .header {
@@ -39,7 +41,8 @@
 }
 
 .helpIcon,
-.userIcon {
+.userIcon,
+.themeToggle {
   background: none;
   border: none;
   font-size: 18px;
@@ -48,6 +51,23 @@
   padding: 8px;
   border-radius: 4px;
   transition: background-color 0.2s ease;
+}
+
+.themeToggle {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.themeToggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
 .helpIcon:hover,

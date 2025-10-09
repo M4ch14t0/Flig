@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/authContextImports.js';
+import { useTheme } from '../contexts/ThemeContext';
 import { User, Settings, LogOut, Wrench, FileText, Phone, HelpCircle } from 'lucide-react';
 import styles from './Layout.module.css';
 
@@ -35,6 +36,8 @@ export default function Layout({
   const location = useLocation();
   // Hook personalizado para acessar função de logout
   const { logout } = useAuth();
+  // Hook para acessar funcionalidades de tema
+  const { theme, toggleTheme, isDark } = useTheme();
 
   /**
    * Função para fazer logout do usuário
@@ -88,6 +91,16 @@ export default function Layout({
             <Link to="/faq" className={styles.helpIcon} aria-label="FAQ">
               <HelpCircle size={20} />
             </Link>
+
+            {/* Botão de alternância de tema */}
+            <button 
+              className={styles.themeToggle} 
+              onClick={toggleTheme}
+              aria-label={`Alternar para tema ${isDark ? 'claro' : 'escuro'}`}
+              title={`Tema atual: ${theme === 'dark' ? 'Escuro' : 'Claro'}`}
+            >
+              {isDark ? '☀️' : '🌙'}
+            </button>
 
             {/* Menu do usuário com dropdown */}
             <div className={styles.userIconWrapper}>
