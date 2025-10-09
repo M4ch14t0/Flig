@@ -4,7 +4,7 @@ import axios from 'axios';
 // CONFIGURAÇÃO DA API
 // ========================================
 // URL base do backend - ajuste conforme necessário
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // ========================================
 // INSTÂNCIA DO AXIOS
@@ -65,7 +65,8 @@ api.interceptors.request.use(
         console.warn(`⚠️ Token não encontrado para ${userType}`);
       }
     } else {
-      console.warn('⚠️ Tipo de usuário não detectado para a requisição:', url);
+      // Para rotas públicas (como registro), não é necessário token
+      console.log('📄 Rota pública detectada:', url);
     }
     
     return config;
