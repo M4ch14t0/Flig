@@ -18,11 +18,20 @@ console.log('REDIS_PORT:', process.env.REDIS_PORT);
 console.log('REDISPASSWORD:', process.env.REDISPASSWORD);
 console.log('REDIS_PASSWORD:', process.env.REDIS_PASSWORD);
 
-const REDIS_CONFIG = {
+// Tentar usar URL do Redis primeiro
+const REDIS_URL = process.env.REDIS_URL || process.env.REDIS_PUBLIC_URL;
+
+console.log('🔍 Redis URL:', REDIS_URL);
+
+const REDIS_CONFIG = REDIS_URL ? {
+  url: REDIS_URL,
+  retryDelayOnFailover: 100,
+  maxRetriesPerRequest: 3
+} : {
   host: process.env.REDISHOST || process.env.REDIS_HOST || 'localhost',
-  port: process.env.REDISPORT || process.env.REDIS_PORT || 6379,
+  port: parseInt(process.env.REDISPORT || process.env.REDIS_PORT || 6379),
   password: process.env.REDISPASSWORD || process.env.REDIS_PASSWORD || null,
-  db: process.env.REDIS_DB || 0,
+  db: parseInt(process.env.REDIS_DB || 0),
   retryDelayOnFailover: 100,
   maxRetriesPerRequest: 3
 };
@@ -37,7 +46,28 @@ async function connectRedis() {
     if (redisClient && redisClient.isOpen) return redisClient;
 
     console.log('🔧 Criando cliente Redis com configuração:', REDIS_CONFIG);
-    redisClient = redis.createClient(REDIS_CONFIG);
+    
+    // Forçar configuração explícita
+    if (REDIS_CONFIG.url) {
+      console.log('🔗 Usando URL do Redis:', REDIS_CONFIG.url);
+      redisClient = redis.createClient({ url: REDIS_CONFIG.url });
+    } else {
+      console.log('🔧 Usando configuração individual do Redis');
+      console.log('Host:', REDIS_CONFIG.host);
+      console.log('Port:', REDIS_CONFIG.port);
+      console.log('Password:', REDIS_CONFIG.password ? '***' : 'null');
+      
+      redisClient = redis.createClient({
+        socket: {
+          host: REDIS_CONFIG.host,
+          port: REDIS_CONFIG.port,
+          connectTimeout: 10000,
+          lazyConnect: true
+        },
+        password: REDIS_CONFIG.password,
+        database: REDIS_CONFIG.db
+      });
+    }
 
     redisClient.on('connect', () => console.log('✅ Conectado ao Redis'));
     redisClient.on('error', (err) => console.error('❌ Erro no Redis:', err));
