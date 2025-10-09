@@ -22,6 +22,10 @@ export default function CadastroE() {
     bairro: '',
     cidade: '',
     uf: '',
+    telefone: '',
+    descricao: '',
+    categoria: '',
+    horario: '',
     senha: '',
     senha2: ''
   });
@@ -73,11 +77,11 @@ export default function CadastroE() {
           } else {
             setCnpjValido(false);
           }
-        } catch (err) {
+        })
+        .catch((err) => {
           console.error('Erro ao validar CNPJ:', err);
           setCnpjValido(false);
-        }
-      })();
+        });
     } else {
       setCnpjValido(true);
     }
@@ -138,7 +142,7 @@ export default function CadastroE() {
     };
 
     try {
-      const response = await api.post('/auth/register/establishment', empresa);
+      const response = await api.post('/api/auth/register/establishment', empresa);
       const data = response?.data;
       console.log('Resposta do servidor:', data);
 
