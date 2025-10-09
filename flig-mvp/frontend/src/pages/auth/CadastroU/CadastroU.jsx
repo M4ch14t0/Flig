@@ -98,7 +98,12 @@ export default function CadastroU() {
       const result = await register(userData, 'cliente');
 
       if (result.success) {
-        navigate('/cliente/home');
+        // Redireciona para login em vez de home
+        navigate('/login', { 
+          state: { 
+            message: result.message || 'Cadastro realizado com sucesso! Faça login para continuar.' 
+          } 
+        });
       } else {
         setError(result.error);
       }

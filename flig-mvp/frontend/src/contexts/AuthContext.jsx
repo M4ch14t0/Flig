@@ -491,39 +491,11 @@ export const AuthProvider = ({ children }) => {
 
           console.log('📥 Dados recebidos do backend no registro:', user);
 
-          // Armazena dados no localStorage
-        // Armazena dados no localStorage usando chaves específicas do tipo
-        const keys = getUserKeys(user.userType);
-        const userName = user.nome_usuario || user.nome_empresa;
-        const userEmail = user.email_usuario || user.email_empresa;
-        
-        localStorage.setItem(keys.token, token);
-        localStorage.setItem(keys.userType, user.userType);
-        localStorage.setItem(keys.email, userEmail);
-        localStorage.setItem(keys.name, userName);
-        localStorage.setItem(keys.id, user.id);
-        
-        console.log('💾 Dados salvos no localStorage (registro):', {
-          name: userName,
-          email: userEmail,
-          type: user.userType,
-          id: user.id
-        });
+          // NÃO faz login automático após cadastro
+          // Apenas retorna sucesso para que o componente redirecione para login
+          console.log('✅ Cadastro realizado com sucesso. Redirecionando para login...');
 
-          // Atualiza os estados
-          setUser({
-            id: user.id,
-            email: user.email_usuario || user.email_empresa,
-            name: user.nome_usuario || user.nome_empresa,
-            type: user.userType,
-            token
-          });
-          setUserType(user.userType);
-
-          // Dispara evento para sincronizar com outras abas
-          window.dispatchEvent(new CustomEvent('authChange', { detail: { type: user.userType, action: 'login' } }));
-
-          return { success: true };
+          return { success: true, message: 'Cadastro realizado com sucesso! Faça login para continuar.' };
         } else {
           return { success: false, error: response.data.message };
         }

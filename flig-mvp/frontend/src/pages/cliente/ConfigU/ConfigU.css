@@ -4,9 +4,10 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #1e1e1e; /* Cor de fundo escura */
-  color: #fff; /* Texto em branco */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   font-family: Arial, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .configU-header {
@@ -14,7 +15,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background-color: #0044cc; /* Azul do cabeçalho */
+  background-color: var(--accent);
 }
 
 .configU-logo {
@@ -39,17 +40,18 @@
   align-items: center;
   background-color: transparent;
   border: none;
-  color: #fff;
+  color: var(--text-primary);
   margin-bottom: 20px;
   cursor: pointer;
   font-size: 16px;
 }
 
 .configU-card {
-  background-color: #2c2c2c; /* Cor do cartão */
+  background-color: var(--bg-secondary);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 10px var(--shadow);
+  border: 1px solid var(--border-color);
 }
 
 .configU-line {

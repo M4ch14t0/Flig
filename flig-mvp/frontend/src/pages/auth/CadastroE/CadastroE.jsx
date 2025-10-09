@@ -148,7 +148,12 @@ export default function CadastroE() {
 
       if (data?.success) {
         console.log('Empresa cadastrada com sucesso!');
-        navigate('/estabelecimento/home');
+        // Redireciona para login em vez de home
+        navigate('/login-estab', { 
+          state: { 
+            message: 'Cadastro realizado com sucesso! Faça login para continuar.' 
+          } 
+        });
       } else {
         setApiError(data?.message || 'Erro ao cadastrar empresa');
       }

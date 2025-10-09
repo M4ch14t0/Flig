@@ -28,7 +28,7 @@ export default function Layout({
   userType = 'cliente', // Tipo de usuário (padrão: cliente)
   showHeader = true, // Mostrar header (padrão: true)
   showSidebar = true, // Mostrar sidebar (padrão: true)
-  showFooter = true // Mostrar footer (padrão: true)
+  showFooter = false // Mostrar footer (padrão: false)
 }) {
   // Hook do React Router para navegação programática
   const navigate = useNavigate();

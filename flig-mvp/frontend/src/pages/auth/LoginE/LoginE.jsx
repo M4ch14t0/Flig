@@ -16,6 +16,7 @@ export default function LoginE() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -29,6 +30,12 @@ export default function LoginE() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMessage('');
+
+    // Verifica se há mensagem de sucesso do cadastro
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+    }
 
     try {
       const result = await login(formData, 'estabelecimento');
@@ -59,6 +66,7 @@ export default function LoginE() {
           <p className="empresa-login-label">Entrar:</p>
 
           <form onSubmit={handleSubmit} className="empresa-login-form">
+            {successMessage && <div className="empresa-login-success">{successMessage}</div>}
             {error && <div className="empresa-login-error">{error}</div>}
 
             <input
