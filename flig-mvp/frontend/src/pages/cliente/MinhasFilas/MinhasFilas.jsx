@@ -66,7 +66,7 @@ function MinhasFilas() {
       setLoading(true);
       setError(null);
       
-      const response = await api.get('/users/active-queues');
+      const response = await api.get('/api/users/active-queues');
       const data = response.data;
       
       if (data.success) {
@@ -96,7 +96,7 @@ function MinhasFilas() {
         return;
       }
 
-      const response = await api.get(`/queues/${queueId}/clients`);
+      const response = await api.get(`/api/queues/${queueId}/clients`);
       const clientsData = response.data;
       
       if (!clientsData.success || !Array.isArray(clientsData.data.clients)) {
@@ -122,7 +122,7 @@ function MinhasFilas() {
 
   const handleLeaveQueue = async (queueId) => {
     try {
-      const response = await api.delete(`/queues/${queueId}/leave`);
+      const response = await api.delete(`/api/queues/${queueId}/leave`);
       if (response.data.success) {
         fetchUserQueues();
       }

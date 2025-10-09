@@ -63,8 +63,8 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   const loadQueueData = async () => {
     try {
       const [queueResponse, clientsResponse] = await Promise.all([
-        api.get(`/queues/${queueId}`),
-        api.get(`/queues/${queueId}/clients`)
+        api.get(`/api/queues/${queueId}`),
+        api.get(`/api/queues/${queueId}/clients`)
       ]);
 
       if (queueResponse.data.success) {
@@ -97,7 +97,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
     setJoining(true);
 
     try {
-      const response = await api.post(`/queues/${queueId}/join`, joinForm);
+      const response = await api.post(`/api/queues/${queueId}/join`, joinForm);
 
       if (response.data.success) {
         setShowJoinForm(false);
@@ -120,7 +120,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
     setAdvancing(true);
 
     try {
-      const response = await api.post(`/queues/${queueId}/advance`, {
+      const response = await api.post(`/api/queues/${queueId}/advance`, {
         clientId: clientPosition.id,
         positions: advanceForm.positions,
         paymentData: {

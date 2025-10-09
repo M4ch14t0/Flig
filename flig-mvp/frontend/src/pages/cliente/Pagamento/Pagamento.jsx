@@ -99,7 +99,7 @@ function Pagamento() {
     
     try {
       // Processa o avanço na fila via API
-      const response = await api.post(`/queues/${queueData.queueId}/advance`, {
+      const response = await api.post(`/api/queues/${queueData.queueId}/advance`, {
         clientId: queueData.userId,
         positions: queueData.positionsToAdvance || 1, // Avançar posições selecionadas
         paymentData: {

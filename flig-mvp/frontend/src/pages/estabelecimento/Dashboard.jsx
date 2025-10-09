@@ -45,7 +45,7 @@ export default function Dashboard() {
       }
 
       // Busca estatísticas do estabelecimento
-      const statsResponse = await api.get(`/estabelecimentos/${user.id}/estatisticas`);
+      const statsResponse = await api.get(`/api/estabelecimentos/${user.id}/estatisticas`);
       if (statsResponse.data) {
         const stats = statsResponse.data;
         setDashboardData({
@@ -61,7 +61,7 @@ export default function Dashboard() {
       }
 
       // Busca filas do estabelecimento
-      const filasResponse = await api.get(`/queues/establishment/${user.id}`);
+      const filasResponse = await api.get(`/api/queues/establishment/${user.id}`);
       if (filasResponse.data.success && Array.isArray(filasResponse.data.data)) {
         setFilas(filasResponse.data.data);
       }

@@ -32,13 +32,13 @@ export default function DetalhesFila() {
       setLoading(true);
       
       // Buscar detalhes da fila
-      const filaResponse = await api.get(`/queues/${id}`);
+      const filaResponse = await api.get(`/api/queues/${id}`);
       if (filaResponse.data.success) {
         setFila(filaResponse.data.data);
       }
 
       // Buscar clientes da fila (com parâmetro isEstablishment para obter dados completos)
-      const clientsResponse = await api.get(`/queues/${id}/clients?isEstablishment=true`);
+      const clientsResponse = await api.get(`/api/queues/${id}/clients?isEstablishment=true`);
       if (clientsResponse.data.success) {
         setClients(clientsResponse.data.data.clients || []);
       }

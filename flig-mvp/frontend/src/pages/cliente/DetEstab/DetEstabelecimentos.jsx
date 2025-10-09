@@ -26,14 +26,14 @@ function DetEstabelecimentos() {
 
       // Se não temos dados do estabelecimento, busca pela API
       if (!establishment) {
-        const establishmentResponse = await api.get(`/estabelecimentos/${id}`);
+        const establishmentResponse = await api.get(`/api/estabelecimentos/${id}`);
         if (establishmentResponse.data.success) {
           setEstablishment(establishmentResponse.data.data);
         }
       }
 
       // Busca filas do estabelecimento
-      const queuesResponse = await api.get(`/estabelecimentos/${id}/filas`);
+      const queuesResponse = await api.get(`/api/estabelecimentos/${id}/filas`);
       if (queuesResponse.data && Array.isArray(queuesResponse.data)) {
         setFilas(queuesResponse.data);
       }
