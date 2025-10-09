@@ -301,7 +301,7 @@ export const AuthProvider = ({ children }) => {
     else {
       try {
         // Chama a API real do backend
-        const endpoint = type === 'cliente' ? '/api/auth/login/user' : '/api/auth/login/establishment';
+        const endpoint = type === 'cliente' ? '/auth/login/user' : '/auth/login/establishment';
         const emailField = type === 'cliente' ? 'email_usuario' : 'email_empresa';
         const passwordField = type === 'cliente' ? 'senha_usuario' : 'senha_empresa';
 
@@ -390,7 +390,7 @@ export const AuthProvider = ({ children }) => {
     else {
       try {
         // Chama a API real do backend para logout
-        await api.post('/api/auth/logout');
+        await api.post('/auth/logout');
       } catch (error) {
         console.error('Erro ao fazer logout:', error);
       } finally {
@@ -482,7 +482,7 @@ export const AuthProvider = ({ children }) => {
     else {
       try {
         // Chama a API real do backend para registro
-        const endpoint = type === 'cliente' ? '/api/auth/register/user' : '/api/auth/register/establishment';
+        const endpoint = type === 'cliente' ? '/auth/register/user' : '/auth/register/establishment';
         
         const response = await api.post(endpoint, userData);
 
