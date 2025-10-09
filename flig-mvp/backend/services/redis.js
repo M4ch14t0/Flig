@@ -36,13 +36,16 @@ async function connectRedis() {
   try {
     if (redisClient && redisClient.isOpen) return redisClient;
 
+    console.log('🔧 Criando cliente Redis com configuração:', REDIS_CONFIG);
     redisClient = redis.createClient(REDIS_CONFIG);
 
     redisClient.on('connect', () => console.log('✅ Conectado ao Redis'));
     redisClient.on('error', (err) => console.error('❌ Erro no Redis:', err));
     redisClient.on('end', () => console.log('🔌 Conexão Redis encerrada'));
 
+    console.log('🔌 Tentando conectar ao Redis...');
     await redisClient.connect();
+    console.log('✅ Redis conectado com sucesso!');
     return redisClient;
   } catch (error) {
     console.error('❌ Falha ao conectar com Redis:', error);
