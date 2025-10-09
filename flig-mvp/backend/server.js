@@ -19,3 +19,9 @@ app.listen(PORT, async () => {
     console.log(`⚠️  Sistema funcionará sem filas até Redis estar disponível`);
   }
 });
+
+  // Inicializar API MercadoPago
+  // SDK do Mercado Pago
+import { MercadoPagoConfig, Preference } from 'mercadopago';
+// Adicione credenciais
+const client = new MercadoPagoConfig({ accessToken: 'APP_USR-7477222719242827-100907-b5c7d9ea85eefbe4ef46c5f983df8d3b-2915256254' });
