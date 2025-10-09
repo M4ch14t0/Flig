@@ -36,9 +36,21 @@ const allowedOrigins = [...new Set([...defaultCorsOrigins, ...configuredOrigins]
 
 app.use(cors({
   origin: function (origin, callback) {
+    console.log('🔍 CORS Request from origin:', origin);
+    console.log('🔍 Allowed origins:', allowedOrigins);
+    
     // Permitir requisições sem origin (ex.: ferramentas de teste, curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin) {
+      console.log('✅ CORS: Allowing request without origin');
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS: Origin allowed:', origin);
+      return callback(null, true);
+    }
+    
+    console.log('❌ CORS: Origin not allowed:', origin);
     return callback(new Error(`Not allowed by CORS: ${origin}`));
   },
   credentials: true,
@@ -46,6 +58,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(express.json());
+
+// Middleware de debug para todas as requisições
+app.use((req, res, next) => {
+  console.log(`🔍 ${req.method} ${req.originalUrl} - Headers:`, req.headers);
+  console.log(`🔍 Body:`, req.body);
+  next();
+});
 
 // Importar rotas
 const authRoutes = require('./routes/authRoutes');
