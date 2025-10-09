@@ -23,7 +23,8 @@ const defaultCorsOrigins = [
   'http://127.0.0.1:5173',
   'https://flig-mvp.vercel.app',
   'https://flig-frontend.vercel.app',
-  'https://flig.vercel.app'
+  'https://flig.vercel.app',
+  'https://flig-8x932j289-m4ch14t0s-projects.vercel.app'
 ];
 
 // Permitir configuração via variável de ambiente (suporta múltiplas origens separadas por vírgula)
@@ -45,8 +46,15 @@ app.use(cors({
       return callback(null, true);
     }
     
+    // Verificar se está na lista de origens permitidas
     if (allowedOrigins.includes(origin)) {
       console.log('✅ CORS: Origin allowed:', origin);
+      return callback(null, true);
+    }
+    
+    // Permitir qualquer domínio do Vercel
+    if (origin.includes('.vercel.app')) {
+      console.log('✅ CORS: Vercel domain allowed:', origin);
       return callback(null, true);
     }
     
