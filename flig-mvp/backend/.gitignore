@@ -11,16 +11,18 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Build outputs
-dist/
-build/
-
 # Logs
 logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
 # Coverage directory
 coverage/
@@ -35,6 +37,14 @@ tests/
 dev/
 development/
 
+# Database files
+*.sqlite
+*.db
+
+# Temporary files
+tmp/
+temp/
+
 # Editor files
 .vscode/
 .idea/
@@ -44,6 +54,3 @@ development/
 # OS files
 .DS_Store
 Thumbs.db
-
-# Vite
-.vite/
