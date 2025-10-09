@@ -1,0 +1,21 @@
+# Ignore frontend build files for Railway
+flig-mvp/frontend/
+flig-mvp/frontend/**
+
+# Ignore development files
+.git/
+.vscode/
+.qodo/
+*.md
+!RAILWAY-DEPLOY.md
+!README-DEPLOY.md
+
+# Ignore test files
+**/*.test.js
+**/*.spec.js
+**/test/
+**/tests/
+
+# Ignore documentation
+**/docs/
+**/documentation/

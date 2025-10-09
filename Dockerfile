@@ -1,24 +1,22 @@
 # Use Node.js 18 LTS
 FROM node:18-alpine
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package.json ./
 COPY flig-mvp/backend/package.json ./flig-mvp/backend/
-COPY flig-mvp/frontend/package.json ./flig-mvp/frontend/
 
 # Install dependencies
 RUN npm install
 RUN cd flig-mvp/backend && npm install
-RUN cd flig-mvp/frontend && npm install
 
-# Copy source code
-COPY . .
-
-# Build frontend
-RUN cd flig-mvp/frontend && npm run build
+# Copy backend source code only
+COPY flig-mvp/backend/ ./flig-mvp/backend/
 
 # Expose port
 EXPOSE 5000
