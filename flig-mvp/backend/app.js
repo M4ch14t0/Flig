@@ -15,12 +15,15 @@ if (!TOKEN) {
   console.warn('⚠️  CNPJA_TOKEN not configured. Some features may not work properly.');
 }
 
-// Configuração CORS mais permissiva para desenvolvimento
+// Configuração CORS mais permissiva para desenvolvimento e produção
 const defaultCorsOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:5173',
-  'http://127.0.0.1:5173'
+  'http://127.0.0.1:5173',
+  'https://flig-mvp.vercel.app',
+  'https://flig-frontend.vercel.app',
+  'https://flig.vercel.app'
 ];
 
 // Permitir configuração via variável de ambiente (suporta múltiplas origens separadas por vírgula)
