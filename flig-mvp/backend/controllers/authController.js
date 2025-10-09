@@ -140,6 +140,20 @@ async function registerUser(req, res) {
     // Criptografa a senha
     const hashedPassword = cryptoUtils.hashPassword(senha_usuario);
 
+    // Prepara parâmetros com valores padrão
+    const params = [
+      nome_usuario,
+      cpf,
+      telefone_usuario || null,
+      email_usuario,
+      hashedPassword,
+      cep_usuario || null,
+      endereco_usuario || null,
+      numero_usuario || null
+    ];
+
+    console.log('🔍 Parâmetros para inserção:', params);
+
     // Insere usuário no banco
     const sql = `
       INSERT INTO usuarios 
@@ -150,7 +164,7 @@ async function registerUser(req, res) {
     const result = await new Promise((resolve, reject) => {
       connection.query(
         sql,
-        [nome_usuario, cpf, telefone_usuario, email_usuario, hashedPassword, cep_usuario, endereco_usuario, numero_usuario],
+        params,
         (err, result) => err ? reject(err) : resolve(result)
       );
     });

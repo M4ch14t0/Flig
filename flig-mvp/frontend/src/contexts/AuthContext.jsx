@@ -154,7 +154,7 @@ export const AuthProvider = ({ children }) => {
           const userData = {
             id: parseInt(storedId) || (storedUserType === 'estabelecimento' ? 8 : 1),
             email: storedEmail || 'user@example.com',
-            name: storedName || 'Usuário',
+            name: storedName || '',
             type: storedUserType,
             token,
           };

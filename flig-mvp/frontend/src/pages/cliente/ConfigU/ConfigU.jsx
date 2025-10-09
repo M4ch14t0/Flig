@@ -1,10 +1,12 @@
 // ConfigU.jsx
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
 import './ConfigU.css';
 
 export default function ConfigU() {
   const navigate = useNavigate();
+  const { theme, toggleTheme, isDark } = useTheme();
 
   return (
     <div className="configU-container">
@@ -27,7 +29,11 @@ export default function ConfigU() {
             <div className="configU-switch-group">
               <span>Escuro</span>
               <label className="switch">
-                <input type="checkbox" />
+                <input 
+                  type="checkbox" 
+                  checked={isDark}
+                  onChange={toggleTheme}
+                />
                 <span className="slider"></span>
               </label>
               <span>Claro</span>

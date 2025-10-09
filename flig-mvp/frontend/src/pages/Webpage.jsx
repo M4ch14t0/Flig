@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Wrench, FileText, Phone, Zap, RefreshCw, Lightbulb, Trophy, Send, Instagram, Linkedin } from 'lucide-react';
+import { ArrowRight, Wrench, FileText, Phone, Zap, RefreshCw, Lightbulb, Trophy, Send, Instagram, Linkedin, ChevronUp, HelpCircle } from 'lucide-react';
 import styles from './Webpage.module.css';
 
 function Webpage() {
@@ -8,6 +8,10 @@ function Webpage() {
     <div className={styles.welcome}>
       {/* NAVBAR */}
       <nav className={styles.navbar}>
+        <div className={styles.logo} onClick={() => navigate('/')} style={{cursor: 'pointer'}}>
+          <img src="/assets/logos/flig-logo.svg" alt="Flig" className={styles.logoImg} />
+        </div>
+
         <div className={styles.navdivision}>
           <ul className={styles.navLinks}>
             <li>
@@ -36,12 +40,7 @@ function Webpage() {
               Fale Conosco
             </a>
           </div>
-        </div>
-
-        <div className={styles.logoAndLine}>
-          <div className={styles.logo} onClick={() => navigate('/')} style={{cursor: 'pointer'}}>
-            <img src="/assets/logos/flig-logo.svg" alt="Flig" className={styles.logoImg} />
-          </div>
+          
           <div className={styles.navUnderline}></div>
         </div>
       </nav>
@@ -61,7 +60,7 @@ function Webpage() {
             <button className={styles.readmore}>Leia Mais</button>
             <Link to="/escolha-login" className={styles.loginOutline}>
               Login
-              <ArrowRight size={16} />
+              
             </Link>
           </div>
         </div>
@@ -91,22 +90,22 @@ function Webpage() {
         <h2>Nossa Equipe</h2>
         <div className={styles.team}>
           <div className={styles.member}>
-            <img src="/equipe/rafael.jpg" alt="Rafael Matos" />
+            <img src="/assets/team/Rafael.JPG" alt="Rafael Matos" />
             <p className={styles.name}>Rafael Matos</p>
             <p className={styles.role}>Desenvolvedor, Programador</p>
           </div>
           <div className={styles.member}>
-            <img src="/equipe/guilherme.jpg" alt="Guilherme Correia" />
+            <img src="/assets/team/Guilherme.JPG" alt="Guilherme Correia" />
             <p className={styles.name}>Guilherme Correia</p>
             <p className={styles.role}>Desenvolvedor, Analista de dados</p>
           </div>
           <div className={styles.member}>
-            <img src="/equipe/gabriela.jpg" alt="Gabriela Almeida" />
+            <img src="/assets/team/Gabriela.JPG" alt="Gabriela Almeida" />
             <p className={styles.name}>Gabriela Almeida</p>
             <p className={styles.role}>Desenvolvedora, Designer</p>
           </div>
           <div className={styles.member}>
-            <img src="/equipe/nicolas.jpg" alt="Nicolas Rocha" />
+            <img src="/assets/team/Nicolas.JPG" alt="Nicolas Rocha" />
             <p className={styles.name}>Nicolas Rocha</p>
             <p className={styles.role}>Desenvolvedor, Financeiro</p>
           </div>
@@ -166,6 +165,49 @@ function Webpage() {
         </div>
       </section>
 
+      {/* PLANOS */}
+      <section id="plano" className={styles.plansSection}>
+        <h2>Nossos Planos para Estabelecimentos</h2>
+        <div className={styles.plansContainer}>
+          <div className={styles.planCard}>
+            <div className={styles.planHeader}>
+              <h3>Essencial</h3>
+              <div className={styles.planPrice}>
+                <span className={styles.currency}>R$</span>
+                <span className={styles.amount}>89,90</span>
+                <span className={styles.period}>/mês</span>
+              </div>
+            </div>
+            <ul className={styles.planFeatures}>
+              <li>✓ Acesso ao sistema</li>
+              <li>✓ Painel Básico com Visão Geral das Filas</li>
+              <li>✓ Visualização em tempo real da fila virtual</li>
+              <li>✓ Chamada de clientes diretamente pelo sistema</li>
+              <li>✓ Suporte básico por e-mail</li>
+            </ul>
+            <button className={styles.planButton}>Escolher Plano</button>
+          </div>
+
+          <div className={styles.planCard}>
+            <div className={styles.planHeader}>
+              <h3>Profissional</h3>
+              <div className={styles.planPrice}>
+                <span className={styles.currency}>R$</span>
+                <span className={styles.amount}>129,90</span>
+                <span className={styles.period}>/mês</span>
+              </div>
+            </div>
+            <ul className={styles.planFeatures}>
+              <li>✓ Todas as funções do Plano Essencial</li>
+              <li>✓ Estatísticas avançadas: tempo médio de espera, taxa de abandono e volume de clientes</li>
+              <li>✓ Relatórios exportáveis (PDF/Excel)</li>
+              <li>✓ Suporte prioritário (chat + e-mail)</li>
+            </ul>
+            <button className={styles.planButton}>Escolher Plano</button>
+          </div>
+        </div>
+      </section>
+
       {/* CONTATO */}
       <section id="contato" className={styles.section}>
         <h2>Entre em Contato Conosco</h2>
@@ -181,63 +223,77 @@ function Webpage() {
       </section>
 
       {/* FOOTER */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContainer}>
-          <div className={styles.footerColumn}>
-            <img
-              src="/assets/logos/flig-logo.svg"
-              alt="Logo Flig"
-              style={{ width: '95px' }}
-            />
-            <p>
-              <strong>FligPTI@gmail.com</strong>
-            </p>
-            <div className={styles.socialLinks}>
-              <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                <Instagram size={24} />
-              </a>
-              <a href="https://linkedin.com/company/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                <Linkedin size={24} />
-              </a>
-              <a href="https://tiktok.com/" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                </svg>
-              </a>
-            </div>
-          </div>
+                  <footer className={styles.footer}>
+                    <div className={styles.footerContainer}>
+                      <div className={styles.footerColumn}>
+                        <img
+                          src="/assets/logos/flig-logo.svg"
+                          alt="Logo Flig"
+                          style={{ width: '95px' }}
+                        />
+                        <p>
+                          <strong>FligPTI@gmail.com</strong>
+                        </p>
+                        <div className={styles.socialLinks}>
+                          <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                            <Instagram size={24} color="#F8DF4B" />
+                          </a>
+                          <a href="https://linkedin.com/company/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                            <Linkedin size={24} color="#F8DF4B" />
+                          </a>
+                          <a href="https://tiktok.com/" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#F8DF4B">
+                              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
 
-          <div className={styles.footerColumn}>
-            <h4>Serviços:</h4>
-            <Link to="/escolha-login">Login Clientes</Link>
-            <a href="#baixarapp">App Flig</a>
-            <a href="#termos">Termos de privacidade</a>
-          </div>
+                      <div className={styles.footerColumn}>
+                        <h4>Serviços:</h4>
+                        <Link to="/escolha-login">Login Clientes</Link>
+                        <a href="#baixarapp">App Flig</a>
+                        <a href="#termos">Termos de privacidade</a>
+                      </div>
 
-          <div className={styles.footerColumn}>
-            <h4>Ajuda:</h4>
-            <Link to="/faq"><FileText size={16} /> FAQ</Link>
-            <a href="#suporte"><Wrench size={16} /> Suporte</a>
-            <a href="#contato"><Phone size={16} /> Contate-nos</a>
-          </div>
+                      <div className={styles.footerColumn}>
+                        <h4>Ajuda:</h4>
+                        <Link to="/faq"><HelpCircle size={16} color="#F8DF4B" /> FAQ</Link>
+                        <a href="#suporte"><Wrench size={16} color="#F8DF4B" /> Suporte</a>
+                        <a href="#contato"><Phone size={16} color="#F8DF4B" /> Contate-nos</a>
+                      </div>
 
-          <div className={styles.footerColumn}>
-            <h4>Tem alguma dica pra gente?</h4>
-            <p>Dê um FeedBack! Agradecemos Muito</p>
-            <div className={styles.footerInput}>
-              <input type="text" placeholder="Digite Aqui..." />
-              <button type="button" aria-label="Enviar feedback">
-                <Send size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
+                      <div className={styles.footerColumn}>
+                        <h4>Tem alguma dica pra gente?</h4>
+                        <p>Dê um FeedBack! Agradecemos Muito</p>
+                        <div className={styles.feedbackInputContainer}>
+                          <input type="text" placeholder="Digite Aqui..." className={styles.feedbackInput} />
+                          <button type="button" aria-label="Enviar feedback" className={styles.feedbackButton}>
+                            <Send size={20} color="white" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
 
-        <div className={styles.footerBottom}>
-          &copy; {new Date().getFullYear()} Flig Soluções de agilidade.
-          Todos os Direitos Reservados
-        </div>
-      </footer>
+                    <div className={styles.footerSeparator}></div>
+
+                    <div className={styles.footerBottom}>
+                      &copy; 2025 Flig Soluções de agilidade.
+                      Todos os Direitos Reservados
+                    </div>
+                  </footer>
+
+      {/* BOTÃO VOLTAR AO TOPO */}
+      <button 
+        className={styles.backToTop}
+        onClick={() => {
+          console.log('CLICOU NO BOTÃO!');
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }}
+      >
+        <ChevronUp size={24} color="white" />
+      </button>
     </div>
   );
 }

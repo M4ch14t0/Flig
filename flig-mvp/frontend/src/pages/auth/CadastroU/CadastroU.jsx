@@ -41,11 +41,10 @@ export default function CadastroU() {
 
       // Simular validação bem-sucedida
       if (cleanCpf.length === 11) {
-        setNome('Usuário Teste');
+        // Não preencher automaticamente o nome - deixar o usuário digitar
         setErroCpf('');
       } else {
         setErroCpf('CPF inválido');
-        setNome('');
       }
     } catch {
       setErroCpf('Erro ao verificar CPF. Verifique sua conexão.');
