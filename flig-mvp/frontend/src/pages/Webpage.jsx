@@ -55,7 +55,7 @@ function Webpage() {
           <p className={styles.subtitle}>
             Levamos menos de 60s entre conexão e realização de fila. Controle
             processos com facilidade, entre em filas com um clique. Ninguém
-            gosta de esperar. Simples assim!
+            gosta de esperar. Simples assim!!
           </p>
           <div className={styles.headerButtons}>
             <button className={styles.readmore}>Leia Mais</button>
