@@ -20,8 +20,9 @@ body::-webkit-scrollbar {
   background-color: #152E60;
   width: 100%;
   display: flex;
-  flex-direction: column;
-  padding: 24px 150px 0 150px;
+  align-items: flex-start;
+  padding: 24px 5%;
+  position: relative;
 }
 
 .logo {
@@ -34,35 +35,51 @@ body::-webkit-scrollbar {
 }
 
 .logoImg {
-  height: 120px;
+  height: 200px;
   width: auto;
+  max-width: 100%;
+  margin-top: 20px;
 }
 
-.logoAndLine {
+.logo {
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
   display: flex;
   align-items: center;
-  width: 100%;
+  margin-right: 40px;
+  margin-top: auto;
 }
 
 .navdivision {
   display: flex;
-  width: 100%;
-  justify-content: space-between;
   align-items: center;
-  padding-bottom: 12px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  flex: 1;
+  position: relative;
+  padding-bottom: 16px;
+  margin-top: 100px;
 }
 
 .navUnderline{
-  flex: 1;
-  border-bottom: 1px solid #d9d9d9;
-  margin-left: 20px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #d9d9d9;
 }
 
 .navLinks {
   display: flex;
   gap: 16px;
   list-style: none;
-  margin-left: 200px;
+  margin: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+  order: 1;
 }
 
 .navLinks li a {
@@ -74,6 +91,7 @@ body::-webkit-scrollbar {
   border-radius: 20px;
   font-size: 14px;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .navLinks li a:hover {
@@ -84,6 +102,9 @@ body::-webkit-scrollbar {
 .navButtons {
   display: flex;
   align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  order: 2;
 }
 
 .navSeparator {
@@ -106,6 +127,7 @@ body::-webkit-scrollbar {
   gap: 6px;
   color: white;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .loginLink:hover,
@@ -120,34 +142,39 @@ body::-webkit-scrollbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 150px 35px 150px;
+  padding: 40px 5%;
   width: 100%;
   flex-wrap: wrap;
+  gap: 40px;
+  min-height: 500px;
 }
 
 .headerLeft {
-  max-width: 50%;
+  flex: 1;
+  min-width: 300px;
+  max-width: 600px;
 }
 
 .title {
-  font-size: 36px;
+  font-size: clamp(28px, 4vw, 48px);
   font-weight: 800;
   color: white;
   margin-bottom: 16px;
-  margin-right: 300px;
+  line-height: 1.2;
 }
 
 .subtitle {
   color: #dcdcdc;
-  font-size: 16px;
+  font-size: clamp(14px, 2vw, 18px);
   margin-bottom: 32px;
   line-height: 1.6;
-  margin-right: 200px;
+  max-width: 100%;
 }
 
 .headerButtons {
   display: flex;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 .readmore,
@@ -161,32 +188,49 @@ body::-webkit-scrollbar {
   cursor: pointer;
   text-decoration: none;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  font-size: 14px;
 }
 
 .readmore:hover,
 .loginOutline:hover {
   background-color: #ffffff;
   color: #152E60;
+}
 
+.headerImage {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.headerImage img {
+  width: 100%;
+  height: auto;
+  max-width: 400px;
+  object-fit: contain;
 }
 
 /* -------- SECTION GERAL -------- */
 .section {
   width: 100%;
-  padding: 80px 150px;
+  padding: 80px 5%;
   text-align: center;
   background-color: #1F1F1F;
   color: white;
 }
 
 .section h2 {
-  font-size: 28px;
+  font-size: clamp(24px, 3vw, 32px);
   font-weight: bold;
   margin-bottom: 24px;
 }
 
 .section p {
-  font-size: 16px;
+  font-size: clamp(14px, 2vw, 18px);
   line-height: 1.7;
   margin: 0 auto;
   max-width: 100%;
@@ -195,46 +239,53 @@ body::-webkit-scrollbar {
 /* -------- SOBRE / EQUIPE -------- */
 .equipe {
   background-color: #152E60;
-  padding: 150px 150px;
+  padding: 80px 5%;
 }
-.equipe H2{
+
+.equipe h2 {
   color: #ffffff;
-  font-size: 28px;
+  font-size: clamp(24px, 3vw, 32px);
   margin-bottom: 24px;
   text-align: center;
 }
 
 .team {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 32px;
   margin-top: 32px;
-   
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .member {
-  width: 180px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .member img {
   width: 100%;
-  height: 220px;
+  height: 250px;
   object-fit: cover;
   border-radius: 12px;
   background: #ccc;
+  max-width: 200px;
 }
 
 .name {
   font-weight: 800;
   font-size: 16px;
   margin-top: 12px;
+  color: white;
 }
 
 .role {
   font-size: 14px;
   color: #e0e0e0;
+  margin-top: 4px;
 }
 
 /* -------- O QUE OFERECE -------- */
@@ -243,16 +294,18 @@ body::-webkit-scrollbar {
 }
 
 .features {
-  display: flex;
-  justify-content: space-around;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 40px;
   margin-top: 40px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .feature {
-  width: 180px;
   text-align: center;
+  padding: 20px;
 }
 
 .icon {
@@ -265,11 +318,126 @@ body::-webkit-scrollbar {
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 8px;
+  color: white;
 }
 
 .feature p {
   font-size: 14px;
   line-height: 1.6;
+  color: #dcdcdc;
+}
+
+/* -------- PLANOS -------- */
+.plansSection {
+  background-color: #152E60;
+  padding: 80px 5%;
+  text-align: center;
+  color: white;
+}
+
+.plansSection h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: bold;
+  margin-bottom: 40px;
+  color: white;
+}
+
+.plansContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.planCard {
+  background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: left;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.planCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  border-color: #4a90e2;
+}
+
+.planHeader {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.planHeader h3 {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 16px;
+}
+
+.planPrice {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.currency {
+  font-size: 18px;
+  color: white;
+  font-weight: 600;
+}
+
+.amount {
+  font-size: 48px;
+  font-weight: bold;
+  color: white;
+}
+
+.period {
+  font-size: 16px;
+  color: #dcdcdc;
+}
+
+.planFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0;
+}
+
+.planFeatures li {
+  padding: 8px 0;
+  color: #dcdcdc;
+  font-size: 14px;
+  line-height: 1.5;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.planFeatures li:last-child {
+  border-bottom: none;
+}
+
+.planButton {
+  width: 100%;
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 24px;
+}
+
+.planButton:hover {
+  background: linear-gradient(135deg, #357abd 0%, #2c5f9a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(74, 144, 226, 0.3);
 }
 
 /* -------- CONTATO -------- */
@@ -297,6 +465,7 @@ body::-webkit-scrollbar {
   resize: none;
   font-family: Arial, Helvetica, sans-serif;
   background-color: #ffffff;
+  color: #3a3a3a;
 }
 
 .contactForm button {
@@ -314,26 +483,26 @@ body::-webkit-scrollbar {
 .footer {
   background-color: #152E60;
   color: white;
-  padding: 40px 150px;
+  padding: 40px 5%;
   font-size: 14px;
   width: 100%;
 }
 
 .footerContainer {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 40px;
-  border-bottom: 1px solid #ccc;
   padding-bottom: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .footerColumn {
-  flex: 1;
   min-width: 180px;
 }
 
 .footerColumn h4 {
+  color: white;
   font-weight: bold;
   margin-bottom: 12px;
 }
@@ -347,25 +516,93 @@ body::-webkit-scrollbar {
   gap: 6px;
 }
 
-.footerInput {
+.feedbackInputContainer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
   margin-top: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  overflow: hidden;
 }
 
-.footerInput input {
+.feedbackInput {
   border: none;
-  border-radius: 20px;
+  background: transparent;
   padding: 8px 16px;
+  color: white;
+  flex: 1;
+  outline: none;
   font-size: 14px;
+}
+
+.feedbackInput::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.feedbackButton {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.feedbackButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.footerSeparator {
+  width: 100%;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.2);
+  margin: 20px 0;
 }
 
 .footerBottom {
   text-align: center;
-  padding-top: 24px;
+  padding-top: 0;
   font-size: 12px;
+  color: white;
   opacity: 0.7;
+}
+
+.socialLinks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* -------- BOTÃO VOLTAR AO TOPO -------- */
+.backToTop {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: #152E60;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.backToTop:hover {
+  background: #0f1f42;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 16px rgba(21, 46, 96, 0.3);
+}
+
+.backToTop:active {
+  transform: translateY(-1px);
 }
 
 /* -------- RESPONSIVIDADE -------- */
@@ -373,120 +610,209 @@ body::-webkit-scrollbar {
 /* Tablets (≤1024px) */
 @media (max-width: 1024px) {
   .navbar {
-    padding: 24px;
+    padding: 24px 5%;
   }
 
   .navdivision {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 16px;
   }
 
   .navLinks {
-    margin-left: 0;
-    flex-wrap: wrap;
+    justify-content: center;
+    order: 1;
   }
 
   .navButtons {
-    justify-content: flex-start;
+    justify-content: center;
     width: 100%;
+    order: 2;
   }
 
   .header {
     flex-direction: column;
-    align-items: flex-start;
-    padding: 40px 24px;
+    align-items: center;
+    text-align: center;
+    gap: 40px;
   }
 
   .headerLeft {
     max-width: 100%;
+    text-align: center;
   }
 
   .headerImage {
-    margin-top: 24px;
-    display: flex;
-    justify-content: center;
     width: 100%;
+    max-width: 400px;
   }
 
-  .headerImage img {
-    width: 240px;
+  .team {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
 
   .features {
-    justify-content: center;
-  }
-
-  .footerContainer {
-    flex-direction: column;
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 
 /* Celulares (≤768px) */
 @media (max-width: 768px) {
-  .logo {
-    font-size: 24px;
+  .navbar {
+    padding: 16px 5%;
+  }
+
+  .logoImg {
+    height: 80px;
   }
 
   .navLinks {
     flex-direction: column;
     gap: 12px;
+    width: 100%;
+    order: 1;
   }
 
   .navLinks li a {
     font-size: 13px;
-    padding: 5px 14px;
+    padding: 8px 16px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .navButtons {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+    order: 2;
   }
 
   .loginLink,
-  .registerButton {
+  .contactbutton {
     font-size: 13px;
-    padding: 6px 14px;
+    padding: 8px 16px;
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .header {
+    padding: 40px 5%;
+    min-height: auto;
   }
 
   .title {
-    font-size: 28px;
+    font-size: clamp(24px, 6vw, 36px);
   }
 
   .subtitle {
-    font-size: 14px;
+    font-size: clamp(14px, 3vw, 16px);
+  }
+
+  .headerButtons {
+    flex-direction: column;
+    width: 100%;
   }
 
   .readmore,
   .loginOutline {
     font-size: 14px;
-    padding: 10px 20px;
+    padding: 12px 24px;
+    width: 100%;
+    text-align: center;
   }
 
   .section {
-    padding: 60px 24px;
+    padding: 60px 5%;
   }
 
   .team {
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 24px;
+  }
+
+  .member img {
+    height: 200px;
   }
 
   .features {
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .plansContainer {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .planCard {
+    padding: 24px;
   }
 
   .contactForm {
     padding: 24px;
+    margin: 20px 0;
   }
 
   .footer {
-    padding: 24px;
+    padding: 24px 5%;
   }
 
-  .footerInput {
+  .footerContainer {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .feedbackInputContainer {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .footerInput input {
+  .feedbackInput {
     width: 100%;
+  }
+}
+
+/* Telas muito pequenas (≤480px) */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 12px 5%;
+  }
+
+  .logoImg {
+    height: 60px;
+  }
+
+  .header {
+    padding: 30px 5%;
+  }
+
+  .section {
+    padding: 40px 5%;
+  }
+
+  .team {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .member img {
+    height: 180px;
+    max-width: 150px;
+  }
+
+  .features {
+    gap: 20px;
+  }
+
+  .contactForm {
+    padding: 20px;
+  }
+
+  .backToTop {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
   }
 }
