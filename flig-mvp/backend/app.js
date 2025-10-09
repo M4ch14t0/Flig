@@ -83,6 +83,24 @@ const establishmentRoutes = require('./routes/establishmentRoutes');
 // Aplicar rate limiting geral
 app.use(generalLimiter);
 
+// Rota raiz
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'Flig Backend API is running',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      api: '/api',
+      auth: '/api/auth',
+      queues: '/api/queues',
+      users: '/api/users',
+      establishments: '/api/establishments'
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ 
