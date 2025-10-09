@@ -53,10 +53,15 @@ export default function CadastroE() {
   // Buscar dados do CNPJ (via backend)
   useEffect(() => {
     if (form.cnpj.length === 14) {
-      (async () => {
-        try {
-          const response = await api.post('/auth/validate-cnpj', { cnpj: form.cnpj });
-          const data = response?.data;
+      fetch(`${import.meta.env.VITE_API_URL}/api/auth/validate-cnpj`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cnpj: form.cnpj })
+      })
+        .then((res) => res.json())
+        .then((data) => {
           console.log('Validação de CNPJ:', data);
 
           if (data?.success && data?.data?.razao_social) {
