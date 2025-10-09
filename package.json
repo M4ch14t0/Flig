@@ -4,7 +4,7 @@
   "description": "Flig MVP - Sistema de Filas Virtuais Inteligentes",
   "main": "flig-mvp/backend/server.js",
   "scripts": {
-    "start": "cd flig-mvp/backend && npm start",
+    "start": "node flig-mvp/backend/server.js",
     "dev": "cd flig-mvp/backend && npm run dev",
     "build": "cd flig-mvp/backend && npm install",
     "install:backend": "cd flig-mvp/backend && npm install",
