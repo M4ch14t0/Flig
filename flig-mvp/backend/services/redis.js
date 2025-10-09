@@ -10,6 +10,14 @@
 const redis = require('redis');
 
 // Configuração do Redis
+console.log('🔍 Redis Environment Variables:');
+console.log('REDISHOST:', process.env.REDISHOST);
+console.log('REDIS_HOST:', process.env.REDIS_HOST);
+console.log('REDISPORT:', process.env.REDISPORT);
+console.log('REDIS_PORT:', process.env.REDIS_PORT);
+console.log('REDISPASSWORD:', process.env.REDISPASSWORD);
+console.log('REDIS_PASSWORD:', process.env.REDIS_PASSWORD);
+
 const REDIS_CONFIG = {
   host: process.env.REDISHOST || process.env.REDIS_HOST || 'localhost',
   port: process.env.REDISPORT || process.env.REDIS_PORT || 6379,
@@ -18,6 +26,8 @@ const REDIS_CONFIG = {
   retryDelayOnFailover: 100,
   maxRetriesPerRequest: 3
 };
+
+console.log('🔧 Redis Config:', REDIS_CONFIG);
 
 let redisClient = null;
 
