@@ -299,4 +299,4 @@ Para suporte técnico, entre em contato:
 
 ---
 
-**⚠️ IMPORTANTE: Nunca commite arquivos .env com valores reais!**
+**⚠️ IMPORTANTE: Nunca commite arquivos .env com valores reais!!**
