@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import styles from './CadastroE.module.css';
+import { api } from '../../../services/api';
 
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -62,21 +63,21 @@ export default function CadastroE() {
         .then((res) => res.json())
         .then((data) => {
           console.log('Validação de CNPJ:', data);
-  
-          if (data.success && data.data && data.data.razao_social) {
+
+          if (data?.success && data?.data?.razao_social) {
             setForm(prev => ({ ...prev, razao: data.data.razao_social }));
             setCnpjValido(true);
-          } else if (data.success) {
+          } else if (data?.success) {
             // CNPJ válido mas sem dados da API
             setCnpjValido(true);
           } else {
             setCnpjValido(false);
           }
-        })
-        .catch((err) => {
+        } catch (err) {
           console.error('Erro ao validar CNPJ:', err);
           setCnpjValido(false);
-        });
+        }
+      })();
     } else {
       setCnpjValido(true);
     }
@@ -137,23 +138,15 @@ export default function CadastroE() {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register/establishment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(empresa),
-      });
-
-      const data = await response.json();
+      const response = await api.post('/auth/register/establishment', empresa);
+      const data = response?.data;
       console.log('Resposta do servidor:', data);
 
-      if (data.success) {
-        // TODO: Implementar notificação toast
+      if (data?.success) {
         console.log('Empresa cadastrada com sucesso!');
         navigate('/estabelecimento/home');
       } else {
-        setApiError(data.message || 'Erro ao cadastrar empresa');
+        setApiError(data?.message || 'Erro ao cadastrar empresa');
       }
     } catch (err) {
       console.error('Erro ao cadastrar empresa:', err);

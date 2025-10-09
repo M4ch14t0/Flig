@@ -141,7 +141,7 @@ api.interceptors.response.use(
  */
 export const checkBackendHealth = async () => {
   try {
-    const response = await api.get('/api/health');
+    const response = await api.get('/health');
     return response.status === 200;
   } catch (error) {
     console.error('Backend não está disponível:', error);
@@ -155,7 +155,7 @@ export const checkBackendHealth = async () => {
  */
 export const getCurrentUser = async () => {
   try {
-    const response = await api.get('/api/auth/me');
+    const response = await api.get('/auth/me');
     return response.data;
   } catch (error) {
     console.error('Erro ao obter dados do usuário:', error);
@@ -175,12 +175,12 @@ export const getCurrentUser = async () => {
  */
 export const loginUser = async (credentials, userType) => {
   if (userType === 'cliente') {
-    return api.post('/api/auth/login/user', {
+    return api.post('/auth/login/user', {
       email_usuario: credentials.email,
       senha_usuario: credentials.password,
     });
   } else {
-    return api.post('/api/auth/login/establishment', {
+    return api.post('/auth/login/establishment', {
       email_empresa: credentials.email,
       senha_empresa: credentials.password,
     });
@@ -195,9 +195,9 @@ export const loginUser = async (credentials, userType) => {
  */
 export const registerUser = async (userData, userType) => {
   if (userType === 'cliente') {
-    return api.post('/api/auth/register/user', userData);
+    return api.post('/auth/register/user', userData);
   } else {
-    return api.post('/api/auth/register/establishment', userData);
+    return api.post('/auth/register/establishment', userData);
   }
 };
 
@@ -206,7 +206,7 @@ export const registerUser = async (userData, userType) => {
  * @returns {Promise<Object>}
  */
 export const logoutUser = async () => {
-  return api.post('/api/auth/logout');
+  return api.post('/auth/logout');
 };
 
 // ========================================
@@ -219,7 +219,7 @@ export const logoutUser = async () => {
  * @returns {Promise<Object>}
  */
 export const getEstablishments = async (filters = {}) => {
-  return api.get('/api/estabelecimentos', { params: filters });
+  return api.get('/estabelecimentos', { params: filters });
 };
 
 /**
@@ -228,7 +228,7 @@ export const getEstablishments = async (filters = {}) => {
  * @returns {Promise<Object>}
  */
 export const getEstablishmentById = async (id) => {
-  return api.get(`/api/establishments/${id}`);
+  return api.get(`/establishments/${id}`);
 };
 
 // ========================================
@@ -240,7 +240,7 @@ export const getEstablishmentById = async (id) => {
  * @returns {Promise<Object>}
  */
 export const getUserQueues = async () => {
-  return api.get('/api/queues/user');
+  return api.get('/queues/user');
 };
 
 /**
@@ -249,7 +249,7 @@ export const getUserQueues = async () => {
  * @returns {Promise<Object>}
  */
 export const joinQueue = async (establishmentId) => {
-  return api.post('/api/queues/join', { establishmentId });
+  return api.post('/queues/join', { establishmentId });
 };
 
 /**
@@ -258,7 +258,7 @@ export const joinQueue = async (establishmentId) => {
  * @returns {Promise<Object>}
  */
 export const leaveQueue = async (queueId) => {
-  return api.post('/api/queues/leave', { queueId });
+  return api.post('/queues/leave', { queueId });
 };
 
 // ========================================
@@ -270,7 +270,7 @@ export const leaveQueue = async (queueId) => {
  * @returns {Promise<Object>}
  */
 export const getEstablishmentQueues = async () => {
-  return api.get('/api/establishment/queues');
+  return api.get('/establishment/queues');
 };
 
 /**
@@ -279,7 +279,7 @@ export const getEstablishmentQueues = async () => {
  * @returns {Promise<Object>}
  */
 export const createQueue = async (queueData) => {
-  return api.post('/api/establishment/queues', queueData);
+  return api.post('/establishment/queues', queueData);
 };
 
 /**
@@ -289,7 +289,7 @@ export const createQueue = async (queueData) => {
  * @returns {Promise<Object>}
  */
 export const updateQueue = async (queueId, queueData) => {
-  return api.put(`/api/establishment/queues/${queueId}`, queueData);
+  return api.put(`/establishment/queues/${queueId}`, queueData);
 };
 
 /**
@@ -298,7 +298,7 @@ export const updateQueue = async (queueId, queueData) => {
  * @returns {Promise<Object>}
  */
 export const deleteQueue = async (queueId) => {
-  return api.delete(`/api/establishment/queues/${queueId}`);
+  return api.delete(`/establishment/queues/${queueId}`);
 };
 
 // ========================================
