@@ -66,6 +66,9 @@ if (!JWT_SECRET) {
  */
 async function registerUser(req, res) {
   try {
+    console.log('🔍 registerUser - Starting user registration');
+    console.log('🔍 Request body:', req.body);
+    
     const {
       nome_usuario,
       cpf,
@@ -181,6 +184,15 @@ async function registerUser(req, res) {
 
   } catch (error) {
     console.error('❌ Erro ao registrar usuário:', error);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      errno: error.errno,
+      sqlState: error.sqlState,
+      sqlMessage: error.sqlMessage
+    });
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor',

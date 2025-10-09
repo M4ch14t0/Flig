@@ -31,6 +31,11 @@ const cnpjValidation = require('../services/cnpjValidation');
  */
 router.post('/register/user', 
   rateLimit(60000, 5), // 5 tentativas por minuto
+  (req, res, next) => {
+    console.log('🔍 POST /api/auth/register/user - Request received');
+    console.log('🔍 Request body:', req.body);
+    next();
+  },
   validateUserRegistration,
   authController.registerUser
 );
@@ -43,6 +48,11 @@ router.post('/register/user',
  */
 router.post('/register/establishment',
   rateLimit(60000, 5), // 5 tentativas por minuto
+  (req, res, next) => {
+    console.log('🔍 POST /api/auth/register/establishment - Request received');
+    console.log('🔍 Request body:', req.body);
+    next();
+  },
   validateEstablishmentRegistration,
   authController.registerEstablishment
 );
