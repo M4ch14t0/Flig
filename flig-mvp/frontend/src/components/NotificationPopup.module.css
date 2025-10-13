@@ -1,0 +1,113 @@
+.notificationContainer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+}
+
+.notification {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  min-width: 320px;
+  max-width: 400px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.notificationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.notificationIcon {
+  color: #10b981;
+  display: flex;
+  align-items: center;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.notificationContent {
+  padding: 0 20px 16px;
+}
+
+.notificationMessage {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.progressBar {
+  height: 4px;
+  background: var(--bg-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  transition: width 0.1s linear;
+  border-radius: 0 0 12px 12px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .notificationContainer {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+  }
+  
+  .notification {
+    min-width: auto;
+    max-width: none;
+  }
+}
+

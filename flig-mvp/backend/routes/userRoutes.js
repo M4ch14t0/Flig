@@ -198,5 +198,18 @@ router.use((error, req, res, next) => {
   });
 });
 
+/**
+ * @route GET /api/users/:id/password
+ * @desc Obtém a senha criptografada do usuário
+ * @access Private (Cliente - apenas próprio usuário)
+ * @headers { Authorization: Bearer <token> }
+ */
+router.get('/:id/password',
+  authenticateToken,
+  requireUserType('cliente'),
+  sanitizeParams,
+  userController.getUserPassword
+);
+
 module.exports = router;
 

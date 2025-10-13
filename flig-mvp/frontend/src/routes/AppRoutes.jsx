@@ -22,6 +22,8 @@ import LoginE from '../pages/auth/LoginE/LoginE'; // Login para estabelecimentos
 import LoginU from '../pages/auth/LoginU/LoginU'; // Login para clientes
 import CadastroU from '../pages/auth/CadastroU/CadastroU'; // Cadastro de clientes
 import CadastroE from '../pages/auth/CadastroE/CadastroE'; // Cadastro de estabelecimentos
+import ForgotPassword from '../pages/auth/ForgotPassword/ForgotPassword'; // Esqueci minha senha
+import ResetPassword from '../pages/auth/ResetPassword/ResetPassword'; // Redefinir senha
 
 /**
  * PÁGINAS DO CLIENTE
@@ -49,8 +51,9 @@ import PagamentoEstab from '../pages/estabelecimento/PagamentoE/PagamentoE'; // 
 import ContaE from '../pages/estabelecimento/ContaE/ContaE'; // Perfil e dados da empresa
 import ConfigE from '../pages/estabelecimento/ConfigE/ConfigE'; // Configurações da conta do estabelecimento
 import Plano from '../pages/estabelecimento/Planos/Plano'; // Página principal de planos
-import PlanoA from '../pages/estabelecimento/Planos/PlanoA'; // Página para assinar novos planos
-import PlanoR from '../pages/estabelecimento/Planos/PlanoR'; // Página para renovar planos existentes
+import AssinarPlano from '../pages/estabelecimento/Planos/AssinarPlano'; // Página para assinar novos planos
+import RenovarPlano from '../pages/estabelecimento/Planos/RenovarPlano'; // Página para renovar planos existentes
+import PaymentSuccess from '../pages/estabelecimento/Planos/PaymentSuccess'; // Página de sucesso do pagamento
 import PlanoGratuito from '../pages/estabelecimento/Planos/PlanoGratuito'; // Detalhes do plano gratuito
 import PlanoPremium from '../pages/estabelecimento/Planos/PlanoPremium'; // Detalhes do plano premium
 
@@ -79,6 +82,8 @@ function AppRoutes() {
       <Route path="/login-estab" element={<LoginE />} /> {/* Login para estabelecimentos */}
       <Route path="/cadastro-cliente" element={<CadastroU />} /> {/* Cadastro de clientes */}
       <Route path="/cadastro-estabelecimento" element={<CadastroE />} /> {/* Cadastro de estabelecimentos */}
+      <Route path="/forgot-password" element={<ForgotPassword />} /> {/* Esqueci minha senha */}
+      <Route path="/reset-password" element={<ResetPassword />} /> {/* Redefinir senha */}
 
       {/*
         ROTAS PROTEGIDAS - CLIENTE
@@ -138,8 +143,11 @@ function AppRoutes() {
             <Route path="perfil" element={<ContaE />} /> {/* Perfil da empresa */}
             <Route path="configuracoes" element={<ConfigE />} /> {/* Configurações da conta */}
             <Route path="planos" element={<Plano />} /> {/* Página principal de planos */}
-            <Route path="planos/assinar" element={<PlanoA />} /> {/* Assinar novos planos */}
-            <Route path="planos/renovar" element={<PlanoR />} /> {/* Renovar planos existentes */}
+            <Route path="planos/assinar" element={<AssinarPlano />} /> {/* Assinar novos planos */}
+            <Route path="planos/renovar" element={<RenovarPlano />} /> {/* Renovar planos existentes */}
+            <Route path="planos/success" element={<PaymentSuccess />} /> {/* Sucesso do pagamento */}
+            <Route path="planos/failure" element={<PaymentSuccess />} /> {/* Falha do pagamento */}
+            <Route path="planos/pending" element={<PaymentSuccess />} /> {/* Pagamento pendente */}
             <Route path="planos/gratuito" element={<PlanoGratuito />} /> {/* Plano gratuito */}
             <Route path="planos/premium" element={<PlanoPremium />} /> {/* Plano premium */}
             <Route path="*" element={<Navigate to="/estabelecimento/home" replace />} /> {/* Redireciona rotas inválidas para home */}

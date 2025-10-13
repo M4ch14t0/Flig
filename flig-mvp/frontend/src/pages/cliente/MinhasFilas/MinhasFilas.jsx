@@ -4,11 +4,13 @@ import { Home, MapPin, List, LogOut, X, ChevronUp } from 'lucide-react';
 import Layout from '../../../components/Layout';
 import { api } from '../../../services/api';
 import { AuthContext } from '../../../contexts/authContextImports';
+import { useTheme } from '../../../contexts/ThemeContext';
 import styles from './MinhasFilas.module.css';
 
 function MinhasFilas() {
   const navigate = useNavigate();
   const { user, userType } = useContext(AuthContext);
+  const { theme } = useTheme();
   const [filas, setFilas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -84,7 +86,7 @@ function MinhasFilas() {
 
   const handleAdvancePosition = async (queueId, currentPosition) => {
     try {
-      const userId = localStorage.getItem('userId');
+      const userId = localStorage.getItem('userId_cliente');
       if (!userId) {
         alert('Usuário não identificado');
         return;
@@ -141,7 +143,7 @@ function MinhasFilas() {
   const handleConfirmAdvance = () => {
     if (!selectedQueue) return;
 
-    const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem('userId_cliente');
     const maxAdvance = getMaxAdvance();
 
     if (selectedPositions > maxAdvance) {
@@ -199,14 +201,7 @@ function MinhasFilas() {
       userType="cliente"
       showFooter={false}
     >
-      <div 
-        style={{ 
-          background: '#1F1F1F',
-          minHeight: '100vh',
-          width: '100%',
-          padding: '60px 80px'
-        }}
-      >
+      <div className={styles.container}>
         {loading ? (
           <div className={styles.loading}>
             <div className={styles.loadingSpinner}></div>

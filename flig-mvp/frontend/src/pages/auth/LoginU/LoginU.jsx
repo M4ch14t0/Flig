@@ -91,6 +91,9 @@ export default function LoginU() {
             <p className="login-link">
               Ainda não tem uma conta? <a href="/cadastro-cliente">Crie agora.</a>
             </p>
+            <p className="login-link">
+              <a href="/forgot-password">Esqueci minha senha</a>
+            </p>
 
             <button
               type="submit"

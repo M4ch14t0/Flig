@@ -14,7 +14,10 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const passwordResetController = require('../controllers/passwordResetController');
+const passwordResetControllerSimple = require('../controllers/passwordResetControllerSimple');
 const { authenticateToken } = require('../middleware/auth');
+const { authenticateTokenSimple } = require('../middleware/authSimple');
 const { 
   validateUserRegistration, 
   validateEstablishmentRegistration,
@@ -101,6 +104,17 @@ router.get('/me',
 router.post('/logout',
   authenticateToken,
   authController.logout
+);
+
+/**
+ * @route POST /api/auth/logout-all
+ * @desc Logout em todas as sessões do usuário
+ * @access Private
+ * @headers { Authorization: Bearer <token> }
+ */
+router.post('/logout-all',
+  authenticateToken,
+  authController.logoutAll
 );
 
 /**
@@ -192,6 +206,45 @@ router.use((error, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? error.message : undefined
   });
 });
+
+/**
+ * ROTAS DE RECUPERAÇÃO DE SENHA
+ * Rotas para solicitar e redefinir senha
+ */
+
+// Solicitar recuperação de senha (público - para usuários não logados)
+router.post('/forgot-password', rateLimit, passwordResetController.forgotPassword);
+
+// Solicitar recuperação de senha (privado - para usuários logados)
+router.post('/forgot-password-authenticated',
+  authenticateToken,
+  rateLimit,
+  passwordResetController.forgotPassword
+);
+
+// ROTA TEMPORÁRIA PARA DEBUG (SEM AUTENTICAÇÃO)
+router.post('/forgot-password-simple',
+  rateLimit,
+  passwordResetControllerSimple.forgotPasswordSimple
+);
+
+// ROTA TEMPORÁRIA PARA DEBUG (COM AUTENTICAÇÃO SIMPLES)
+router.post('/forgot-password-simple-auth',
+  authenticateTokenSimple,
+  rateLimit,
+  passwordResetControllerSimple.forgotPasswordSimple
+);
+
+// ROTA TEMPORÁRIA PARA DEBUG (SEM RATE LIMITING)
+router.post('/forgot-password-debug',
+  passwordResetControllerSimple.forgotPasswordSimple
+);
+
+// Validar token de redefinição
+router.get('/validate-reset-token/:token', passwordResetController.validateResetToken);
+
+// Redefinir senha com token
+router.post('/reset-password', rateLimit(60000, 5), passwordResetController.resetPassword);
 
 module.exports = router;
 

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, Home, MapPin, List } from 'lucide-react';
 import Layout from '../../../components/Layout';
 import { api } from '../../../services/api';
+import { useTheme } from '../../../contexts/ThemeContext';
 import styles from './Estabelecimentos.module.css';
 
 function Estabelecimentos() {
@@ -19,6 +20,14 @@ function Estabelecimentos() {
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
+  const { theme } = useTheme();
+
+  // Debug: verificar se o tema está sendo detectado
+  useEffect(() => {
+    console.log('Tema atual:', theme);
+    console.log('Classes do body:', document.body.className);
+    console.log('Classes do html:', document.documentElement.className);
+  }, [theme]);
 
   const sidebarLinks = [
     {

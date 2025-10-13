@@ -19,6 +19,8 @@
 const Queue = require('../models/Queue');
 const paymentService = require('../services/payment');
 const redisService = require('../services/redis');
+const TempoEsperaService = require('../services/tempoEsperaService');
+const AutoCallService = require('../services/autoCallService');
 const cryptoUtils = require('../utils/crypto');
 const uuidUtils = require('../utils/uuid');
 
@@ -225,6 +227,14 @@ async function joinQueue(req, res) {
       email
     });
 
+    // Registrar tempo de entrada para cálculo de espera
+    try {
+      await TempoEsperaService.registrarEntrada(result.clientId, queueId, email);
+    } catch (tempoError) {
+      console.warn('⚠️ Erro ao registrar tempo de entrada:', tempoError);
+      // Não falhar a operação por causa do tempo de entrada
+    }
+
     console.log(`✅ Cliente ${nome} entrou na fila ${queue.nome}`);
 
     res.status(201).json({
@@ -413,6 +423,27 @@ async function leaveQueue(req, res) {
     // Remove o cliente da fila usando a função do redisService
     const result = await redisService.removeClientFromQueue(queueId, client);
     console.log(`✅ Cliente removido: ${result}`);
+
+    // Marcar como abandonou no histórico
+    try {
+      await new Promise((resolve, reject) => {
+        connection.query(
+          `UPDATE historico_clientes_filas 
+           SET status = 'abandonou', data_saida = NOW() 
+           WHERE queue_id = ? AND email_cliente = ? AND status = 'aguardando'`,
+          [queueId, email],
+          (err, results) => {
+            if (err) reject(err);
+            else {
+              console.log(`📝 Cliente ${email} marcado como abandonou no histórico`);
+              resolve(results);
+            }
+          }
+        );
+      });
+    } catch (histErr) {
+      console.warn('⚠️ Erro ao atualizar histórico:', histErr);
+    }
 
     console.log(`✅ Cliente ${email} saiu da fila ${queue.nome} (posição ${position})`);
 
@@ -788,6 +819,27 @@ async function chamarProximoCliente(req, res) {
       });
     }
     
+    // Marcar cliente como "chamado" no histórico (aguardando comparecimento)
+    try {
+      await new Promise((resolve, reject) => {
+        connection.query(
+          `UPDATE historico_clientes_filas 
+           SET status = 'chamado', data_saida = NOW() 
+           WHERE queue_id = ? AND email_cliente = ? AND status = 'aguardando'`,
+          [queueId, proximoCliente.email],
+          (err, results) => {
+            if (err) reject(err);
+            else {
+              console.log(`📝 Cliente ${proximoCliente.email} marcado como chamado no histórico`);
+              resolve(results);
+            }
+          }
+        );
+      });
+    } catch (histErr) {
+      console.warn('⚠️ Erro ao atualizar histórico:', histErr);
+    }
+
     // Remove o cliente da fila (chamado)
     const removed = await redisService.removeClientFromQueue(queueId, proximoCliente);
     
@@ -797,6 +849,49 @@ async function chamarProximoCliente(req, res) {
         message: 'Erro ao remover cliente da fila'
       });
     }
+
+    // Registrar tempo de atendimento e calcular tempo de espera
+    try {
+      const clientId = proximoCliente.id || proximoCliente.clientId || `client-${Date.now()}`;
+      const tempoEsperaData = await TempoEsperaService.registrarAtendimento(
+        clientId,
+        queueId,
+        proximoCliente.email
+      );
+      
+      console.log(`⏰ Cliente ${proximoCliente.email} foi atendido após ${tempoEsperaData.tempoEsperaMinutos} minutos de espera`);
+    } catch (tempoError) {
+      console.error('❌ Erro ao registrar tempo de atendimento:', tempoError.message);
+      console.error('Stack:', tempoError.stack);
+      // Não falhar a operação por causa do tempo de espera
+    }
+
+    // Configurar timeout para marcar como abandonou se não comparecer
+    const timeoutMinutes = 5; // 5 minutos para comparecer
+    setTimeout(async () => {
+      try {
+        const db = require('../config/db');
+        // Verificar se o cliente ainda está como "chamado" (não compareceu)
+        const [rows] = await db.promise().query(
+          `SELECT id FROM historico_clientes_filas 
+           WHERE queue_id = ? AND email_cliente = ? AND status = 'chamado'`,
+          [queueId, proximoCliente.email]
+        );
+        
+        if (rows.length > 0) {
+          // Cliente não compareceu, marcar como abandonou
+          await db.promise().query(
+            `UPDATE historico_clientes_filas 
+             SET status = 'abandonou' 
+             WHERE queue_id = ? AND email_cliente = ? AND status = 'chamado'`,
+            [queueId, proximoCliente.email]
+          );
+          console.log(`⏰ Cliente ${proximoCliente.email} marcado como abandonou (não compareceu em ${timeoutMinutes}min)`);
+        }
+      } catch (timeoutErr) {
+        console.error('❌ Erro no timeout de abandono:', timeoutErr);
+      }
+    }, timeoutMinutes * 60 * 1000); // Converter minutos para milissegundos
     
     console.log(`✅ Cliente ${proximoCliente.nome} chamado da fila ${queueId}`);
     
@@ -815,6 +910,241 @@ async function chamarProximoCliente(req, res) {
   }
 }
 
+/**
+ * Adiciona cliente de teste à fila (para estabelecimento)
+ * 
+ * POST /api/queues/:queueId/add-test-client
+ * Body: { nome, telefone, email }
+ */
+async function addTestClient(req, res) {
+  try {
+    const { queueId } = req.params;
+    const { nome, telefone, email } = req.body;
+
+    // Validações obrigatórias
+    if (!nome || !telefone || !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nome, telefone e email são obrigatórios'
+      });
+    }
+
+    // Busca a fila
+    const queue = await Queue.findById(queueId);
+    if (!queue) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fila não encontrada'
+      });
+    }
+
+    // Verifica se a fila está ativa
+    if (queue.status !== 'ativa') {
+      return res.status(400).json({
+        success: false,
+        message: 'Fila não está ativa'
+      });
+    }
+
+    // Adiciona cliente à fila
+    const result = await queue.addClient({
+      nome,
+      telefone,
+      email
+    });
+
+    // Criar registro no histórico
+    try {
+      const clientId = result.clientId || `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const posicaoInicial = result.position || 1;
+      
+      const db = require('../config/db');
+      await db.promise().query(
+        `INSERT INTO historico_clientes_filas 
+         (client_id, queue_id, email_cliente, nome_cliente, telefone_cliente, posicao_inicial, status, data_entrada) 
+         VALUES (?, ?, ?, ?, ?, ?, 'aguardando', NOW())`,
+        [clientId, queueId, email, nome, telefone, posicaoInicial]
+      );
+      
+      console.log(`📝 Cliente ${email} adicionado ao histórico (ID: ${clientId}, Posição: ${posicaoInicial})`);
+    } catch (histErr) {
+      console.warn('⚠️ Erro ao adicionar ao histórico:', histErr);
+    }
+
+    console.log(`✅ Cliente de teste ${nome} adicionado à fila ${queue.nome}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Cliente de teste adicionado à fila com sucesso',
+      data: {
+        clientId: result.clientId,
+        position: result.position,
+        estimatedTime: result.estimatedTime,
+        queueName: queue.nome
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao adicionar cliente de teste à fila:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Erro interno do servidor'
+    });
+  }
+}
+
+/**
+ * Obtém estatísticas de tempo de espera de uma fila
+ * 
+ * GET /api/queues/:queueId/tempo-espera
+ */
+async function getTempoEsperaStats(req, res) {
+  try {
+    const { queueId } = req.params;
+    
+    // Busca a fila no banco
+    const fila = await Queue.findById(queueId);
+    if (!fila) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fila não encontrada'
+      });
+    }
+    
+    // Obter estatísticas de tempo de espera
+    const stats = await TempoEsperaService.obterEstatisticasTempo(queueId);
+    
+    // Buscar intervalo médio entre chamadas
+    const { pool } = require('../config/database');
+    const [intervaloRows] = await pool.execute(
+      `SELECT tempo_medio_atendimento, total_atendimentos_calculados FROM filas WHERE id = ?`,
+      [queueId]
+    );
+    
+    const intervaloMedio = intervaloRows.length > 0 ? parseFloat(intervaloRows[0].tempo_medio_atendimento) || 0 : 0;
+    const totalAtendimentosCalc = intervaloRows.length > 0 ? parseInt(intervaloRows[0].total_atendimentos_calculados) || 0 : 0;
+    
+    res.json({
+      success: true,
+      data: {
+        queueId,
+        queueName: fila.nome,
+        tempoEspera: stats,
+        intervalo: {
+          medio: intervaloMedio.toFixed(2),
+          totalCalculados: totalAtendimentosCalc,
+          descricao: 'Tempo médio entre chamadas (intervalo de atendimento)'
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao obter estatísticas de tempo de espera:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+}
+
+/**
+ * Calcula tempo estimado para um cliente na fila
+ * 
+ * GET /api/queues/:queueId/tempo-estimado/:position
+ */
+async function getTempoEstimado(req, res) {
+  try {
+    const { queueId, position } = req.params;
+    const { atendentes = 1 } = req.query;
+    
+    const posicaoAtual = parseInt(position);
+    const atendentesAtivos = parseInt(atendentes);
+    
+    if (isNaN(posicaoAtual) || posicaoAtual < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Posição inválida'
+      });
+    }
+    
+    // Calcular tempo estimado
+    const estimativa = await TempoEsperaService.calcularTempoEstimado(
+      queueId, 
+      posicaoAtual, 
+      atendentesAtivos
+    );
+    
+    res.json({
+      success: true,
+      data: {
+        queueId,
+        posicaoAtual,
+        atendentesAtivos,
+        estimativa
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao calcular tempo estimado:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+}
+
+// Configurar chamada automática para uma fila
+async function configurarChamadaAutomatica(req, res) {
+  try {
+    const { queueId } = req.params;
+    const { ativar, intervalo = 5 } = req.body;
+    
+    const resultado = await AutoCallService.configurarChamadaAutomatica(queueId, ativar, intervalo);
+    
+    res.json({
+      success: true,
+      data: resultado
+    });
+  } catch (error) {
+    console.error('❌ Erro ao configurar chamada automática:', error);
+    res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+  }
+}
+
+// Verificar status da chamada automática
+async function verificarChamadaAutomatica(req, res) {
+  try {
+    const { queueId } = req.params;
+    
+    const status = await AutoCallService.verificarChamadaAutomatica(queueId);
+    
+    res.json({
+      success: true,
+      data: status
+    });
+  } catch (error) {
+    console.error('❌ Erro ao verificar chamada automática:', error);
+    res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+  }
+}
+
+// Executar chamada automática manualmente
+async function executarChamadaAutomatica(req, res) {
+  try {
+    const { queueId } = req.params;
+    
+    const resultado = await AutoCallService.executarChamadaAutomatica(queueId);
+    
+    res.json({
+      success: resultado.sucesso,
+      data: resultado
+    });
+  } catch (error) {
+    console.error('❌ Erro ao executar chamada automática:', error);
+    res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+  }
+}
+
 module.exports = {
   createQueue,
   getEstablishmentQueues,
@@ -828,6 +1158,12 @@ module.exports = {
   updateQueueStatus,
   closeQueue,
   getQueueStats,
-  chamarProximoCliente
+  chamarProximoCliente,
+  addTestClient,
+  getTempoEsperaStats,
+  getTempoEstimado,
+  configurarChamadaAutomatica,
+  verificarChamadaAutomatica,
+  executarChamadaAutomatica
 };
 

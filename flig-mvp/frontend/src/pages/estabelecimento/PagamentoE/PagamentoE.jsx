@@ -126,7 +126,15 @@ function PagamentoEstab() {
                 </label>
               </div>
 
-              <button className={styles.confirmBtn}>Confirmar Pagamento</button>
+              <button 
+                className={styles.confirmBtn}
+                onClick={() => {
+                  alert('Pagamento simulado com sucesso! (Modo teste)');
+                  navigate('/estabelecimento/planos');
+                }}
+              >
+                Confirmar Pagamento (Simulado)
+              </button>
             </section>
           </div>
         </main>

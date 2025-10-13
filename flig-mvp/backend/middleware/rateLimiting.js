@@ -12,11 +12,11 @@ const rateLimit = require('express-rate-limit');
 
 /**
  * Rate limiter geral para todas as rotas
- * 100 requisições por 5 minutos por IP
+ * 10000 requisições por 5 minutos por IP (DESENVOLVIMENTO)
  */
 const generalLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutos
-  max: 100, // máximo 100 requisições por IP
+  max: 10000, // máximo 10000 requisições por IP (DESENVOLVIMENTO)
   message: {
     success: false,
     message: 'Muitas requisições. Tente novamente em 5 minutos.',
@@ -36,11 +36,11 @@ const generalLimiter = rateLimit({
 
 /**
  * Rate limiter para autenticação (login/registro)
- * 5 tentativas por 5 minutos por IP
+ * 10000 tentativas por 5 minutos por IP (DESENVOLVIMENTO)
  */
 const authLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutos
-  max: 5, // máximo 5 tentativas de login por IP
+  max: 10000, // máximo 10000 tentativas de login por IP (DESENVOLVIMENTO)
   message: {
     success: false,
     message: 'Muitas tentativas de login. Tente novamente em 5 minutos.',
@@ -60,11 +60,11 @@ const authLimiter = rateLimit({
 
 /**
  * Rate limiter para operações de fila
- * 50 requisições por 5 minutos por IP
+ * 1000 requisições por 5 minutos por IP (DESENVOLVIMENTO)
  */
 const queueLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutos
-  max: 50, // máximo 50 operações de fila por IP
+  max: 1000, // máximo 1000 operações de fila por IP (DESENVOLVIMENTO)
   message: {
     success: false,
     message: 'Muitas operações de fila. Tente novamente em 5 minutos.',

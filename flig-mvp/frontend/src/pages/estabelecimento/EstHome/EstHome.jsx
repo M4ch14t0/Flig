@@ -36,11 +36,17 @@ export default function EstHome() {
     >
       <div className={styles.welcomeContainer}>
         <h1 className={styles.welcomeTitle}>
-          Bem-vindo a <strong>Flig</strong>
+          Bem-vindo a 
         </h1>
-        <p className={styles.welcomeSubtitle}>
-          Gerencie suas filas e otimize a experiência dos seus clientes
-        </p>
+        <img 
+          src="/assets/logos/logo2-flig.png" 
+          alt="Flig" 
+          className={styles.logo}
+          onError={(e) => {
+            console.error('Erro ao carregar logo:', e.target.src);
+            e.target.src = '/assets/logos/flig-logo.svg';
+          }}
+        />
       </div>
     </Layout>
   );

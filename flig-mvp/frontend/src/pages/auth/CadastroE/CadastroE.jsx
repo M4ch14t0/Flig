@@ -19,13 +19,11 @@ export default function CadastroE() {
     cnpj: '',
     cep: '',
     endereco: '',
+    numero: '',
     bairro: '',
     cidade: '',
     uf: '',
     telefone: '',
-    descricao: '',
-    categoria: '',
-    horario: '',
     senha: '',
     senha2: ''
   });
@@ -135,10 +133,7 @@ export default function CadastroE() {
       endereco_empresa: form.endereco,
       telefone_empresa: form.telefone || '',
       email_empresa: form.email,
-      senha_empresa: form.senha,
-      descricao: form.descricao || '',
-      categoria: form.categoria || '',
-      horario_funcionamento: form.horario || ''
+      senha_empresa: form.senha
     };
 
     try {
@@ -187,6 +182,9 @@ export default function CadastroE() {
         </button>
         <form className={styles['empresa-cadastro-form']} onSubmit={handleSubmit} noValidate>
           <h2>Cadastro</h2>
+
+          {apiError && <div className={styles['empresa-cadastro-error']}>{apiError}</div>}
+
           <input
             name="razao"
             type="text"
@@ -196,6 +194,7 @@ export default function CadastroE() {
             onChange={handleChange}
           />
           {errors.razao && <span className={styles['erro']}>{errors.razao}</span>}
+
           <input
             name="email"
             type="email"
@@ -205,6 +204,7 @@ export default function CadastroE() {
             onChange={handleChange}
           />
           {errors.email && <span className={styles['erro']}>{errors.email}</span>}
+
           <input
             name="cnpj"
             type="text"
@@ -215,6 +215,16 @@ export default function CadastroE() {
             style={{ borderColor: cnpjValido ? '' : 'red' }}
           />
           {errors.cnpj && <span className={styles['erro']}>{errors.cnpj}</span>}
+
+          <input
+            name="telefone"
+            type="text"
+            placeholder="Telefone:"
+            className={styles['empresa-cadastro-input']}
+            value={form.telefone}
+            onChange={handleChange}
+          />
+
           <input
             name="cep"
             type="text"
@@ -224,6 +234,7 @@ export default function CadastroE() {
             onChange={handleChange}
           />
           {errors.cep && <span className={styles['erro']}>{errors.cep}</span>}
+
           <input
             name="endereco"
             type="text"
@@ -233,30 +244,46 @@ export default function CadastroE() {
             onChange={handleChange}
           />
           {errors.endereco && <span className={styles['erro']}>{errors.endereco}</span>}
-          <input
-            name="bairro"
-            type="text"
-            placeholder="Bairro:"
-            className={styles['empresa-cadastro-input']}
-            value={form.bairro}
-            onChange={handleChange}
-          />
-          <input
-            name="cidade"
-            type="text"
-            placeholder="Cidade:"
-            className={styles['empresa-cadastro-input']}
-            value={form.cidade}
-            onChange={handleChange}
-          />
-          <input
-            name="uf"
-            type="text"
-            placeholder="UF:"
-            className={styles['empresa-cadastro-input']}
-            value={form.uf}
-            onChange={handleChange}
-          />
+
+          <div className={styles['empresa-cadastro-row']}>
+            <input
+              name="numero"
+              type="text"
+              placeholder="Número:"
+              className={styles['input-numero']}
+              value={form.numero}
+              onChange={handleChange}
+            />
+            <input
+              name="bairro"
+              type="text"
+              placeholder="Bairro:"
+              className={styles['input-bairro']}
+              value={form.bairro}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className={styles['empresa-cadastro-row']}>
+            <input
+              name="cidade"
+              type="text"
+              placeholder="Cidade:"
+              className={styles['input-cidade']}
+              value={form.cidade}
+              onChange={handleChange}
+            />
+            <input
+              name="uf"
+              type="text"
+              placeholder="UF:"
+              className={styles['input-uf']}
+              value={form.uf}
+              onChange={handleChange}
+            />
+          </div>
+
+
           <input
             name="senha"
             type="password"
@@ -266,6 +293,7 @@ export default function CadastroE() {
             onChange={handleChange}
           />
           {errors.senha && <span className={styles['erro']}>{errors.senha}</span>}
+
           <input
             name="senha2"
             type="password"
@@ -275,10 +303,11 @@ export default function CadastroE() {
             onChange={handleChange}
           />
           {errors.senha2 && <span className={styles['erro']}>{errors.senha2}</span>}
+
           <p className={styles['empresa-cadastro-login']}>
             Já tem uma conta? <a href="/login-estab">Entrar</a>
           </p>
-          {apiError && <span className={styles['erro']}>{apiError}</span>}
+
           <button
             type="submit"
             className={styles['empresa-cadastro-button']}
