@@ -1,9 +1,4 @@
-.wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  font-family: sans-serif;
-}
+/* Wrapper removido - usando Layout padrão */
 
 .header {
   background-color: #152E60;
@@ -110,48 +105,118 @@
 .main {
   flex: 1;
   padding: 2rem;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
+}
+
+.main h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  margin-top: 0;
+  transition: color 0.3s ease;
 }
 
 .barTop {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.searchContainer {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  color: #888;
+  z-index: 1;
 }
 
 .barTop input {
-  flex: 1;
-  margin-right: 1rem;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  background-color: var(--form-bg);
+  border: 1px solid var(--form-border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: border-color 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.barTop input:focus {
+  outline: none;
+  border-color: #4A90E2;
+}
+
+.barTop input::placeholder {
+  color: var(--text-muted);
 }
 
 .barTop button {
-  padding: 0.5rem 1rem;
-  background-color: #35538f;
+  padding: 12px 24px;
+  background-color: #4A90E2;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.barTop button:hover {
+  background-color: #357ABD;
 }
 
 .tabela {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
-  
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .tabela th,
 .tabela td {
-  padding: 0.75rem;
+  padding: 16px 20px;
   text-align: left;
-  
+  border-bottom: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
 }
 
 .tabela th {
-  background-color: #3D3D3D;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tabela td {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.tabela tr:hover td {
+  background-color: var(--bg-tertiary);
 }
 
 /* Loading e Error States */
@@ -225,37 +290,41 @@
 
 .filaInfo strong {
   font-size: 16px;
-  color: #2c3e50;
+  color: var(--text-primary);
   margin-bottom: 4px;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 .filaInfo small {
-  color: #7f8c8d;
+  color: var(--text-muted);
   font-size: 12px;
+  transition: color 0.3s ease;
 }
 
 /* Status */
 .status {
-  padding: 4px 12px;
+  padding: 6px 16px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .status.active {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #27ae60;
+  color: #ffffff;
 }
 
 .status.paused {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: #f39c12;
+  color: #ffffff;
 }
 
 .status.inactive {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #e74c3c;
+  color: #ffffff;
 }
 
 /* Info Icons */
@@ -264,80 +333,125 @@
 .priceInfo {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 14px;
-  color: #2c3e50;
+  color: var(--text-primary);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+/* Client Info Container */
+.clientInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Tempo de Espera */
+.tempoEspera {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  transition: color 0.3s ease;
+}
+
+.tempoEspera svg {
+  color: var(--accent);
 }
 
 /* Actions */
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .actions button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
-  transition: background-color 0.3s;
+  transition: all 0.2s ease;
+  background-color: transparent;
+  color: var(--text-primary);
+  min-width: 80px;
+}
+
+.actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .pauseButton {
+  background-color: transparent;
+  color: #f39c12;
+  border-color: #f39c12;
+}
+
+.pauseButton:hover {
   background-color: #f39c12;
   color: white;
 }
 
-.pauseButton:hover {
-  background-color: #e67e22;
+.resumeButton {
+  background-color: transparent;
+  color: #27ae60;
+  border-color: #27ae60;
 }
 
-.resumeButton {
+.resumeButton:hover {
   background-color: #27ae60;
   color: white;
 }
 
-.resumeButton:hover {
-  background-color: #229954;
+.detailsButton {
+  background-color: transparent;
+  color: #3498db;
+  border-color: #3498db;
 }
 
-.detailsButton {
+.detailsButton:hover {
   background-color: #3498db;
   color: white;
 }
 
-.detailsButton:hover {
-  background-color: #2980b9;
+.closeButton {
+  background-color: transparent;
+  color: #e74c3c;
+  border-color: #e74c3c;
 }
 
-.closeButton {
+.closeButton:hover {
   background-color: #e74c3c;
   color: white;
 }
 
-.closeButton:hover {
-  background-color: #c0392b;
+.callButton {
+  background-color: transparent;
+  color: #27ae60;
+  border-color: #27ae60;
 }
 
-.callButton {
+.callButton:hover {
   background-color: #27ae60;
   color: white;
 }
 
-.callButton:hover {
-  background-color: #229954;
-}
-
 .editButton {
-  background-color: #f39c12;
-  color: white;
+  background-color: transparent;
+  color: #f39c12;
+  border-color: #f39c12;
 }
 
 .editButton:hover {
-  background-color: #e67e22;
+  background-color: #f39c12;
+  color: white;
 }
 
 .popupOverlay {
@@ -346,7 +460,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -354,50 +468,205 @@
 }
 
 .popup {
-  background: #3D3D3D;
-  padding: 2rem;
-  width: 400px;
+  background: var(--bg-secondary);
+  width: 500px;
   max-width: 90%;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  color: var(--text-primary);
+  overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.popupHeader {
   display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
 }
 
-.popup h3 {
-  margin-top: 0;
+.popupTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: #4A90E2;
+  text-decoration: underline;
+  text-decoration-color: #4A90E2;
 }
 
-.popup label {
-  font-weight: bold;
-  margin-top: 0.5rem;
-}
-
-.popup input[type="text"],
-.popup input[type="number"],
-.popup input[type="time"],
-.popup select,
-.popup textarea {
-  width: 100%;
-  padding: 0.5rem;
+.closeButton {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: #404040;
+  color: white;
+}
+
+.popupContent {
+  padding: 24px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #E0E0E0;
+  margin-bottom: 8px;
+}
+
+.select {
+  width: 100%;
+  padding: 12px;
+  background: #404040;
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #4A90E2;
+}
+
+.checkboxLabel {
+  font-size: 14px;
+  color: #E0E0E0;
+  cursor: pointer;
+}
+
+.input {
+  width: 100%;
+  padding: 12px;
+  background: var(--form-bg);
+  border: 1px solid var(--form-border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.radioGroup {
+  display: flex;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radio {
+  width: 16px;
+  height: 16px;
+  accent-color: #4A90E2;
+}
+
+.timeInput {
+  padding: 8px 12px;
+  background: #404040;
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  width: 120px;
+}
+
+.radioLabel {
+  font-size: 14px;
+  color: #E0E0E0;
+  cursor: pointer;
+}
+
+
+.popupActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #404040;
+}
+
+.cancelButton {
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: #888;
+  border: 1px solid #555;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  height: 44px;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
 }
 
-.popup input[type="checkbox"],
-.popup input[type="radio"] {
-  margin-right: 0.5rem;
+.cancelButton:hover {
+  background: #404040;
+  color: #E0E0E0;
+  border-color: #666;
 }
 
-.popup button {
-  align-self: flex-end;
-  margin-top: 1rem;
-  padding: 0.5rem 1.2rem;
-  background-color: #35538f;
+.createButton {
+  padding: 0;
+  margin: 0;
+  background: #4A90E2;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  height: 44px;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.createButton:hover {
+  background: #357ABD;
+  transform: translateY(-1px);
 }

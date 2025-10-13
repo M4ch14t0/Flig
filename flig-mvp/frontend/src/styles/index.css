@@ -14,9 +14,9 @@
 
 /* Tema Claro */
 .light-theme {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #e9ecef;
+  --bg-primary: #f7f6f3;
+  --bg-secondary: #faf9f6;
+  --bg-tertiary: #f0f0f0;
   --text-primary: #212529;
   --text-secondary: #6c757d;
   --text-muted: #adb5bd;
@@ -28,6 +28,8 @@
   --warning: #ffc107;
   --danger: #dc3545;
   --info: #17a2b8;
+  --form-bg: #faf9f6;
+  --form-border: #dee2e6;
 }
 
 /* Tema Escuro */
@@ -35,7 +37,7 @@
   --bg-primary: #1a1a1a;
   --bg-secondary: #2d2d2d;
   --bg-tertiary: #404040;
-  --text-primary: #ffffff;
+  --text-primary: #e0e0e0;
   --text-secondary: #b3b3b3;
   --text-muted: #808080;
   --border-color: #404040;
@@ -46,6 +48,8 @@
   --warning: #ffc107;
   --danger: #dc3545;
   --info: #17a2b8;
+  --form-bg: #2d2d2d;
+  --form-border: #404040;
 }
 
   

@@ -25,6 +25,7 @@ const express = require('express');
 const router = express.Router();
 const queueController = require('../controllers/queueController');
 const { authenticateToken, requireUserType, requireQueueOwnership } = require('../middleware/auth');
+const { checkPlanActive, checkPlanLimits, optionalPlanCheck } = require('../middleware/planCheck');
 const { validateQueueCreation, validateJoinQueue, validatePayment, sanitizeParams } = require('../middleware/validation');
 
 /**
@@ -78,6 +79,8 @@ router.use(validateRedisConnection);
 router.post('/', 
   authenticateToken,
   requireUserType('estabelecimento'),
+  checkPlanActive,
+  checkPlanLimits,
   validateQueueCreation,
   queueController.createQueue
 );
@@ -205,8 +208,72 @@ router.get('/:queueId/stats', queueController.getQueueStats);
 router.post('/:queueId/chamar-proximo', 
   authenticateToken,
   requireUserType('estabelecimento'),
+  checkPlanActive,
   requireQueueOwnership,
   queueController.chamarProximoCliente
+);
+
+/**
+ * @route POST /api/queues/:queueId/add-test-client
+ * @desc Adicionar cliente de teste à fila
+ * @access Estabelecimento
+ * @params { queueId } - ID da fila
+ * @body { nome, telefone, email }
+ */
+router.post('/:queueId/add-test-client', 
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  requireQueueOwnership,
+  sanitizeParams,
+  queueController.addTestClient
+);
+
+/**
+ * @route GET /api/queues/:queueId/tempo-espera
+ * @desc Obter estatísticas de tempo de espera da fila
+ * @access Estabelecimento
+ * @params { queueId } - ID da fila
+ */
+router.get('/:queueId/tempo-espera', 
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  requireQueueOwnership,
+  queueController.getTempoEsperaStats
+);
+
+/**
+ * @route GET /api/queues/:queueId/tempo-estimado/:position
+ * @desc Calcular tempo estimado para posição na fila
+ * @access Público
+ * @params { queueId, position } - ID da fila e posição
+ * @query { atendentes } - Número de atendentes ativos (padrão: 1)
+ */
+router.get('/:queueId/tempo-estimado/:position', 
+  sanitizeParams,
+  queueController.getTempoEstimado
+);
+
+// Rotas para chamadas automáticas
+router.post('/:queueId/chamada-automatica/configurar',
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  checkPlanActive,
+  requireQueueOwnership,
+  queueController.configurarChamadaAutomatica
+);
+
+router.get('/:queueId/chamada-automatica/status',
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  requireQueueOwnership,
+  queueController.verificarChamadaAutomatica
+);
+
+router.post('/:queueId/chamada-automatica/executar',
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  requireQueueOwnership,
+  queueController.executarChamadaAutomatica
 );
 
 /**

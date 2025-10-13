@@ -139,7 +139,15 @@ class Queue {
     const clientId = uuidUtils.generateClientId();
     const clientWithId = { ...clientData, id: clientId, timestamp: new Date().toISOString() };
 
-    const position = (await redisService.getQueueSize(this.id)) + 1;
+    // Calcular posição única baseada na maior posição existente + 1
+    let maxPosition = 0;
+    if (queueClients.length > 0) {
+      maxPosition = Math.max(...queueClients.map(client => client.position || 0));
+    }
+    const position = maxPosition + 1;
+
+    console.log(`🔍 Adicionando cliente ${clientData.nome} na posição ${position} (maxPosition: ${maxPosition})`);
+
     await redisService.addClientToQueue(this.id, position, clientWithId);
 
     console.log(`✅ Cliente adicionado à fila ${this.nome}: ${clientData.nome} (Posição: ${position})`);
@@ -191,9 +199,43 @@ class Queue {
   async getStats() {
     const queueSize = await redisService.getQueueSize(this.id);
     const clients = await this.getClients(true).catch(() => []);
+    
+    // Buscar média real do banco de dados
+    let averageWaitTime = 0;
+    try {
+      const { pool } = require('../config/database');
+      const [rows] = await pool.execute(
+        `SELECT tempo_medio_espera, total_atendidos_tempo 
+         FROM filas 
+         WHERE id = ?`,
+        [this.id]
+      );
+      
+      console.log(`📊 getStats() - Fila ${this.nome}:`, {
+        queueSize,
+        dbRows: rows,
+        totalAtendidos: rows[0]?.total_atendidos_tempo,
+        tempoMedio: rows[0]?.tempo_medio_espera
+      });
+      
+      if (rows.length > 0 && rows[0].total_atendidos_tempo > 0) {
+        // Usar média real se há dados históricos
+        averageWaitTime = parseFloat(rows[0].tempo_medio_espera) || 0;
+        console.log(`✅ Usando média REAL: ${averageWaitTime} min`);
+      } else {
+        // Se não há dados históricos, usar estimativa baseada na posição
+        averageWaitTime = queueSize > 0 ? (queueSize - 1) * this.tempo_estimado : 0;
+        console.log(`⚠️ Usando ESTIMATIVA: ${averageWaitTime} min`);
+      }
+    } catch (error) {
+      console.warn('⚠️ Erro ao buscar média real, usando estimativa:', error.message);
+      // Fallback para estimativa
+      averageWaitTime = queueSize > 0 ? (queueSize - 1) * this.tempo_estimado : 0;
+    }
+    
     return {
       totalClients: queueSize,
-      averageWaitTime: queueSize > 0 ? (queueSize * this.tempo_estimado) / 2 : 0,
+      averageWaitTime: averageWaitTime,
       status: this.status,
       createdAt: this.created_at,
       lastUpdated: this.updated_at
@@ -202,6 +244,8 @@ class Queue {
 
   /** Avança cliente na fila */
   async advanceClient(clientId, positions) {
+    console.log(`🔍 advanceClient - clientId: ${clientId}, positions: ${positions}`);
+    
     if (this.status !== 'ativa') {
       throw new Error('Fila não está ativa');
     }
@@ -212,19 +256,23 @@ class Queue {
 
     // Buscar clientes atuais
     const clients = await redisService.getQueueClients(this.id);
+    console.log(`🔍 Clientes encontrados: ${clients.length}`);
+    console.log(`🔍 Clientes:`, clients.map(c => ({ id: c.id, nome: c.nome, position: c.position })));
+    
     if (!Array.isArray(clients)) {
       throw new Error('Erro ao buscar clientes da fila');
     }
 
-    // Encontrar o cliente (convertendo clientId para número se necessário)
-    const clientIdNum = typeof clientId === 'string' ? parseInt(clientId, 10) : clientId;
-    const clientIndex = clients.findIndex(client => client.id === clientIdNum);
+    // Encontrar o cliente
+    const clientIndex = clients.findIndex(client => client.id === clientId);
+    console.log(`🔍 Cliente encontrado no índice: ${clientIndex}`);
+    
     if (clientIndex === -1) {
       throw new Error('Cliente não encontrado na fila');
     }
 
     const client = clients[clientIndex];
-    const oldPosition = clientIndex + 1;
+    const oldPosition = client.position || (clientIndex + 1);
     const newPosition = Math.max(1, oldPosition - positions);
 
     // Verificar se pode avançar
@@ -232,15 +280,30 @@ class Queue {
       throw new Error('Não é possível avançar para uma posição igual ou superior à atual');
     }
 
-    // Reorganizar a fila
+    console.log(`🔍 Movendo cliente ${client.nome} da posição ${oldPosition} para ${newPosition}`);
+
+    // Reorganizar a fila: remover cliente atual e inserir na nova posição
     const newClients = [...clients];
     newClients.splice(clientIndex, 1); // Remove o cliente da posição atual
-    newClients.splice(newPosition - 1, 0, client); // Insere na nova posição
+    
+    // Encontrar a nova posição correta baseada na posição numérica
+    let insertIndex = 0;
+    for (let i = 0; i < newClients.length; i++) {
+      if ((newClients[i].position || (i + 1)) >= newPosition) {
+        insertIndex = i;
+        break;
+      }
+      insertIndex = i + 1;
+    }
+    
+    newClients.splice(insertIndex, 0, client); // Insere na nova posição
 
-    // Atualizar posições
+    // Reorganizar todas as posições sequencialmente
     newClients.forEach((c, index) => {
       c.position = index + 1;
     });
+
+    console.log(`🔍 Posições após reorganização:`, newClients.map(c => ({ nome: c.nome, position: c.position })));
 
     // Salvar no Redis
     await redisService.setQueueClients(this.id, newClients);

@@ -8,26 +8,6 @@
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.configE-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background-color: var(--accent);
-}
-
-.configE-logo {
-  height: 40px;
-}
-
-.configE-icons button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 24px;
-  cursor: pointer;
-}
-
 .configE-content {
   flex: 1;
   padding: 20px;

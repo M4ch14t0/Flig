@@ -121,8 +121,12 @@ export const AuthProvider = ({ children }) => {
         const estabToken = localStorage.getItem(estabKeys.token);
         const estabType = localStorage.getItem(estabKeys.userType);
         
-        // Prioriza o tipo que tem token válido
-        if (clienteToken && clienteType && isValidTokenFormat(clienteToken)) {
+        // Se ambos os tipos têm dados válidos, não define nenhum (deixa o usuário escolher)
+        if ((clienteToken && clienteType && isValidTokenFormat(clienteToken)) && 
+            (estabToken && estabType && isValidTokenFormat(estabToken))) {
+          console.log('🔀 Ambos os tipos de usuário estão logados. Usando contexto da URL.');
+          // Não define expectedUserType, deixa a lógica da URL decidir
+        } else if (clienteToken && clienteType && isValidTokenFormat(clienteToken)) {
           expectedUserType = 'cliente';
         } else if (estabToken && estabType && isValidTokenFormat(estabToken)) {
           expectedUserType = 'estabelecimento';
@@ -261,6 +265,8 @@ export const AuthProvider = ({ children }) => {
         // Gera token mock único usando timestamp e string aleatória
         const mockToken = `mock-jwt-token-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
+        // Não limpa dados de outros tipos - permite múltiplos tipos simultâneos
+
         // Cria objeto do usuário com dados fornecidos
         const mockUser = {
           id: Date.now(), // ID único baseado no timestamp
@@ -301,7 +307,7 @@ export const AuthProvider = ({ children }) => {
     else {
       try {
         // Chama a API real do backend
-        const endpoint = type === 'cliente' ? '/auth/login/user' : '/auth/login/establishment';
+        const endpoint = type === 'cliente' ? '/api/auth/login/user' : '/api/auth/login/establishment';
         const emailField = type === 'cliente' ? 'email_usuario' : 'email_empresa';
         const passwordField = type === 'cliente' ? 'senha_usuario' : 'senha_empresa';
 
@@ -314,6 +320,8 @@ export const AuthProvider = ({ children }) => {
           const { token, user } = response.data.data;
 
           console.log('📥 Dados recebidos do backend no login:', user);
+
+          // Não limpa dados de outros tipos - permite múltiplos tipos simultâneos
 
           // Armazena dados no localStorage
         // Armazena dados no localStorage usando chaves específicas do tipo
@@ -361,6 +369,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+
+  /**
+   * Função para forçar limpeza completa de todos os dados
+   * Útil quando há conflitos entre tipos de usuário
+   */
+  const forceLogout = () => {
+    console.log('🔄 Forçando logout completo...');
+    clearAuthData(); // Limpa todos os dados
+    window.dispatchEvent(new CustomEvent('authChange', { detail: { action: 'forceLogout' } }));
+  };
+
   /**
    * Função de logout
    * @returns {Promise<void>}
@@ -390,7 +409,7 @@ export const AuthProvider = ({ children }) => {
     else {
       try {
         // Chama a API real do backend para logout
-        await api.post('/auth/logout');
+        await api.post('/api/auth/logout');
       } catch (error) {
         console.error('Erro ao fazer logout:', error);
       } finally {
@@ -482,7 +501,7 @@ export const AuthProvider = ({ children }) => {
     else {
       try {
         // Chama a API real do backend para registro
-        const endpoint = type === 'cliente' ? '/auth/register/user' : '/auth/register/establishment';
+        const endpoint = type === 'cliente' ? '/api/auth/register/user' : '/api/auth/register/establishment';
         
         const response = await api.post(endpoint, userData);
 
@@ -520,6 +539,7 @@ export const AuthProvider = ({ children }) => {
     loading, // Estado de carregamento
     login, // Função de login
     logout, // Função de logout
+    forceLogout, // Função para forçar logout completo
     register, // Função de registro
     isAuthenticated: !!user, // Boolean indicando se está autenticado (converte user para boolean)
   };

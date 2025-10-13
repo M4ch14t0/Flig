@@ -19,6 +19,10 @@ if (!TOKEN) {
 const defaultCorsOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3001',
+  'http://localhost:3002',
+  'http://127.0.0.1:3002',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'https://flig-mvp.vercel.app',
@@ -79,6 +83,7 @@ const authRoutes = require('./routes/authRoutes');
 const queueRoutes = require('./routes/queueRoutes');
 const userRoutes = require('./routes/userRoutes');
 const establishmentRoutes = require('./routes/establishmentRoutes');
+const planRoutes = require('./routes/planRoutes');
 
 // Aplicar rate limiting geral
 app.use(generalLimiter);
@@ -96,7 +101,8 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       queues: '/api/queues',
       users: '/api/users',
-      establishments: '/api/establishments'
+      establishments: '/api/establishments',
+      plans: '/api/plans'
     }
   });
 });
@@ -119,11 +125,112 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// ROTA DE TESTE DIRETA
+app.post('/test-debug', (req, res) => {
+  console.log('🔍 [TEST] Rota de teste chamada');
+  res.json({
+    success: true,
+    message: 'Rota de teste funcionando!'
+  });
+});
+
+// ROTA DE RECUPERAÇÃO DE SENHA SIMPLIFICADA
+app.post('/api/auth/forgot-password-fixed', async (req, res) => {
+  console.log('🔍 [FIXED] Recuperação de senha chamada');
+  
+  try {
+    // Verificar se há token de autenticação
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token de autenticação necessário'
+      });
+    }
+
+    // Decodificar token para obter dados do usuário
+    const jwt = require('jsonwebtoken');
+    const JWT_SECRET = process.env.JWT_SECRET || 'seu_jwt_secret_super_seguro_aqui_123456789';
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const { userId, userType, email } = decoded;
+    
+    console.log('🔍 [FIXED] Usuário autenticado:', { userId, userType, email });
+
+    // Gerar token de recuperação
+    const crypto = require('crypto');
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expireTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+
+    // Salvar token no banco de dados
+    const connection = require('./config/db');
+    
+    if (userType === 'cliente') {
+      await new Promise((resolve, reject) => {
+        connection.query(
+          'UPDATE usuarios SET reset_token = ?, reset_expires = ? WHERE id = ?',
+          [resetToken, expireTime, userId],
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      });
+    } else {
+      await new Promise((resolve, reject) => {
+        connection.query(
+          'UPDATE estabelecimentos SET reset_token = ?, reset_expires = ? WHERE id = ?',
+          [resetToken, expireTime, userId],
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      });
+    }
+
+    console.log('🔍 [FIXED] Token salvo no banco:', resetToken.substring(0, 10) + '...');
+
+    // Resposta imediata
+    res.json({
+      success: true,
+      message: 'Solicitação de recuperação processada. Verifique seu email em alguns instantes.'
+    });
+    
+    // Processa envio de email em background
+    setImmediate(async () => {
+      try {
+        console.log('📧 [FIXED] Enviando email em background...');
+        
+        // Tentar enviar email
+        const emailService = require('./services/emailService');
+        const userName = userType === 'cliente' ? 'Cliente' : 'Estabelecimento';
+        
+        const emailSent = await emailService.sendPasswordResetEmail(email, resetToken, userName);
+        
+        if (emailSent) {
+          console.log('✅ [FIXED] Email enviado com sucesso para:', email);
+        } else {
+          console.log('⚠️ [FIXED] Email não enviado. Token disponível:', resetToken);
+          console.log('🔗 [FIXED] Link de recuperação:', `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`);
+        }
+      } catch (error) {
+        console.error('❌ [FIXED] Erro ao enviar email:', error);
+        console.log('🔗 [FIXED] Token de recuperação:', resetToken);
+        console.log('🌐 [FIXED] Link:', `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`);
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ [FIXED] Erro na recuperação de senha:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+});
+
 // Usar rotas com rate limiting específico
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/queues', queueLimiter, queueRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/establishments', establishmentRoutes);
+app.use('/api/plans', planRoutes);
 
 // Rota para buscar estabelecimentos
 app.get("/api/estabelecimentos", (req, res) => {
@@ -338,6 +445,47 @@ app.get("/api/estabelecimentos/:id/estatisticas", queueLimiter, async (req, res)
       );
     });
 
+    // Buscar tempo médio real de espera baseado no histórico
+    const tempoMedioReal = await new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT 
+           AVG(TIMESTAMPDIFF(MINUTE, hcf.data_entrada, hcf.data_saida)) as tempo_medio_real
+         FROM historico_clientes_filas hcf
+         JOIN filas f ON hcf.queue_id = f.id
+         WHERE f.estabelecimento_id = ? 
+           AND hcf.status = 'atendido'
+           AND hcf.data_saida IS NOT NULL`,
+        [estabelecimentoId],
+        (err, results) => {
+          if (err) reject(err);
+          else resolve(results[0]?.tempo_medio_real || 0);
+        }
+      );
+    });
+
+    // Calcular taxa de abandono baseada no histórico
+    const taxaAbandono = await new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT 
+           COUNT(CASE WHEN hcf.status = 'abandonou' THEN 1 END) as total_abandonos,
+           COUNT(CASE WHEN hcf.status IN ('atendido', 'abandonou') THEN 1 END) as total_saidas
+         FROM historico_clientes_filas hcf
+         JOIN filas f ON hcf.queue_id = f.id
+         WHERE f.estabelecimento_id = ?`,
+        [estabelecimentoId],
+        (err, results) => {
+          if (err) reject(err);
+          else {
+            const data = results[0];
+            const totalSaidas = data.total_saidas || 0;
+            const totalAbandonos = data.total_abandonos || 0;
+            const taxa = totalSaidas > 0 ? (totalAbandonos / totalSaidas) * 100 : 0;
+            resolve(Math.round(taxa * 10) / 10); // Arredondar para 1 casa decimal
+          }
+        }
+      );
+    });
+
     // Buscar clientes atuais nas filas ativas do Redis
     const redisService = require('./services/redis');
     let clientesAtuais = 0;
@@ -364,10 +512,15 @@ app.get("/api/estabelecimentos/:id/estatisticas", queueLimiter, async (req, res)
       console.warn('Erro ao buscar clientes do Redis:', redisErr);
     }
 
-    // Adicionar clientes atuais às estatísticas
+    // Adicionar clientes atuais, tempo médio real e taxa de abandono às estatísticas
     stats.clientes_atuais = clientesAtuais;
+    stats.tempo_medio_real = Math.round(tempoMedioReal) || 0;
+    stats.taxa_abandono = taxaAbandono;
     
-    res.json(stats);
+    res.json({
+      success: true,
+      data: stats
+    });
   } catch (error) {
     console.error("Erro ao buscar estatísticas:", error);
     res.status(500).json({ error: "Erro no servidor" });
@@ -402,6 +555,58 @@ app.get("/api/estabelecimentos/:id/relatorios", queueLimiter, (req, res) => {
       res.json(results);
     }
   );
+});
+
+// Rota para buscar dados históricos de atendimentos por hora
+app.get("/api/estabelecimentos/:id/atendimentos-por-hora", queueLimiter, async (req, res) => {
+  const estabelecimentoId = req.params.id;
+  const { dias = '7' } = req.query; // padrão: últimos 7 dias
+  
+  try {
+    // Buscar dados do histórico de clientes nas filas
+    const sql = `
+      SELECT 
+        HOUR(hcf.data_entrada) as hora,
+        COUNT(*) as total_atendimentos
+      FROM historico_clientes_filas hcf
+      JOIN filas f ON hcf.queue_id = f.id
+      WHERE f.estabelecimento_id = ? 
+        AND hcf.data_entrada >= DATE_SUB(NOW(), INTERVAL ? DAY)
+        AND hcf.status = 'atendido'
+      GROUP BY HOUR(hcf.data_entrada)
+      ORDER BY hora
+    `;
+    
+    const results = await new Promise((resolve, reject) => {
+      connection.query(sql, [estabelecimentoId, dias], (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
+    });
+
+    // Formatar dados para o gráfico
+    const horas = ['08:00', '12:00', '16:00', '20:00', '00:00'];
+    const dadosFormatados = horas.map(hora => {
+      const horaNum = parseInt(hora.split(':')[0]);
+      const dadosHora = results.find(r => r.hora === horaNum);
+      return {
+        hora,
+        pessoas: dadosHora ? dadosHora.total_atendimentos : 0
+      };
+    });
+
+    res.json({
+      success: true,
+      data: dadosFormatados
+    });
+
+  } catch (error) {
+    console.error("Erro ao buscar atendimentos por hora:", error);
+    res.status(500).json({ 
+      success: false,
+      error: "Erro no servidor" 
+    });
+  }
 });
 
 // Rota para buscar logs do sistema

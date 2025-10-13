@@ -7,19 +7,50 @@ html, body {
   width: 100%;
 }
 
+/* Força aplicação das variáveis CSS do tema */
+:global(.light-theme) .container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+:global(.dark-theme) .container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
 /* Container principal */
 .container {
   padding: 32px;
-  background-color: #f4f4f4;
+  background-color: var(--bg-primary) !important;
   min-height: 100vh;
+  color: var(--text-primary) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Força aplicação específica para o container */
+.container[class*="container"] {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Regra de fallback para garantir que as variáveis sejam aplicadas */
+.container {
+  background-color: var(--bg-primary, #ffffff) !important;
+  color: var(--text-primary, #000000) !important;
+}
+
+/* Força aplicação em todos os elementos filhos */
+.container * {
+  color: inherit;
 }
 
 /* Título da página */
 .pageTitle {
   font-size: 28px;
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary) !important;
   margin-bottom: 24px;
+  transition: color 0.3s ease;
 }
 
 /* SEARCH E FILTRO */
@@ -29,8 +60,10 @@ html, body {
   gap: 8px;
   margin-bottom: 16px;
   position: relative;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
+  background-color: var(--form-bg);
+  transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
 .search {
@@ -39,7 +72,12 @@ html, body {
   border-radius: 4px;
   border: transparent;
   background-color: transparent;
-  color: #ffffff;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.search::placeholder {
+  color: var(--text-muted);
 }
 
 .filtersIconWrapper {
@@ -47,25 +85,29 @@ html, body {
 }
 
 .filtersIcon {
-  color: white;
+  color: var(--text-primary);
   border: none;
   border-radius: 4px;
   padding: 8px 12px;
   cursor: pointer;
   font-size: 16px;
+  background-color: var(--accent);
+  transition: color 0.3s ease, background-color 0.3s ease;
 }
 
 .filtersPopup {
   position: absolute;
   top: 40px;
   right: 0;
-  background-color: #2c2b2b;
-  color: #ffffff;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   border-radius: 8px;
   padding: 16px;
   z-index: 10;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px var(--shadow);
   width: 250px;
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .filtersPopup h3 {
@@ -86,36 +128,40 @@ html, body {
 }
 
 .card {
-  background-color: #2c2b2b;
+  background-color: var(--bg-secondary) !important;
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border-color);
 }
 
 .card:hover {
   transform: translateY(-4px);
+  box-shadow: 0 4px 16px var(--shadow);
 }
 
 .cardImage {
   height: 150px;
-  background-color: #ccc;
+  background-color: var(--bg-tertiary);
   background-size: cover;
   background-position: center;
   position: relative;
+  transition: background-color 0.3s ease;
 }
 
 .categoryBadge {
   position: absolute;
   top: 8px;
   right: 8px;
-  background-color: #152E60;
+  background-color: var(--accent);
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
 .cardDetails {
@@ -127,26 +173,32 @@ html, body {
 .cardLeft h4 {
   margin: 0;
   font-size: 16px;
+  color: var(--text-primary) !important;
+  transition: color 0.3s ease;
 }
 
 .cardLeft small {
-  color: #666;
+  color: var(--text-secondary) !important;
+  transition: color 0.3s ease;
 }
 
 .cardLeft .address {
-  color: #888;
+  color: var(--text-muted) !important;
   font-size: 12px;
   margin: 4px 0;
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 0.3s ease;
 }
 
 .cardRight p {
   margin: 0;
   font-size: 13px;
   text-align: right;
+  color: var(--text-primary) !important;
+  transition: color 0.3s ease;
 }
 
 .status {
@@ -170,7 +222,8 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 40px;
-  color: #666;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
 }
 
 .loader {
@@ -189,21 +242,23 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 40px;
-  color: #f44336;
+  color: var(--danger);
+  transition: color 0.3s ease;
 }
 
 .retryButton {
-  background-color: #152E60;
+  background-color: var(--accent);
   color: white;
   border: none;
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
   margin-top: 16px;
+  transition: background-color 0.3s ease;
 }
 
 .retryButton:hover {
-  background-color: #1e3a73;
+  background-color: var(--accent-light);
 }
 
 /* PAGINAÇÃO */
@@ -216,17 +271,20 @@ html, body {
 
 .pageButton {
   padding: 8px 12px;
-  border: 1px solid #ccc;
-  background-color: white;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .pageButton:hover {
-  background-color: #eee;
+  background-color: var(--bg-secondary);
 }
 
 .activePage {
   font-weight: bold;
-  background-color: #ccc;
+  background-color: var(--accent);
+  color: white;
 }

@@ -4,6 +4,7 @@ import AppRoutes from './routes/AppRoutes';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
+import { NotificationProvider } from './contexts/NotificationContext.jsx';
 import './styles/index.css';
 
 /**
@@ -45,11 +46,18 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         */}
         <ThemeProvider>
           {/*
-            AppRoutes - Sistema de roteamento principal
-            Define todas as rotas disponíveis e suas proteções
-            Organiza rotas por tipo de acesso (público, cliente, estabelecimento)
+            NotificationProvider - Contexto de notificações global
+            Fornece funcionalidade de exibição de notificações popup
+            Gerencia múltiplas notificações simultâneas
           */}
-          <AppRoutes />
+          <NotificationProvider>
+            {/*
+              AppRoutes - Sistema de roteamento principal
+              Define todas as rotas disponíveis e suas proteções
+              Organiza rotas por tipo de acesso (público, cliente, estabelecimento)
+            */}
+            <AppRoutes />
+          </NotificationProvider>
         </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -1,143 +1,189 @@
 /* Container principal */
 .plano-container {
-  background-color: #111;
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
   color: white;
   min-height: 100vh;
-  font-family: sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   display: flex;
   flex-direction: column;
-}
-
-/* Cabeçalho */
-.plano-header {
-  background-color: #0A2A5D;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-}
-
-
-.plano-logo {
-  height: 40px;
-}
-
-.plano-header h1 {
-  font-size: 1.5rem;
-  margin: 0;
-}
-
-/* Wrapper do conteúdo */
-.plano-content {
-  display: flex;
-  flex: 1;
-  width: 100%;
-}
-
-/* Sidebar */
-.plano-sidebar {
-  background-color: #0A2A5D;
-  width: 200px;
-  padding-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  color: white;
-  min-height: calc(100vh - 80px); /* altura total menos o header */
-}
-
-.plano-nav-btn {
-  background: none;
-  border: none;
-  color: white;
-  padding: 0.75rem 1rem;
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background 0.2s;
-}
-
-.plano-nav-btn:hover {
-  background-color: #0d3a80;
 }
 
 /* Conteúdo principal */
 .plano-main {
   flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 2rem;
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Título */
+.plano-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Container dos cards */
+.plano-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
-  padding: 2rem;
-  flex-wrap: wrap;
+  width: 100%;
+  max-width: 800px;
 }
 
 /* Cartões */
 .plano-card {
-  background-color: #1e1e1e;
-  padding: 2rem;
-  border-radius: 10px;
-  width: 260px;
+  background: linear-gradient(145deg, #1e1e1e 0%, #2a2a2a 100%);
+  padding: 2.5rem;
+  border-radius: 16px;
   text-align: center;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.plano-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .plano-card h2 {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
+  font-weight: 600;
   margin-bottom: 1rem;
+  color: white;
+}
+
+/* Container do preço */
+.plano-preco-container {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
 }
 
 .plano-preco {
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+}
+
+.plano-periodo {
+  font-size: 1rem;
+  color: #a0a0a0;
+  font-weight: 400;
 }
 
 .plano-btn {
-  padding: 0.7rem 1.5rem;
-  border: none;
-  border-radius: 6px;
+  padding: 1rem 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   font-size: 1rem;
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  color: white;
+  transition: all 0.3s ease;
+  width: 100%;
+  backdrop-filter: blur(10px);
 }
 
-.renovar {
-  background-color: #f0d85a;
-  color: black;
+.plano-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
 }
 
-.renovar:hover {
-  background-color: #e6c94f;
+/* Link de contato */
+.plano-contact {
+  margin-top: 1.5rem;
 }
 
-.assinar {
-  background-color: #f0d85a;
-  color: black;
+.plano-contact-link {
+  color: #a0a0a0;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
 }
 
-.assinar:hover {
-  background-color: #f0d85a;
+.plano-contact-link:hover {
+  color: white;
+  text-decoration: underline;
 }
 
 /* Rodapé */
 .plano-footer {
   text-align: center;
-  padding: 1rem;
-  font-size: 0.85rem;
-  color: #aaa;
-  border-top: 1px solid #333;
+  padding: 2rem;
+  font-size: 0.9rem;
+  color: #a0a0a0;
   width: 100%;
+  margin-top: 3rem;
 }
 
-.plano-icons button {
-  background: none;
-  border: none;
-  color: white;
-  margin-left: 1rem;
-  cursor: pointer;
-  font-size: 1.25rem;
+.plano-footer-line {
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  margin: 0 auto 1.5rem auto;
+}
+
+.plano-footer p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .plano-main {
+    padding: 2rem 1rem;
+    gap: 2rem;
+  }
+  
+  .plano-title {
+    font-size: 2rem;
+  }
+  
+  .plano-cards-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .plano-card {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .plano-main {
+    padding: 1.5rem 1rem;
+  }
+  
+  .plano-title {
+    font-size: 1.8rem;
+  }
+  
+  .plano-card {
+    padding: 1.5rem;
+  }
+  
+  .plano-btn {
+    padding: 0.8rem 1.5rem;
+  }
 }

@@ -58,7 +58,7 @@ function validateEmail(email) {
  * Middleware para validar dados de registro de usuário
  */
 function validateUserRegistration(req, res, next) {
-  const { nome_usuario, cpf, email_usuario, senha_usuario } = req.body;
+  const { nome_usuario, cpf, data_nascimento, email_usuario, senha_usuario, telefone_usuario, cep_usuario, endereco_usuario, bairro_usuario, cidade_usuario, uf_usuario, numero_usuario } = req.body;
   const errors = [];
 
   // Validação do nome
@@ -69,6 +69,44 @@ function validateUserRegistration(req, res, next) {
   // Validação do CPF
   if (!cpf || !validateCPF(cpf)) {
     errors.push('CPF inválido');
+  }
+
+  // Validação da data de nascimento
+  if (!data_nascimento) {
+    errors.push('Data de nascimento é obrigatória');
+  } else {
+    // Verifica se a data está no formato correto (DDMMAAAA)
+    const dateRegex = /^\d{8}$/;
+    if (!dateRegex.test(data_nascimento)) {
+      errors.push('Data de nascimento deve estar no formato DD/MM/AAAA');
+    } else {
+      // Converte de DDMMAAAA para YYYY-MM-DD para validação
+      const day = parseInt(data_nascimento.slice(0, 2));
+      const month = parseInt(data_nascimento.slice(2, 4));
+      const year = parseInt(data_nascimento.slice(4, 8));
+      
+      // Validação básica dos valores
+      if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > new Date().getFullYear()) {
+        errors.push('Data de nascimento inválida');
+      } else {
+        const date = new Date(year, month - 1, day);
+        
+        if (isNaN(date.getTime()) || date.getDate() !== day || date.getMonth() !== month - 1 || date.getFullYear() !== year) {
+          errors.push('Data de nascimento inválida');
+        } else {
+          // Verifica se a pessoa tem pelo menos 13 anos
+          const today = new Date();
+          let age = today.getFullYear() - year;
+          const monthDiff = today.getMonth() - (month - 1);
+          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < day)) {
+            age--;
+          }
+          if (age < 13) {
+            errors.push('Idade mínima é 13 anos');
+          }
+        }
+      }
+    }
   }
 
   // Validação do email
@@ -83,6 +121,41 @@ function validateUserRegistration(req, res, next) {
     errors.push('Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número');
   }
 
+  // Validação do telefone
+  if (!telefone_usuario || telefone_usuario.trim().length < 10) {
+    errors.push('Telefone deve ter pelo menos 10 caracteres');
+  }
+
+  // Validação do CEP
+  if (!cep_usuario || cep_usuario.replace(/\D/g, '').length !== 8) {
+    errors.push('CEP deve ter 8 dígitos');
+  }
+
+  // Validação do endereço
+  if (!endereco_usuario || endereco_usuario.trim().length < 5) {
+    errors.push('Endereço deve ter pelo menos 5 caracteres');
+  }
+
+  // Validação do bairro
+  if (!bairro_usuario || bairro_usuario.trim().length < 2) {
+    errors.push('Bairro deve ter pelo menos 2 caracteres');
+  }
+
+  // Validação da cidade
+  if (!cidade_usuario || cidade_usuario.trim().length < 2) {
+    errors.push('Cidade deve ter pelo menos 2 caracteres');
+  }
+
+  // Validação da UF
+  if (!uf_usuario || uf_usuario.trim().length !== 2) {
+    errors.push('UF deve ter exatamente 2 caracteres');
+  }
+
+  // Validação do número
+  if (!numero_usuario || numero_usuario.trim().length < 1) {
+    errors.push('Número é obrigatório');
+  }
+
   if (errors.length > 0) {
     return res.status(400).json({
       success: false,
@@ -94,7 +167,15 @@ function validateUserRegistration(req, res, next) {
   // Sanitiza dados
   req.body.nome_usuario = nome_usuario.trim();
   req.body.cpf = cpf.replace(/[^\d]/g, '');
+  req.body.data_nascimento = data_nascimento.replace(/\D/g, '');
   req.body.email_usuario = email_usuario.toLowerCase().trim();
+  req.body.telefone_usuario = telefone_usuario.trim();
+  req.body.cep_usuario = cep_usuario.replace(/\D/g, '');
+  req.body.endereco_usuario = endereco_usuario.trim();
+  req.body.bairro_usuario = bairro_usuario.trim();
+  req.body.cidade_usuario = cidade_usuario.trim();
+  req.body.uf_usuario = uf_usuario.trim().toUpperCase();
+  req.body.numero_usuario = numero_usuario.trim();
 
   next();
 }
@@ -148,12 +229,15 @@ function validateEstablishmentRegistration(req, res, next) {
  * Middleware para validar dados de login
  */
 function validateLogin(req, res, next) {
+  console.log('🔍 validateLogin - Body recebido:', req.body);
   const { email_usuario, senha_usuario, email_empresa, senha_empresa } = req.body;
   const errors = [];
 
   // Verifica se é login de usuário ou estabelecimento
   const email = email_usuario || email_empresa;
   const password = senha_usuario || senha_empresa;
+
+  console.log('🔍 validateLogin - Email:', email, 'Password:', password ? '***' : 'undefined');
 
   if (!email || !validateEmail(email)) {
     errors.push('Email inválido');
@@ -164,6 +248,7 @@ function validateLogin(req, res, next) {
   }
 
   if (errors.length > 0) {
+    console.log('❌ validateLogin - Erros encontrados:', errors);
     return res.status(400).json({
       success: false,
       message: 'Dados inválidos',
@@ -171,8 +256,15 @@ function validateLogin(req, res, next) {
     });
   }
 
+  console.log('✅ validateLogin - Validação passou, prosseguindo...');
+
   // Sanitiza email
-  req.body.email = email.toLowerCase().trim();
+  if (email_usuario) {
+    req.body.email_usuario = email.toLowerCase().trim();
+  }
+  if (email_empresa) {
+    req.body.email_empresa = email.toLowerCase().trim();
+  }
 
   next();
 }

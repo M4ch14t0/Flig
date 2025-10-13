@@ -363,14 +363,24 @@ async function getNextClient(queueId) {
     if (Array.isArray(result[0])) {
       // Formato antigo: [value, score]
       [clientData, score] = result[0];
-    } else {
+    } else if (result[0].value !== undefined) {
       // Formato novo: {value, score}
       clientData = result[0].value;
       score = result[0].score;
+    } else {
+      // Formato direto: string
+      clientData = result[0];
+      score = 1; // Score padrão
     }
     
     console.log('📝 Dados do cliente:', clientData);
     console.log('🎯 Score:', score);
+    
+    // Verificar se clientData é válido
+    if (!clientData || typeof clientData !== 'string') {
+      console.error('❌ Dados do cliente inválidos:', clientData);
+      throw new Error('Dados do cliente inválidos');
+    }
     
     const clientInfo = JSON.parse(clientData);
     

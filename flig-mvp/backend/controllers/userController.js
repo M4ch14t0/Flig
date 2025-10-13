@@ -463,9 +463,38 @@ async function updateUser(req, res) {
     // Remove campos que não podem ser atualizados
     delete updateData.id;
     delete updateData.cpf;
-    delete updateData.senha_usuario;
     delete updateData.created_at;
     delete updateData.updated_at;
+
+    // Se está alterando senha, verifica senha atual
+    if (updateData.senha_atual && updateData.nova_senha) {
+      const user = await User.findById(id);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Usuário não encontrado'
+        });
+      }
+
+      // Verifica se a senha atual está correta
+      const isCurrentPasswordValid = await user.verifyPassword(updateData.senha_atual);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({
+          success: false,
+          message: 'Senha atual incorreta'
+        });
+      }
+
+      // Substitui senha_atual e nova_senha por senha_usuario
+      updateData.senha_usuario = updateData.nova_senha;
+      delete updateData.senha_atual;
+      delete updateData.nova_senha;
+    } else if (updateData.senha_atual || updateData.nova_senha) {
+      return res.status(400).json({
+        success: false,
+        message: 'Para alterar senha, forneça tanto a senha atual quanto a nova senha'
+      });
+    }
 
     const updatedUser = await User.update(id, updateData);
 
@@ -514,6 +543,50 @@ async function deleteUser(req, res) {
   }
 }
 
+/**
+ * Obtém a senha criptografada do usuário
+ * 
+ * GET /api/users/:id/password
+ * Headers: { Authorization: Bearer <token> }
+ */
+async function getUserPassword(req, res) {
+  try {
+    const { id } = req.params;
+    const { userId } = req.user;
+
+    // Verificar se o usuário está tentando acessar seus próprios dados
+    if (parseInt(id) !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Acesso negado'
+      });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuário não encontrado'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        hashedPassword: user.getHashedPassword()
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar senha do usuário:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+}
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -525,6 +598,7 @@ module.exports = {
   listUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
+  getUserPassword
 };
 

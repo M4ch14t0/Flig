@@ -61,6 +61,7 @@ async function authenticateToken(req, res, next) {
 
         // Adiciona dados do usuário ao objeto req
         req.user = {
+          id: decoded.userId,
           userId: decoded.userId,
           email: decoded.email,
           userType: decoded.userType
@@ -73,6 +74,7 @@ async function authenticateToken(req, res, next) {
         // Em caso de erro na blacklist, permite o acesso (fail-open)
         // Alternativa: fail-closed (rejeitar em caso de erro)
         req.user = {
+          id: decoded.userId,
           userId: decoded.userId,
           email: decoded.email,
           userType: decoded.userType

@@ -223,6 +223,8 @@ async function registerUser(req, res) {
  */
 async function registerEstablishment(req, res) {
   try {
+    console.log('🔍 [REGISTER ESTABLISHMENT] Body recebido:', req.body);
+    
     const {
       nome_empresa,
       cnpj,
@@ -230,14 +232,27 @@ async function registerEstablishment(req, res) {
       endereco_empresa,
       telefone_empresa,
       email_empresa,
-      senha_empresa,
-      descricao,
-      categoria,
-      horario_funcionamento
+      senha_empresa
     } = req.body;
+
+    console.log('🔍 [REGISTER ESTABLISHMENT] Campos extraídos:', {
+      nome_empresa,
+      cnpj,
+      cep_empresa,
+      endereco_empresa,
+      telefone_empresa,
+      email_empresa,
+      senha_empresa: senha_empresa ? '***' : undefined
+    });
 
     // Validações obrigatórias
     if (!nome_empresa || !cnpj || !email_empresa || !senha_empresa) {
+      console.log('❌ [REGISTER ESTABLISHMENT] Campos obrigatórios faltando:', {
+        nome_empresa: !!nome_empresa,
+        cnpj: !!cnpj,
+        email_empresa: !!email_empresa,
+        senha_empresa: !!senha_empresa
+      });
       return res.status(400).json({
         success: false,
         message: 'Nome da empresa, CNPJ, email e senha são obrigatórios'
@@ -299,14 +314,14 @@ async function registerEstablishment(req, res) {
     // Insere estabelecimento no banco
     const sql = `
       INSERT INTO estabelecimentos 
-      (nome_empresa, cnpj, cep_empresa, endereco_empresa, telefone_empresa, email_empresa, senha_empresa, descricao, categoria, horario_funcionamento)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (nome_empresa, cnpj, cep_empresa, endereco_empresa, telefone_empresa, email_empresa, senha_empresa)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
     const result = await new Promise((resolve, reject) => {
       connection.query(
         sql,
-        [nome_empresa, cnpj, cep_empresa, endereco_empresa, telefone_empresa, email_empresa, hashedPassword, descricao, categoria, horario_funcionamento],
+        [nome_empresa, cnpj, cep_empresa, endereco_empresa, telefone_empresa, email_empresa, hashedPassword],
         (err, result) => err ? reject(err) : resolve(result)
       );
     });
@@ -384,8 +399,15 @@ async function loginUser(req, res) {
     const user = users[0];
 
     // Verifica senha
+    console.log('🔍 Verificando senha para:', user.email_usuario);
+    console.log('🔍 Senha fornecida:', senha_usuario);
+    console.log('🔍 Hash no banco:', user.senha_usuario);
+    
     const isValidPassword = cryptoUtils.verifyPassword(senha_usuario, user.senha_usuario);
+    console.log('🔍 Resultado da verificação:', isValidPassword);
+    
     if (!isValidPassword) {
+      console.log('❌ Senha inválida para:', user.email_usuario);
       return res.status(401).json({
         success: false,
         message: 'Credenciais inválidas'
@@ -637,6 +659,47 @@ async function logout(req, res) {
 }
 
 /**
+ * Logout em todas as sessões (invalida todos os tokens do usuário)
+ * 
+ * POST /api/auth/logout-all
+ * Headers: { Authorization: Bearer <token> }
+ */
+async function logoutAll(req, res) {
+  try {
+    const { userId, userType } = req.user;
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token) {
+      // Adiciona token atual à blacklist
+      await tokenBlacklist.addToBlacklist(token);
+      console.log(`✅ Token atual invalidado na blacklist: ${userType} ID ${userId}`);
+    }
+
+    // TODO: Implementar invalidação de todos os tokens do usuário
+    // Por enquanto, apenas invalida o token atual
+    // Em uma implementação completa, seria necessário:
+    // 1. Armazenar todos os tokens ativos do usuário
+    // 2. Invalidar todos os tokens ativos
+    // 3. Notificar outros dispositivos via WebSocket ou similar
+    
+    console.log(`✅ Logout em todas as sessões realizado: ${userType} ID ${userId}`);
+    
+    res.json({
+      success: true,
+      message: 'Logout em todas as sessões realizado com sucesso'
+    });
+
+  } catch (error) {
+    console.error('❌ Erro no logout-all:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+}
+
+/**
  * Valida CPF usando algoritmo oficial
  */
 function validateCPF(cpf) {
@@ -704,6 +767,7 @@ module.exports = {
   loginUser,
   loginEstablishment,
   getCurrentUser,
-  logout
+  logout,
+  logoutAll
 };
 

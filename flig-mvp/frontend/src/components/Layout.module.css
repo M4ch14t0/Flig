@@ -163,7 +163,8 @@
   flex: 1;
   padding: 0;
   overflow-y: auto;
-  background-color: #f4f4f4;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
 }
 
 .footer {

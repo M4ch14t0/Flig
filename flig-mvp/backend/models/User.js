@@ -16,11 +16,15 @@ class User {
     this.id = data.id || null;
     this.nome_usuario = data.nome_usuario || '';
     this.cpf = data.cpf || '';
+    this.data_nascimento = data.data_nascimento || null;
     this.telefone_usuario = data.telefone_usuario || '';
     this.email_usuario = data.email_usuario || '';
     this.senha_usuario = data.senha_usuario || '';
     this.cep_usuario = data.cep_usuario || '';
     this.endereco_usuario = data.endereco_usuario || '';
+    this.bairro_usuario = data.bairro_usuario || '';
+    this.cidade_usuario = data.cidade_usuario || '';
+    this.uf_usuario = data.uf_usuario || '';
     this.numero_usuario = data.numero_usuario || '';
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
@@ -38,20 +42,26 @@ class User {
 
       const sql = `
         INSERT INTO usuarios 
-        (nome_usuario, cpf, telefone_usuario, email_usuario, senha_usuario, cep_usuario, endereco_usuario, numero_usuario)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (nome_usuario, cpf, data_nascimento, telefone_usuario, email_usuario, senha_usuario, cep_usuario, endereco_usuario, bairro_usuario, cidade_usuario, uf_usuario, numero_usuario)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const values = [
         userData.nome_usuario,
         userData.cpf,
+        userData.data_nascimento,
         userData.telefone_usuario,
         userData.email_usuario,
         hashedPassword,
         userData.cep_usuario,
         userData.endereco_usuario,
+        userData.bairro_usuario,
+        userData.cidade_usuario,
+        userData.uf_usuario,
         userData.numero_usuario
       ];
+
+      console.log('🔧 User.create - Valores para inserção:', values);
 
       const result = await new Promise((resolve, reject) => {
         connection.query(sql, values, (err, result) => {
@@ -371,6 +381,15 @@ class User {
   }
 
   /**
+   * Verifica se a senha fornecida é válida
+   * @param {string} password - Senha em texto plano
+   * @returns {boolean} - True se senha é válida
+   */
+  async verifyPassword(password) {
+    return cryptoUtils.verifyPassword(password, this.senha_usuario);
+  }
+
+  /**
    * Converte para objeto público (sem dados sensíveis)
    * @returns {Object} - Dados públicos do usuário
    */
@@ -378,14 +397,27 @@ class User {
     return {
       id: this.id,
       nome_usuario: this.nome_usuario,
+      cpf: this.cpf,
+      data_nascimento: this.data_nascimento,
       email_usuario: this.email_usuario,
       telefone_usuario: this.telefone_usuario,
       cep_usuario: this.cep_usuario,
       endereco_usuario: this.endereco_usuario,
+      bairro_usuario: this.bairro_usuario,
+      cidade_usuario: this.cidade_usuario,
+      uf_usuario: this.uf_usuario,
       numero_usuario: this.numero_usuario,
       created_at: this.created_at,
       updated_at: this.updated_at
     };
+  }
+
+  /**
+   * Retorna a senha criptografada do usuário (para visualização)
+   * @returns {string} - Senha criptografada
+   */
+  getHashedPassword() {
+    return this.senha_usuario;
   }
 }
 

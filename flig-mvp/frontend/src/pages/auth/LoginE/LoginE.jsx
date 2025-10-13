@@ -91,6 +91,9 @@ export default function LoginE() {
             <p className="empresa-login-link">
               Ainda não tem uma conta? <a href="/cadastro-estabelecimento">Crie agora.</a>
             </p>
+            <p className="empresa-login-link">
+              <a href="/forgot-password">Esqueci minha senha</a>
+            </p>
 
             <button className="empresa-login-button" type="submit" disabled={loading}>
               {loading ? 'Entrando...' : 'Acessar'}

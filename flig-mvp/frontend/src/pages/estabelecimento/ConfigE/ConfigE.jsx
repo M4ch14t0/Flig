@@ -1,27 +1,21 @@
 import React from 'react';
 import Layout from '../../../components/Layout';
-import { Home, BarChart2, List, CreditCard } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import './ConfigE.css';
 
 export default function ConfigE() {
+  const navigate = useNavigate();
   const { theme, toggleTheme, isDark } = useTheme();
-  
-  const sidebarLinks = [
-    { to: '/estabelecimento/home', label: 'Home', icon: <Home size={16} /> },
-    { to: '/estabelecimento/dashboard', label: 'Dashboard', icon: <BarChart2 size={16} /> },
-    { to: '/estabelecimento/gerenciar-filas', label: 'Gerenciar Filas', icon: <List size={16} /> },
-    { to: '/estabelecimento/planos', label: 'Planos', icon: <CreditCard size={16} /> },
-  ];
 
   return (
-    <Layout sidebarLinks={sidebarLinks} userType="estabelecimento" showFooter={false}>
+    <Layout userType="estabelecimento" showSidebar={false}>
       <div className="configE-container">
-        <header className="configE-header">
-          <img src="/assets/logos/flig-logo.svg" alt="Logo Flig" className="configE-logo" />
-        </header>
-
         <div className="configE-content">
+          <button onClick={() => navigate(-1)} className="configE-back">
+            <ArrowLeft size={18} /> Voltar
+          </button>
           <div className="configE-card">
             <h2>Configurações</h2>
 
@@ -29,10 +23,10 @@ export default function ConfigE() {
             <div className="configE-line">
               <div>
                 <span className="configE-label">Alternar Tema</span>
-                <p>Muda o tema de exibição</p>
+                <p>Muda o tema da aplicação</p>
               </div>
               <div className="configE-switch-group">
-                <span>Escuro</span>
+                <span>Claro</span>
                 <label className="switch">
                   <input 
                     type="checkbox" 
@@ -41,7 +35,7 @@ export default function ConfigE() {
                   />
                   <span className="slider"></span>
                 </label>
-                <span>Claro</span>
+                <span>Escuro</span>
               </div>
             </div>
 

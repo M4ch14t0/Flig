@@ -31,11 +31,9 @@ export default function UserHome() {
     >
       <div className={styles.welcomeContainer}>
         <h1 className={styles.welcomeTitle}>
-          Bem-vindo a <strong>Flig</strong>
+          Bem-vindo a 
         </h1>
-        <p className={styles.welcomeSubtitle}>
-          Encontre estabelecimentos e gerencie suas filas de forma inteligente
-        </p>
+        <img src="/assets/logos/logo2-flig.png" alt="Flig" className={styles.logo} />
       </div>
     </Layout>
   );
