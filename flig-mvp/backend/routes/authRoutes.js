@@ -17,7 +17,6 @@ const authController = require('../controllers/authController');
 const passwordResetController = require('../controllers/passwordResetController');
 const passwordResetControllerSimple = require('../controllers/passwordResetControllerSimple');
 const { authenticateToken } = require('../middleware/auth');
-const { authenticateTokenSimple } = require('../middleware/authSimple');
 const { 
   validateUserRegistration, 
   validateEstablishmentRegistration,
@@ -228,12 +227,7 @@ router.post('/forgot-password-simple',
   passwordResetControllerSimple.forgotPasswordSimple
 );
 
-// ROTA TEMPORÁRIA PARA DEBUG (COM AUTENTICAÇÃO SIMPLES)
-router.post('/forgot-password-simple-auth',
-  authenticateTokenSimple,
-  rateLimit,
-  passwordResetControllerSimple.forgotPasswordSimple
-);
+// ROTA TEMPORÁRIA PARA DEBUG (COM AUTENTICAÇÃO SIMPLES) - REMOVIDA
 
 // ROTA TEMPORÁRIA PARA DEBUG (SEM RATE LIMITING)
 router.post('/forgot-password-debug',
