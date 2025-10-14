@@ -125,12 +125,26 @@ html, body {
 .filtersIcon {
   color: var(--text-primary);
   border: none;
-  border-radius: 4px;
-  padding: 8px 12px;
+  border-radius: 8px;
+  padding: 10px;
   cursor: pointer;
-  font-size: 16px;
   background-color: var(--accent);
-  transition: color 0.3s ease, background-color 0.3s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.filtersIcon:hover {
+  background-color: #152E60;
+  color: white;
+  transform: scale(1.05);
+}
+
+.filtersIcon:active {
+  transform: scale(0.95);
 }
 
 .filtersPopup {

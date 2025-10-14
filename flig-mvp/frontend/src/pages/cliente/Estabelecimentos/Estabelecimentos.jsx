@@ -1,7 +1,7 @@
 // Estabelecimentos.jsx - Lista de estabelecimentos para clientes
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Home, MapPin, List } from 'lucide-react';
+import { Loader2, Home, MapPin, List, Filter } from 'lucide-react';
 import Layout from '../../../components/Layout';
 import { api } from '../../../services/api';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -193,8 +193,9 @@ function Estabelecimentos() {
             <button
               className={styles.filtersIcon}
               onClick={() => setShowFilters(!showFilters)}
+              title="Filtrar estabelecimentos"
             >
-              %
+              <Filter size={20} />
             </button>
             {showFilters && (
               <div className={styles.filtersPopup}>
