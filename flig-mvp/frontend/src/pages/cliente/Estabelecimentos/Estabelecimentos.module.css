@@ -44,13 +44,51 @@ html, body {
   color: inherit;
 }
 
+/* Header da página */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 /* Título da página */
 .pageTitle {
   font-size: 28px;
   font-weight: bold;
   color: var(--text-primary) !important;
-  margin-bottom: 24px;
+  margin: 0;
   transition: color 0.3s ease;
+}
+
+/* Filtro ativo */
+.activeFilter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #152E60;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.removeFilter {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.removeFilter:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* SEARCH E FILTRO */
@@ -101,23 +139,86 @@ html, body {
   right: 0;
   background-color: var(--bg-secondary);
   color: var(--text-primary);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px;
   z-index: 10;
-  box-shadow: 0 4px 12px var(--shadow);
-  width: 250px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  width: 300px;
   border: 1px solid var(--border-color);
   transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.filtersPopup h3 {
-  margin-top: 0;
+.filtersHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.filtersPopup label {
-  display: block;
-  margin-bottom: 8px;
+.filtersHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.clearFilters {
+  background: #152E60;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clearFilters:hover {
+  background: #0A2A5D;
+}
+
+.filterSection {
+  margin-bottom: 20px;
+}
+
+.filterSection p {
+  margin: 0 0 12px 0;
+  font-weight: 600;
   font-size: 14px;
+  color: var(--text-primary);
+}
+
+.filterOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterOptions label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.filterOptions label:hover {
+  background-color: rgba(21, 46, 96, 0.1);
+}
+
+.filterOptions input[type="radio"] {
+  margin: 0;
+  accent-color: #152E60;
+}
+
+.filterOptions span {
+  font-size: 14px;
+  font-weight: 500;
 }
 
 /* GRID DE CARDS */

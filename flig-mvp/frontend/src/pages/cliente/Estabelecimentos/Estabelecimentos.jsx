@@ -123,8 +123,18 @@ function Estabelecimentos() {
   // Filtra estabelecimentos baseado na pesquisa e filtros
   const filtrados = estabelecimentos.filter((est) => {
     const nomeMatch = est.nome_empresa.toLowerCase().includes(pesquisa.toLowerCase());
-    const categoriaMatch = filtro ? est.categoria === filtro : true;
-    return nomeMatch && categoriaMatch;
+    
+    // Filtro por categoria
+    const categoriaMatch = filtro && ['Restaurante', 'Barbearia', 'Saúde', 'Academia'].includes(filtro) 
+      ? est.categoria === filtro 
+      : true;
+    
+    // Filtro por status
+    const statusMatch = filtro && ['ativo', 'inativo'].includes(filtro)
+      ? est.status === filtro
+      : true;
+    
+    return nomeMatch && categoriaMatch && statusMatch;
   });
 
   const totalPaginas = Math.ceil(filtrados.length / itemsPorPagina);
@@ -153,7 +163,20 @@ function Estabelecimentos() {
       showFooter={false}
     >
       <div className={styles.container}>
-          <h2 className={styles.pageTitle}>Estabelecimentos</h2>
+          <div className={styles.pageHeader}>
+            <h2 className={styles.pageTitle}>Estabelecimentos</h2>
+            {filtro && (
+              <div className={styles.activeFilter}>
+                <span>Filtro ativo: {filtro}</span>
+                <button 
+                  onClick={() => setFiltro(null)}
+                  className={styles.removeFilter}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Barra de busca e filtros */}
           <div className={styles.searchFilterWrapper}>
@@ -175,53 +198,102 @@ function Estabelecimentos() {
             </button>
             {showFilters && (
               <div className={styles.filtersPopup}>
-                <h3>Filtrar</h3>
-                {/* Sistema de avaliações será implementado futuramente */}
-                <p><strong>Categoria:</strong></p>
-                <label>
-                  <input 
-                    type="radio" 
-                    name="categoria"
-                    onChange={() => {
-                      handleFiltro(filtro === 'Restaurante' ? null : 'Restaurante');
+                <div className={styles.filtersHeader}>
+                  <h3>Filtrar</h3>
+                  <button 
+                    className={styles.clearFilters}
+                    onClick={() => {
+                      setFiltro(null);
                       setPaginaAtual(1);
                     }}
-                    checked={filtro === 'Restaurante'}
-                  /> Restaurantes
-                </label>
-                <label>
-                  <input 
-                    type="radio" 
-                    name="categoria"
-                    onChange={() => {
-                      handleFiltro(filtro === 'Barbearia' ? null : 'Barbearia');
-                      setPaginaAtual(1);
-                    }}
-                    checked={filtro === 'Barbearia'}
-                  /> Barbearias
-                </label>
-                <label>
-                  <input 
-                    type="radio" 
-                    name="categoria"
-                    onChange={() => {
-                      handleFiltro(filtro === 'Saúde' ? null : 'Saúde');
-                      setPaginaAtual(1);
-                    }}
-                    checked={filtro === 'Saúde'}
-                  /> Clínicas/Saúde
-                </label>
-                <label>
-                  <input 
-                    type="radio" 
-                    name="categoria"
-                    onChange={() => {
-                      handleFiltro(filtro === 'Academia' ? null : 'Academia');
-                      setPaginaAtual(1);
-                    }}
-                    checked={filtro === 'Academia'}
-                  /> Academias
-                </label>
+                  >
+                    Limpar
+                  </button>
+                </div>
+                
+                <div className={styles.filterSection}>
+                  <p><strong>Categoria:</strong></p>
+                  <div className={styles.filterOptions}>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="categoria"
+                        onChange={() => {
+                          handleFiltro(filtro === 'Restaurante' ? null : 'Restaurante');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'Restaurante'}
+                      /> 
+                      <span>🍽️ Restaurantes</span>
+                    </label>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="categoria"
+                        onChange={() => {
+                          handleFiltro(filtro === 'Barbearia' ? null : 'Barbearia');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'Barbearia'}
+                      /> 
+                      <span>💇 Barbearias</span>
+                    </label>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="categoria"
+                        onChange={() => {
+                          handleFiltro(filtro === 'Saúde' ? null : 'Saúde');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'Saúde'}
+                      /> 
+                      <span>🏥 Clínicas/Saúde</span>
+                    </label>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="categoria"
+                        onChange={() => {
+                          handleFiltro(filtro === 'Academia' ? null : 'Academia');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'Academia'}
+                      /> 
+                      <span>💪 Academias</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className={styles.filterSection}>
+                  <p><strong>Status:</strong></p>
+                  <div className={styles.filterOptions}>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="status"
+                        onChange={() => {
+                          handleFiltro(filtro === 'ativo' ? null : 'ativo');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'ativo'}
+                      /> 
+                      <span>✅ Apenas Ativos</span>
+                    </label>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="status"
+                        onChange={() => {
+                          handleFiltro(filtro === 'inativo' ? null : 'inativo');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'inativo'}
+                      /> 
+                      <span>❌ Apenas Inativos</span>
+                    </label>
+                  </div>
+                </div>
               </div>
             )}
           </div>
