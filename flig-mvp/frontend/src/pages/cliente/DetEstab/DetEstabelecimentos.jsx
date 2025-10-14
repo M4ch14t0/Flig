@@ -4,7 +4,7 @@ import { Loader2, Clock, Users, MapPin, ArrowLeft, Phone, Home, List } from 'luc
 import Layout from '../../../components/Layout';
 import { api } from '../../../services/api';
 import { useTheme } from '../../../contexts/ThemeContext';
-import QueueComponent from '../../../components/QueueComponent';
+import { useAuth } from '../../../contexts/authContextImports';
 import styles from './DetEstabelecimentos.module.css';
 
 function DetEstabelecimentos() {
@@ -13,6 +13,7 @@ function DetEstabelecimentos() {
   const navigate = useNavigate();
   const estabelecimentoFromState = location.state?.estabelecimento;
   const { theme } = useTheme();
+  const { user, userType } = useAuth();
 
   // Configuração da sidebar
   const sidebarLinks = [
@@ -39,7 +40,7 @@ function DetEstabelecimentos() {
   const [filas, setFilas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedQueue, setSelectedQueue] = useState(null);
+  // selectedQueue removido - entrada direta na fila
 
   // Função para carregar dados do estabelecimento e filas
   const loadEstablishmentData = async () => {
@@ -80,6 +81,52 @@ function DetEstabelecimentos() {
 
   const handleError = (message) => {
     setError(message);
+  };
+
+  // Função para entrada direta na fila
+  const handleEnterQueue = async (fila) => {
+    if (!user || userType !== 'cliente') {
+      alert('Usuário não autenticado');
+      return;
+    }
+
+    if (fila.status !== 'ativa') {
+      alert('Esta fila não está ativa no momento');
+      return;
+    }
+
+    try {
+      // Usa dados do usuário logado automaticamente
+      const clientData = {
+        nome: user.name || user.nome || '',
+        telefone: user.telefone || user.phone || '',
+        email: user.email || user.email_usuario || ''
+      };
+
+      console.log('🔍 Dados do usuário:', user);
+      console.log('🔍 Dados sendo enviados:', clientData);
+
+      // Verificar se os dados estão preenchidos
+      if (!clientData.nome || !clientData.telefone || !clientData.email) {
+        alert('Dados do usuário incompletos. Verifique seu perfil.');
+        return;
+      }
+
+      const response = await api.post(`/api/queues/${fila.id}/join`, clientData);
+
+      if (response.data.success) {
+        alert('Você entrou na fila com sucesso!');
+        // Recarrega dados para mostrar a posição
+        await loadEstablishmentData();
+        // Redireciona para minhas filas
+        navigate('/cliente/minhas-filas');
+      } else {
+        alert(`Erro: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error('Erro ao entrar na fila:', error);
+      alert(error.response?.data?.message || 'Erro ao entrar na fila');
+    }
   };
 
   if (loading) {
@@ -193,7 +240,7 @@ function DetEstabelecimentos() {
                         <div className={styles.tableCell}>
                           <button 
                             className={styles.enterButton}
-                            onClick={() => setSelectedQueue(fila)}
+                            onClick={() => handleEnterQueue(fila)}
                             disabled={fila.status !== 'ativa'}
                           >
                             {fila.status === 'ativa' ? 'Entrar' : 'Fechada'}
@@ -208,18 +255,7 @@ function DetEstabelecimentos() {
             </div>
           </div>
 
-          {/* Componente de Fila */}
-          {selectedQueue && (
-            <div className={styles.queueComponent}>
-              <h3>Fila Selecionada: {selectedQueue.nome}</h3>
-              <QueueComponent
-                queueId={selectedQueue.id}
-                establishmentId={id}
-                onJoinSuccess={handleJoinSuccess}
-                onError={handleError}
-              />
-            </div>
-          )}
+          {/* QueueComponent removido - entrada direta na fila */}
       </div>
     </Layout>
   );
