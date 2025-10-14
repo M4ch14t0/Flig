@@ -1,195 +1,103 @@
-/* RESET BASE */
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  height: 100%;
-  width: 100%;
-}
-
-/* WRAPPER: engloba tudo */
-.wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100%;
+/* Container principal */
+.container {
+  padding: 2rem;
   background-color: #f4f4f4;
+  min-height: calc(100vh - 80px);
 }
 
-/* HEADER */
-.header {
-  background-color: #152E60;
+/* Botão Voltar */
+.backButton {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px 48px;
-  height: 80px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  border-bottom: 1px solid #ffffff;
-}
-
-.logo {
-  font-size: 28px;
-  font-weight: bold;
+  gap: 8px;
+  background: #152E60;
   color: white;
-}
-
-.headerRight {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.helpIcon,
-.userIcon {
-  background: none;
   border: none;
-  font-size: 18px;
+  padding: 10px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  color: white;
-}
-
-.userIconWrapper {
-  position: relative;
-}
-
-.userPopup {
-  position: absolute;
-  top: 32px;
-  right: 0;
-  background-color: #ffffff;
-  color: #000;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  display: none;
-  flex-direction: column;
-  gap: 4px;
-  width: 160px;
   font-size: 14px;
-  z-index: 10;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
 }
 
-.userIconWrapper:hover .userPopup {
+.backButton:hover {
+  background: #0A2A5D;
+  transform: translateX(-2px);
+}
+
+/* Card do Estabelecimento */
+.estabCard {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.imageBox {
+  height: 200px;
+  background: linear-gradient(135deg, #152E60 0%, #0A2A5D 100%);
   display: flex;
-}
-
-/* CONTEÚDO */
-.content {
-  display: flex;
-  flex: 1;
-  height: calc(100vh - 80px);
-  width: 100%;
-}
-
-/* SIDEBAR */
-.sidebar {
-  background-color: #152E60;
-  width: 220px;
-  padding: 24px 16px;
-  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
-  height: 100%;
-  position: relative;
-  z-index: 999;
-}
-
-.menu {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.menu a {
+  align-items: center;
+  justify-content: center;
   color: white;
-  text-decoration: none;
+  font-size: 24px;
   font-weight: bold;
 }
 
-.homeActive,
-.estabActive,
-.filasActive {
-  padding: 8px;
-  border-radius: 4px;
-}
-
-.homeActive:hover,
-.estabActive:hover,
-.filasActive:hover {
-  background-color: #d9d9d97e;
-  padding: 8px;
-  border-radius: 4px;
-}
-
-/* MAIN */
-.main {
-  flex: 1;
-  padding: 24px;
-  overflow-y: auto;
-  box-sizing: border-box;
-  background-color: #242424;
-}
-
-.pageTitle {
-  font-size: 24px;
-  margin-bottom: 16px;
-  color: #ffffff;
-}
-
-/* CARD DO ESTABELECIMENTO */
-.estabCard {
-  background-color: #2e2e2e;
-  border-radius: 12px;
-  padding: 20px;
-  max-width: 900px;
-  margin: 0 auto;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
-  color: white;
-}
-
-/* Caixa da imagem - apenas espaço cinza */
-.imageBox {
-  background-color: #555;
-  border-radius: 10px;
-  height: 150px;
-  margin-bottom: 20px;
-}
-
-/* Box com as infos */
 .infoBox {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  padding: 2rem;
 }
 
-/* Parte superior com descrição e endereço */
 .infoTop {
   display: flex;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
 }
 
-/* Texto de label */
+.infoTop h2 {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.categoryBadge {
+  display: inline-block;
+  background: #152E60;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
 .label {
   font-weight: 600;
-  color: #f1c40f;
-  margin-bottom: 5px;
+  color: #666;
+  margin: 1rem 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Texto da descrição */
 .desc {
-  max-width: 450px;
-  line-height: 1.4;
-  font-size: 0.9rem;
-  color: #ddd;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
 }
 
-/* Endereço e tempo */
 .tempo {
-  margin-top: 10px;
-  color: #ccc;
-  font-weight: 500;
+  color: #666;
+  font-size: 14px;
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Sistema de avaliações será implementado futuramente */
@@ -210,71 +118,144 @@ html, body {
 }
 
 .active {
-  color: #4CAF50;
-  font-weight: bold;
+  color: #28a745;
+  font-weight: 600;
 }
 
 .inactive {
-  color: #f44336;
-  font-weight: bold;
-}
-
-.categoryBadge {
-  display: inline-block;
-  background-color: #152E60;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 12px;
-  font-weight: bold;
-  margin: 8px 0;
-}
-
-/* Tabela das filas */
-.tabelaFilas {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #383838;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
-}
-
-.tabelaFilas th,
-.tabelaFilas td {
-  padding: 12px 15px;
-  text-align: center;
-  color: #ddd;
-  font-size: 0.9rem;
-  border-bottom: 1px solid #505050;
-}
-
-.tabelaFilas thead {
-  background-color: #1f1f1f;
+  color: #dc3545;
   font-weight: 600;
-  color: #f1c40f;
-}
-
-.tabelaFilas tbody tr:hover {
-  background-color: #454545;
 }
 
 /* Seção de Filas */
 .filasSection {
-  border-top: 1px solid #444;
-  padding-top: 20px;
+  margin-top: 2rem;
 }
 
 .filasSection h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
-  color: #f1c40f;
+}
+
+.filasGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.filaCard {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filaCard:hover {
+  border-color: #152E60;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(21, 46, 96, 0.15);
+}
+
+.filaCard.selected {
+  border-color: #152E60;
+  background: #f8f9ff;
+}
+
+.queueHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.queueHeader h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status.ativa {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.inativa {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.queueDescription {
+  color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.queueInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+.selectQueueButton {
+  width: 100%;
+  background: #152E60;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.selectQueueButton:hover {
+  background: #0A2A5D;
+}
+
+.selectQueueButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Estados de Loading e Error */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  text-align: center;
 }
 
 .loader {
   animation: spin 1s linear infinite;
+  color: #152E60;
+  margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -282,135 +263,66 @@ html, body {
   to { transform: rotate(360deg); }
 }
 
-.filaInfo {
-  text-align: left;
-}
-
-.filaInfo strong {
-  display: block;
-  margin-bottom: 4px;
-}
-
-.filaInfo small {
-  color: #888;
-  font-size: 0.8rem;
-}
-
-.pessoasCount {
-  background-color: #152E60;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-weight: bold;
-}
-
-.tempoEstimado {
-  color: #4CAF50;
-  font-weight: bold;
-}
-
-.noQueues {
-  text-align: center;
-  color: #888;
-  padding: 20px;
-  font-style: italic;
-}
-
-.errorContainer {
+.error {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  color: #f44336;
-}
-
-.retryButton {
-  background-color: #152E60;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 12px;
-}
-
-.retryButton:hover {
-  background-color: #1e3a73;
-}
-
-/* Botão Entrar */
-.entrar {
-  background-color: #4CAF50;
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
-
-.entrar:hover:not(:disabled) {
-  background-color: #45a049;
-}
-
-.entrar:disabled {
-  background-color: #666;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-/* PAGINAÇÃO */
-.pagination {
-  display: flex;
   justify-content: center;
-  gap: 8px;
-  margin-top: 32px;
+  padding: 4rem;
+  text-align: center;
 }
 
-.pageButton {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  background-color: white;
-  border-radius: 4px;
+.error p {
+  color: #dc3545;
+  font-size: 18px;
+  margin-bottom: 1rem;
+}
+
+.error button {
+  background: #152E60;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
 }
 
-.pageButton:hover {
-  background-color: #eee;
-}
-
-.activePage {
-  font-weight: bold;
-  background-color: #ccc;
+.error button:hover {
+  background: #0A2A5D;
 }
 
 /* Responsividade */
 @media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    position: static;
-    height: auto;
+  .container {
+    padding: 1rem;
   }
   
-  .main {
-    margin-left: 0;
-  }
-  
-  .header {
-    position: static;
-  }
-  
-  .content {
+  .infoTop {
     flex-direction: column;
-    margin-top: 0;
+    gap: 1rem;
   }
   
-  .estabCard {
-    padding: 15px;
+  .filasGrid {
+    grid-template-columns: 1fr;
   }
   
-  .infoTop > div {
-    min-width: 100%;
+  .backButton {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.5rem;
+  }
+  
+  .infoBox {
+    padding: 1rem;
+  }
+  
+  .filaCard {
+    padding: 1rem;
   }
 }
