@@ -196,7 +196,8 @@ class User {
     try {
       const allowedFields = [
         'nome_usuario', 'telefone_usuario', 'email_usuario', 
-        'cep_usuario', 'endereco_usuario', 'numero_usuario'
+        'cep_usuario', 'endereco_usuario', 'numero_usuario',
+        'cidade_usuario', 'bairro_usuario', 'uf_usuario'
       ];
 
       const fields = [];

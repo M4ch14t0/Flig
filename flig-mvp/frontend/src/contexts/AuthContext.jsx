@@ -50,7 +50,12 @@ export const AuthProvider = ({ children }) => {
     userType: `userType_${userType}`,
     email: `userEmail_${userType}`,
     name: `userName_${userType}`,
-    id: `userId_${userType}`
+    id: `userId_${userType}`,
+    telefone: `userTelefone_${userType}`,
+    dataNascimento: `userDataNascimento_${userType}`,
+    cidade: `userCidade_${userType}`,
+    bairro: `userBairro_${userType}`,
+    uf: `userUf_${userType}`
   });
 
   /**
@@ -67,6 +72,11 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem(keys.email);
         localStorage.removeItem(keys.name);
         localStorage.removeItem(keys.id);
+        localStorage.removeItem(keys.telefone);
+        localStorage.removeItem(keys.dataNascimento);
+        localStorage.removeItem(keys.cidade);
+        localStorage.removeItem(keys.bairro);
+        localStorage.removeItem(keys.uf);
       } else {
         // Limpa dados de ambos os tipos (compatibilidade)
         ['cliente', 'estabelecimento'].forEach(type => {
@@ -140,6 +150,11 @@ export const AuthProvider = ({ children }) => {
         const storedEmail = localStorage.getItem(keys.email);
         const storedName = localStorage.getItem(keys.name);
         const storedId = localStorage.getItem(keys.id);
+        const storedTelefone = localStorage.getItem(keys.telefone);
+        const storedDataNascimento = localStorage.getItem(keys.dataNascimento);
+        const storedCidade = localStorage.getItem(keys.cidade);
+        const storedBairro = localStorage.getItem(keys.bairro);
+        const storedUf = localStorage.getItem(keys.uf);
 
         console.log(`🔍 Verificando dados para ${expectedUserType}:`, {
           hasToken: !!token,
@@ -159,6 +174,11 @@ export const AuthProvider = ({ children }) => {
             id: parseInt(storedId) || (storedUserType === 'estabelecimento' ? 8 : 1),
             email: storedEmail || 'user@example.com',
             name: storedName || '',
+            telefone: storedTelefone || '',
+            dataNascimento: storedDataNascimento || '',
+            cidade: storedCidade || '',
+            bairro: storedBairro || '',
+            uf: storedUf || '',
             type: storedUserType,
             token,
           };
@@ -328,12 +348,22 @@ export const AuthProvider = ({ children }) => {
         const keys = getUserKeys(user.userType);
         const userName = user.nome_usuario || user.nome_empresa;
         const userEmail = user.email_usuario || user.email_empresa;
+        const userTelefone = user.telefone_usuario || user.telefone_empresa || '';
+        const userDataNascimento = user.data_nascimento || user.data_nascimento_usuario || '';
+        const userCidade = user.cidade || user.cidade_usuario || '';
+        const userBairro = user.bairro || user.bairro_usuario || '';
+        const userUf = user.uf || user.uf_usuario || '';
         
         localStorage.setItem(keys.token, token);
         localStorage.setItem(keys.userType, user.userType);
         localStorage.setItem(keys.email, userEmail);
         localStorage.setItem(keys.name, userName);
         localStorage.setItem(keys.id, user.id);
+        localStorage.setItem(keys.telefone, userTelefone);
+        localStorage.setItem(keys.dataNascimento, userDataNascimento);
+        localStorage.setItem(keys.cidade, userCidade);
+        localStorage.setItem(keys.bairro, userBairro);
+        localStorage.setItem(keys.uf, userUf);
         
         console.log('💾 Dados salvos no localStorage (login):', {
           name: userName,

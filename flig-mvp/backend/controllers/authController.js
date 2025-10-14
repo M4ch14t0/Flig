@@ -77,7 +77,10 @@ async function registerUser(req, res) {
       senha_usuario,
       cep_usuario,
       endereco_usuario,
-      numero_usuario
+      numero_usuario,
+      cidade_usuario,
+      bairro_usuario,
+      uf_usuario
     } = req.body;
 
     // Validações obrigatórias
@@ -149,7 +152,10 @@ async function registerUser(req, res) {
       hashedPassword,
       cep_usuario || null,
       endereco_usuario || null,
-      numero_usuario || null
+      numero_usuario || null,
+      cidade_usuario || null,
+      bairro_usuario || null,
+      uf_usuario || null
     ];
 
     console.log('🔍 Parâmetros para inserção:', params);
@@ -157,8 +163,8 @@ async function registerUser(req, res) {
     // Insere usuário no banco
     const sql = `
       INSERT INTO usuarios 
-      (nome_usuario, cpf, telefone_usuario, email_usuario, senha_usuario, cep_usuario, endereco_usuario, numero_usuario)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (nome_usuario, cpf, telefone_usuario, email_usuario, senha_usuario, cep_usuario, endereco_usuario, numero_usuario, cidade_usuario, bairro_usuario, uf_usuario)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const result = await new Promise((resolve, reject) => {
@@ -554,7 +560,7 @@ async function getCurrentUser(req, res) {
     if (userType === 'cliente') {
       const users = await new Promise((resolve, reject) => {
         connection.query(
-          'SELECT id, nome_usuario, email_usuario, cpf, telefone_usuario, cep_usuario, endereco_usuario, numero_usuario FROM usuarios WHERE id = ?',
+          'SELECT id, nome_usuario, email_usuario, cpf, telefone_usuario, cep_usuario, endereco_usuario, numero_usuario, cidade_usuario, bairro_usuario, uf_usuario FROM usuarios WHERE id = ?',
           [userId],
           (err, results) => err ? reject(err) : resolve(results)
         );
@@ -576,6 +582,9 @@ async function getCurrentUser(req, res) {
         cep_usuario: users[0].cep_usuario,
         endereco_usuario: users[0].endereco_usuario,
         numero_usuario: users[0].numero_usuario,
+        cidade_usuario: users[0].cidade_usuario,
+        bairro_usuario: users[0].bairro_usuario,
+        uf_usuario: users[0].uf_usuario,
         userType: 'cliente'
       };
     } else {
