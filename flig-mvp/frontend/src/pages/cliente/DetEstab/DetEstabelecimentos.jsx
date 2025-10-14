@@ -153,7 +153,7 @@ function DetEstabelecimentos() {
                 </div>
               </div>
 
-              <div className={styles.avaliacao}>
+              <div className={styles.statusSection}>
                 <h3>Status</h3>
                 <p className={styles.status}>
                   Status: <span className={establishment.status === 'ativo' ? styles.active : styles.inactive}>

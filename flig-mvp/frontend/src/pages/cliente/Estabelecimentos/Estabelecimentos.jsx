@@ -76,17 +76,14 @@ function Estabelecimentos() {
                 ...estabelecimento,
                 filas: filasData.filter(fila => fila.status === 'ativa').length,
                 pessoas: totalPessoas,
-                nota: 4.5 + Math.random() * 0.5, // Simula nota (em produção viria de avaliações reais)
-                avaliacoes: Math.floor(Math.random() * 200) + 50 // Simula avaliações
+                // Sistema de avaliações será implementado futuramente
               };
             } catch (error) {
               console.error(`Erro ao buscar filas do estabelecimento ${estabelecimento.id}:`, error);
               return {
                 ...estabelecimento,
                 filas: 0,
-                pessoas: 0,
-                nota: 4.5,
-                avaliacoes: 0
+                pessoas: 0
               };
             }
           })
@@ -105,8 +102,7 @@ function Estabelecimentos() {
         id: i + 1,
         nome_empresa: `Estabelecimento ${String.fromCharCode(65 + (i % 26))}${i + 1}`,
         categoria: ['Restaurante', 'Barbearia', 'Clínica', 'Academia'][i],
-        nota: 4.5 + Math.random() * 0.5,
-        avaliacoes: Math.floor(Math.random() * 200) + 50,
+        // Sistema de avaliações será implementado futuramente
         filas: Math.floor(Math.random() * 3) + 1,
         pessoas: Math.floor(Math.random() * 50) + 10,
       }));
@@ -180,20 +176,7 @@ function Estabelecimentos() {
             {showFilters && (
               <div className={styles.filtersPopup}>
                 <h3>Filtrar</h3>
-                <p><strong>Avaliações:</strong></p>
-                {[4, 3, 2, 1].map((n) => (
-                  <label key={n}>
-                    <input
-                      type="checkbox"
-                      onChange={() => {
-                        handleFiltro(filtro === n ? null : n);
-                        setPaginaAtual(1);
-                      }}
-                      checked={filtro === n}
-                    />{' '}
-                    {'⭐'.repeat(n)} e acima
-                  </label>
-                ))}
+                {/* Sistema de avaliações será implementado futuramente */}
                 <p><strong>Categoria:</strong></p>
                 <label>
                   <input 
@@ -275,7 +258,7 @@ function Estabelecimentos() {
                   <div className={styles.cardDetails}>
                     <div className={styles.cardLeft}>
                       <h4>{est.nome_empresa}</h4>
-                      <small>⭐ {Number(est.nota || 0).toFixed(1)} ({est.avaliacoes} avaliações)</small>
+                      <small>Estabelecimento ativo</small>
                       <p className={styles.address}>{est.endereco_empresa}</p>
                     </div>
                     <div className={styles.cardRight}>

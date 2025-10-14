@@ -69,7 +69,7 @@ export default function FAQ() {
       questions: [
         {
           question: "O que é o avanço pago?",
-          answer: "O avanço pago é uma funcionalidade que permite pagar para avançar algumas posições na fila. Nem todos os estabelecimentos oferecem essa opção."
+          answer: "O avanço pago é uma funcionalidade que permite pagar para avançar algumas posições na fila."
         },
         {
           question: "Como faço o pagamento?",
