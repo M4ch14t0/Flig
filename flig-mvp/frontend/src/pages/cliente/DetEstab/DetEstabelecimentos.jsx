@@ -134,39 +134,22 @@ function DetEstabelecimentos() {
             <div className={styles.imageBox}></div>
 
             <div className={styles.infoBox}>
-              <div className={styles.infoTop}>
-                <div>
-                  <h2>{establishment.nome_empresa}</h2>
-                  <div className={styles.categoryBadge}>{establishment.categoria}</div>
-                  <p className={styles.label}>Descrição</p>
-                  <p className={styles.desc}>
-                    {establishment.descricao || 'Descrição não disponível.'}
-                  </p>
-                </div>
-                <div>
-                  <p className={styles.label}>
-                    <MapPin size={16} /> Endereço
-                  </p>
-                  <p>{establishment.endereco_empresa}</p>
-                  {establishment.telefone_empresa && (
-                    <p className={styles.tempo}>
-                      <Phone size={16} /> {establishment.telefone_empresa}
-                    </p>
-                  )}
-                  {establishment.horario_funcionamento && (
-                    <p className={styles.tempo}>
-                      <Clock size={16} /> {establishment.horario_funcionamento}
-                    </p>
-                  )}
-                </div>
+              <h2>{establishment.nome_empresa}</h2>
+              
+              <p className={styles.desc}>
+                {establishment.descricao || 'Descrição não disponível.'}
+              </p>
+              
+              <div className={styles.addressSection}>
+                <p className={styles.label}>
+                  <MapPin size={16} /> Endereço
+                </p>
+                <p>{establishment.endereco_empresa}</p>
               </div>
-
-              <div className={styles.statusSection}>
-                <h3>Status</h3>
-                <p className={styles.status}>
-                  Status: <span className={establishment.status === 'ativo' ? styles.active : styles.inactive}>
-                    {establishment.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                  </span>
+              
+              <div className={styles.waitTimeSection}>
+                <p className={styles.waitTime}>
+                  Tempo médio de espera geral: {establishment.tempo_medio_espera || 15}min
                 </p>
               </div>
 
@@ -182,47 +165,41 @@ function DetEstabelecimentos() {
                     <p>Este estabelecimento não possui filas ativas no momento.</p>
                   </div>
                 ) : (
-                  <div className={styles.queuesList}>
+                  <div className={styles.queuesTable}>
+                    <div className={styles.tableHeader}>
+                      <div className={styles.headerCell}>Filas</div>
+                      <div className={styles.headerCell}>Pessoas</div>
+                      <div className={styles.headerCell}>Média espera</div>
+                      <div className={styles.headerCell}>Horário</div>
+                      <div className={styles.headerCell}>Ação</div>
+                    </div>
+                    
                     {filas.map((fila) => (
-                      <div 
-                        key={fila.id}
-                        className={`${styles.queueCard} ${selectedQueue?.id === fila.id ? styles.selected : ''}`}
-                        onClick={() => setSelectedQueue(fila)}
-                      >
-                        <div className={styles.queueHeader}>
-                          <h4>{fila.nome}</h4>
-                          <span className={`${styles.status} ${styles[fila.status]}`}>
-                            {fila.status}
+                      <div key={fila.id} className={styles.tableRow}>
+                        <div className={styles.tableCell}>
+                          <span className={styles.queueName}>{fila.nome}</span>
+                        </div>
+                        <div className={styles.tableCell}>
+                          <span className={styles.peopleCount}>{fila.clientes_na_fila || fila.total_clientes || 0}</span>
+                        </div>
+                        <div className={styles.tableCell}>
+                          <span className={styles.waitTime}>{Number(fila.tempo_estimado || fila.tempo_medio_espera || 0)}min</span>
+                        </div>
+                        <div className={styles.tableCell}>
+                          <span className={styles.schedule}>
+                            {fila.status === 'ativa' ? 'Agora' : 'Fechada'}
                           </span>
                         </div>
-                        
-                        {fila.descricao && (
-                          <p className={styles.queueDescription}>{fila.descricao}</p>
-                        )}
-                        
-                        <div className={styles.queueInfo}>
-                          <div className={styles.infoItem}>
-                            <Clock size={14} />
-                            <span>{Number(fila.tempo_estimado || 0)} min por posição</span>
-                          </div>
-                          <div className={styles.infoItem}>
-                            <Users size={14} />
-                            <span>{fila.stats?.totalClients || 0} pessoas</span>
-                          </div>
-                          <div className={styles.infoItem}>
-                            <span>R$ {Number(fila.valor_avancos || 0).toFixed(2)} por avanço</span>
-                          </div>
+                        <div className={styles.tableCell}>
+                          <button 
+                            className={styles.enterButton}
+                            onClick={() => setSelectedQueue(fila)}
+                            disabled={fila.status !== 'ativa'}
+                          >
+                            {fila.status === 'ativa' ? 'Entrar' : 'Fechada'}
+                            <ArrowLeft size={16} />
+                          </button>
                         </div>
-                        
-                        <button 
-                          className={styles.selectQueueButton}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedQueue(fila);
-                          }}
-                        >
-                          {selectedQueue?.id === fila.id ? 'Selecionada' : 'Selecionar Fila'}
-                        </button>
                       </div>
                     ))}
                   </div>

@@ -79,31 +79,45 @@ html, body {
 
 .imageBox {
   height: 200px;
-  background: linear-gradient(135deg, #152E60 0%, #0A2A5D 100%);
+  background: var(--bg-placeholder);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--text-placeholder);
   font-size: 24px;
   font-weight: bold;
+  border-radius: 16px 16px 0 0;
 }
 
 .infoBox {
   padding: 2rem;
 }
 
-.infoTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.5rem;
-}
-
-.infoTop h2 {
+.infoBox h2 {
   font-size: 28px;
   font-weight: bold;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 1rem 0;
+}
+
+.desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+}
+
+.addressSection {
+  margin-bottom: 1.5rem;
+}
+
+.waitTimeSection {
+  margin-bottom: 2rem;
+}
+
+.waitTime {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
 }
 
 .categoryBadge {
@@ -184,104 +198,87 @@ html, body {
   gap: 8px;
 }
 
-.filasGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.filaCard {
+/* Tabela de Filas */
+.queuesTable {
   background: var(--bg-secondary);
-  border: 2px solid var(--border-color);
   border-radius: 12px;
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
-.filaCard:hover {
-  border-color: var(--primary-color);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
-}
-
-.filaCard.selected {
-  border-color: var(--primary-color);
+.tableHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
   background: var(--bg-accent);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.queueHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.queueHeader h4 {
-  font-size: 18px;
+.headerCell {
+  padding: 1rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0;
+  font-size: 14px;
+  text-align: left;
 }
 
-.status {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
 }
 
-.status.ativa {
-  background: #d4edda;
-  color: #155724;
+.tableRow:hover {
+  background: var(--bg-hover);
 }
 
-.status.inativa {
-  background: #f8d7da;
-  color: #721c24;
+.tableRow:last-child {
+  border-bottom: none;
 }
 
-.queueDescription {
-  color: var(--text-secondary);
-  margin-bottom: 1rem;
-  line-height: 1.5;
-}
-
-.queueInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 1rem;
-}
-
-.infoItem {
+.tableCell {
+  padding: 1rem;
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 14px;
 }
 
-.selectQueueButton {
-  width: 100%;
+.queueName {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.peopleCount {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.waitTime {
+  color: var(--text-secondary);
+}
+
+.schedule {
+  color: var(--text-secondary);
+}
+
+.enterButton {
   background: var(--primary-color);
   color: white;
   border: none;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 0.2s ease;
 }
 
-.selectQueueButton:hover {
+.enterButton:hover {
   background: var(--primary-hover);
-}
-
-.selectQueueButton:disabled {
-  background: var(--disabled-color);
-  cursor: not-allowed;
 }
 
 /* Estados de Loading e Error */

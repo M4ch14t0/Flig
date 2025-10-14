@@ -23,13 +23,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   const [joining, setJoining] = useState(false);
   const [advancing, setAdvancing] = useState(false);
   const [clientPosition, setClientPosition] = useState(null);
-  const [showJoinForm, setShowJoinForm] = useState(false);
   const [showAdvanceForm, setShowAdvanceForm] = useState(false);
-  const [joinForm, setJoinForm] = useState({
-    nome: user?.name || '',
-    telefone: user?.telefone || '',
-    email: user?.email || ''
-  });
   const [advanceForm, setAdvanceForm] = useState({
     positions: 1,
     paymentMethod: 'credit_card',
@@ -42,16 +36,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
     }
   });
 
-  // Preenche dados do usuário automaticamente
-  useEffect(() => {
-    if (user && userType === 'cliente') {
-      setJoinForm({
-        nome: user.name || '',
-        telefone: user.telefone || '',
-        email: user.email || ''
-      });
-    }
-  }, [user, userType]);
+  // Dados do usuário são obtidos automaticamente do contexto
 
   // Carrega dados da fila
   useEffect(() => {
@@ -92,16 +77,25 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
     }
   };
 
-  const handleJoinQueue = async (e) => {
-    e.preventDefault();
+  const handleJoinQueue = async () => {
+    if (!user || userType !== 'cliente') {
+      if (onError) onError('Usuário não autenticado');
+      return;
+    }
+
     setJoining(true);
 
     try {
-      const response = await api.post(`/api/queues/${queueId}/join`, joinForm);
+      // Usa dados do usuário logado automaticamente
+      const clientData = {
+        nome: user.name || user.nome || '',
+        telefone: user.telefone || user.phone || '',
+        email: user.email || user.email_usuario || ''
+      };
+
+      const response = await api.post(`/api/queues/${queueId}/join`, clientData);
 
       if (response.data.success) {
-        setShowJoinForm(false);
-        setJoinForm({ nome: '', telefone: '', email: '' });
         await loadQueueData(); // Recarrega dados
         if (onJoinSuccess) onJoinSuccess(response.data.data);
       } else {
@@ -373,68 +367,19 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
       )}
 
       {/* Botão de Entrada na Fila */}
-      {!clientPosition && !showJoinForm && userType === 'cliente' && (
+      {!clientPosition && userType === 'cliente' && (
         <button 
           className={styles.joinButton}
-          onClick={() => setShowJoinForm(true)}
+          onClick={handleJoinQueue}
+          disabled={joining}
         >
-          Entrar na Fila
+          {joining ? 'Entrando...' : 'Entrar na Fila'}
         </button>
       )}
       
       
 
-      {/* Formulário de Entrada na Fila */}
-      {showJoinForm && (
-        <div className={styles.joinForm}>
-          <h3>Entrar na Fila</h3>
-          <form onSubmit={handleJoinQueue}>
-            <div className={styles.formGroup}>
-              <label>Nome Completo</label>
-              <input 
-                type="text"
-                value={joinForm.nome}
-                onChange={(e) => setJoinForm({ ...joinForm, nome: e.target.value })}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Telefone</label>
-              <input 
-                type="tel"
-                value={joinForm.telefone}
-                onChange={(e) => setJoinForm({ ...joinForm, telefone: e.target.value })}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Email</label>
-              <input 
-                type="email"
-                value={joinForm.email}
-                onChange={(e) => setJoinForm({ ...joinForm, email: e.target.value })}
-                required
-              />
-            </div>
-            <div className={styles.formActions}>
-              <button 
-                type="button"
-                onClick={() => setShowJoinForm(false)}
-                className={styles.cancelButton}
-              >
-                Cancelar
-              </button>
-              <button 
-                type="submit"
-                disabled={joining}
-                className={styles.submitButton}
-              >
-                {joining ? 'Entrando...' : 'Entrar na Fila'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      {/* Formulário de entrada removido - dados obtidos automaticamente do usuário */}
 
       {/* Lista de Clientes na Fila */}
       <div className={styles.clientsList}>
