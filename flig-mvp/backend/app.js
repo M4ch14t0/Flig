@@ -4,6 +4,7 @@ const connection = require("./config/db");
 const redisService = require("./services/redis");
 const Queue = require("./models/Queue");
 const { generalLimiter, authLimiter, queueLimiter, cnpjLimiter, paymentLimiter, notificationLimiter } = require("./middleware/rateLimiting");
+const { sanitizeInputs } = require("./middleware/validation");
 require('dotenv').config();
 
 const app = express();
@@ -70,6 +71,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(express.json());
+
+// Middleware de sanitização global
+app.use(sanitizeInputs);
 
 // Middleware de debug para todas as requisições
 app.use((req, res, next) => {
