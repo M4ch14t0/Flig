@@ -1,8 +1,47 @@
+/* RESET BASE */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  height: 100%;
+  width: 100%;
+}
+
+/* Força aplicação das variáveis CSS do tema */
+:global(.light-theme) .container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+:global(.dark-theme) .container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
 /* Container principal */
 .container {
   padding: 2rem;
-  background-color: #f4f4f4;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
   min-height: calc(100vh - 80px);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Força aplicação específica para o container */
+.container[class*="container"] {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Regra de fallback para garantir que as variáveis sejam aplicadas */
+.container {
+  background-color: var(--bg-primary, #ffffff) !important;
+  color: var(--text-primary, #000000) !important;
+}
+
+/* Força aplicação em todos os elementos filhos */
+.container * {
+  color: inherit;
 }
 
 /* Botão Voltar */
@@ -29,11 +68,13 @@
 
 /* Card do Estabelecimento */
 .estabCard {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-color);
   overflow: hidden;
   margin-bottom: 2rem;
+  transition: all 0.3s ease;
 }
 
 .imageBox {
@@ -61,7 +102,7 @@
 .infoTop h2 {
   font-size: 28px;
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary);
   margin: 0 0 0.5rem 0;
 }
 
@@ -78,7 +119,7 @@
 
 .label {
   font-weight: 600;
-  color: #666;
+  color: var(--text-secondary);
   margin: 1rem 0 0.5rem 0;
   display: flex;
   align-items: center;
@@ -86,13 +127,13 @@
 }
 
 .desc {
-  color: #555;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 0;
 }
 
 .tempo {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   margin: 0.5rem 0;
   display: flex;
@@ -103,13 +144,14 @@
 /* Sistema de avaliações será implementado futuramente */
 
 .statusSection {
-  border-top: 1px solid #444;
+  border-top: 1px solid var(--border-color);
   padding-top: 10px;
   font-size: 1rem;
 }
 
 .statusSection h3 {
   margin-bottom: 8px;
+  color: var(--text-primary);
 }
 
 .status {
@@ -118,12 +160,12 @@
 }
 
 .active {
-  color: #28a745;
+  color: var(--success-color);
   font-weight: 600;
 }
 
 .inactive {
-  color: #dc3545;
+  color: var(--error-color);
   font-weight: 600;
 }
 
@@ -135,7 +177,7 @@
 .filasSection h3 {
   font-size: 20px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
@@ -149,8 +191,8 @@
 }
 
 .filaCard {
-  background: white;
-  border: 2px solid #e0e0e0;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
@@ -158,14 +200,14 @@
 }
 
 .filaCard:hover {
-  border-color: #152E60;
+  border-color: var(--primary-color);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(21, 46, 96, 0.15);
+  box-shadow: var(--shadow-hover);
 }
 
 .filaCard.selected {
-  border-color: #152E60;
-  background: #f8f9ff;
+  border-color: var(--primary-color);
+  background: var(--bg-accent);
 }
 
 .queueHeader {
@@ -178,7 +220,7 @@
 .queueHeader h4 {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -201,7 +243,7 @@
 }
 
 .queueDescription {
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 1rem;
   line-height: 1.5;
 }
@@ -217,13 +259,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .selectQueueButton {
   width: 100%;
-  background: #152E60;
+  background: var(--primary-color);
   color: white;
   border: none;
   padding: 12px;
@@ -234,11 +276,11 @@
 }
 
 .selectQueueButton:hover {
-  background: #0A2A5D;
+  background: var(--primary-hover);
 }
 
 .selectQueueButton:disabled {
-  background: #ccc;
+  background: var(--disabled-color);
   cursor: not-allowed;
 }
 
@@ -254,7 +296,7 @@
 
 .loader {
   animation: spin 1s linear infinite;
-  color: #152E60;
+  color: var(--primary-color);
   margin-bottom: 1rem;
 }
 
@@ -273,13 +315,13 @@
 }
 
 .error p {
-  color: #dc3545;
+  color: var(--error-color);
   font-size: 18px;
   margin-bottom: 1rem;
 }
 
 .error button {
-  background: #152E60;
+  background: var(--primary-color);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -290,7 +332,7 @@
 }
 
 .error button:hover {
-  background: #0A2A5D;
+  background: var(--primary-hover);
 }
 
 /* Responsividade */

@@ -3,6 +3,7 @@ import { useLocation, Link, useNavigate, useParams } from 'react-router-dom';
 import { Loader2, Clock, Users, MapPin, ArrowLeft, Phone, Home, List } from 'lucide-react';
 import Layout from '../../../components/Layout';
 import { api } from '../../../services/api';
+import { useTheme } from '../../../contexts/ThemeContext';
 import QueueComponent from '../../../components/QueueComponent';
 import styles from './DetEstabelecimentos.module.css';
 
@@ -11,6 +12,7 @@ function DetEstabelecimentos() {
   const location = useLocation();
   const navigate = useNavigate();
   const estabelecimentoFromState = location.state?.estabelecimento;
+  const { theme } = useTheme();
 
   // Configuração da sidebar
   const sidebarLinks = [
