@@ -139,14 +139,11 @@ class Queue {
     const clientId = uuidUtils.generateClientId();
     const clientWithId = { ...clientData, id: clientId, timestamp: new Date().toISOString() };
 
-    // Calcular posição única baseada na maior posição existente + 1
-    let maxPosition = 0;
-    if (queueClients.length > 0) {
-      maxPosition = Math.max(...queueClients.map(client => client.position || 0));
-    }
-    const position = maxPosition + 1;
+    // Calcular posição única baseada no tamanho atual da fila + 1
+    // Isso garante posições sequenciais sem duplicatas
+    const position = queueClients.length + 1;
 
-    console.log(`🔍 Adicionando cliente ${clientData.nome} na posição ${position} (maxPosition: ${maxPosition})`);
+    console.log(`🔍 Adicionando cliente ${clientData.nome} na posição ${position} (total clientes: ${queueClients.length})`);
 
     await redisService.addClientToQueue(this.id, position, clientWithId);
 
@@ -263,9 +260,14 @@ class Queue {
       throw new Error('Erro ao buscar clientes da fila');
     }
 
-    // Encontrar o cliente
-    const clientIndex = clients.findIndex(client => client.id === clientId);
+    // Encontrar o cliente - comparação mais robusta
+    const clientIndex = clients.findIndex(client => {
+      // Compara tanto string quanto número para garantir compatibilidade
+      return client.id === clientId || client.id === String(clientId);
+    });
     console.log(`🔍 Cliente encontrado no índice: ${clientIndex}`);
+    console.log(`🔍 Buscando clientId: ${clientId}, tipo: ${typeof clientId}`);
+    console.log(`🔍 Clientes disponíveis:`, clients.map(c => ({ id: c.id, nome: c.nome, tipo: typeof c.id })));
     
     if (clientIndex === -1) {
       throw new Error('Cliente não encontrado na fila');
@@ -286,6 +288,9 @@ class Queue {
     const newClients = [...clients];
     newClients.splice(clientIndex, 1); // Remove o cliente da posição atual
     
+    // Atualizar posição do cliente
+    client.position = newPosition;
+    
     // Encontrar a nova posição correta baseada na posição numérica
     let insertIndex = 0;
     for (let i = 0; i < newClients.length; i++) {
@@ -298,7 +303,8 @@ class Queue {
     
     newClients.splice(insertIndex, 0, client); // Insere na nova posição
 
-    // Reorganizar todas as posições sequencialmente
+    // Reorganizar todas as posições sequencialmente para evitar gaps
+    newClients.sort((a, b) => (a.position || 0) - (b.position || 0));
     newClients.forEach((c, index) => {
       c.position = index + 1;
     });

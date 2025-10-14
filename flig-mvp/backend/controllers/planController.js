@@ -49,7 +49,7 @@ const getPlanById = async (req, res) => {
 // Verificar status do plano do estabelecimento
 const getPlanStatus = async (req, res) => {
   try {
-    const estabelecimentoId = req.user?.id || req.user?.userId;
+    const estabelecimentoId = req.user?.userId;
     
     if (!estabelecimentoId) {
       return res.status(400).json({
@@ -95,7 +95,7 @@ const getPlanStatus = async (req, res) => {
 const createSubscription = async (req, res) => {
   try {
     const { plano_id } = req.body;
-    const estabelecimentoId = req.user?.id || req.user?.userId;
+    const estabelecimentoId = req.user?.userId;
     
     if (!estabelecimentoId) {
       return res.status(400).json({

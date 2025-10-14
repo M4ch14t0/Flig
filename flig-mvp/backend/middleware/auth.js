@@ -60,6 +60,7 @@ async function authenticateToken(req, res, next) {
         }
 
         // Adiciona dados do usuário ao objeto req
+        // Garantir consistência entre id e userId
         req.user = {
           id: decoded.userId,
           userId: decoded.userId,
