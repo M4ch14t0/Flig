@@ -11,7 +11,7 @@ WORKDIR /app
 COPY flig-mvp/backend/package.json ./
 
 # Install dependencies - let npm resolve version conflicts
-RUN npm install --only=production
+RUN npm install --omit=dev
 
 # Copy the rest of the backend code
 COPY flig-mvp/backend/ ./
