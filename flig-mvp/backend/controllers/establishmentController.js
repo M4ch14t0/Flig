@@ -642,6 +642,70 @@ async function getEstablishmentImage(req, res) {
   }
 }
 
+// Endpoint para obter atendimentos por hora
+async function getAtendimentosPorHora(req, res) {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // Verificar se o estabelecimento pertence ao usuário
+    if (parseInt(id) !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Acesso negado'
+      });
+    }
+
+    // Buscar atendimentos por hora do estabelecimento
+    const connection = require('../config/db');
+    
+    const sql = `
+      SELECT 
+        HOUR(created_at) as hora,
+        COUNT(*) as total_atendimentos
+      FROM filas 
+      WHERE estabelecimento_id = ? 
+        AND status = 'encerrada'
+        AND DATE(created_at) = CURDATE()
+      GROUP BY HOUR(created_at)
+      ORDER BY hora
+    `;
+
+    connection.query(sql, [id], (error, results) => {
+      if (error) {
+        console.error('❌ Erro ao buscar atendimentos por hora:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Erro interno do servidor'
+        });
+      }
+
+      // Criar array com todas as horas (0-23) preenchido com 0
+      const atendimentosPorHora = Array.from({ length: 24 }, (_, index) => ({
+        hora: index,
+        total_atendimentos: 0
+      }));
+
+      // Preencher com os dados reais
+      results.forEach(row => {
+        atendimentosPorHora[row.hora].total_atendimentos = row.total_atendimentos;
+      });
+
+      res.json({
+        success: true,
+        data: atendimentosPorHora
+      });
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar atendimentos por hora:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+}
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -657,5 +721,6 @@ module.exports = {
   updateEstablishmentStatus,
   deleteEstablishment,
   deleteAccount,
-  getEstablishmentImage
+  getEstablishmentImage,
+  getAtendimentosPorHora
 };

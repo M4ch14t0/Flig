@@ -57,7 +57,7 @@ export default function Dashboard() {
       console.log('🔍 Buscando dados do dashboard para estabelecimento:', user.id);
 
       // Busca estatísticas do estabelecimento
-      const statsResponse = await api.get(`/api/establishments/${user.id}/stats`);
+      const statsResponse = await api.get(`/api/establishments/stats`);
       console.log('📊 Stats response:', statsResponse.data);
 
       if (statsResponse.data && statsResponse.data.success) {

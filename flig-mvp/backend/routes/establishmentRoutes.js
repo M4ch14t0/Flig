@@ -125,6 +125,19 @@ router.get('/:id/queues',
 );
 
 /**
+ * @route GET /api/establishments/:id/atendimentos-por-hora
+ * @desc Obtém atendimentos por hora de um estabelecimento
+ * @access Private (Estabelecimento)
+ * @headers { Authorization: Bearer <token> }
+ */
+router.get('/:id/atendimentos-por-hora',
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  sanitizeParams,
+  establishmentController.getAtendimentosPorHora
+);
+
+/**
  * @route DELETE /api/establishments/account
  * @desc Deleta conta do estabelecimento
  * @access Private (Estabelecimento)
