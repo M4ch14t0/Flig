@@ -14,7 +14,9 @@
     "db:seed": "mysql -u root -p flig_db < database/seed.sql",
     "db:reset": "npm run db:migrate && npm run db:seed",
     "setup:production": "node scripts/setup-production.js",
-    "start:production": "NODE_ENV=production node server.js"
+    "start:production": "NODE_ENV=production node server.js",
+    "debug": "node -e \"console.log('Node version:', process.version); console.log('Dependencies:', Object.keys(require('./package.json').dependencies)); console.log('Express available:', !!require('express'))\"",
+    "postinstall": "npm install --production"
   },
   "keywords": [
     "filas",
