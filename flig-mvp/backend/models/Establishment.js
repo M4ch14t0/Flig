@@ -433,10 +433,10 @@ class Establishment {
       // Primeiro, vamos verificar se há dados na tabela historico_clientes_filas
       const checkHistorySql = `
         SELECT COUNT(*) as total_records, 
-               COUNT(CASE WHEN status IN ('atendido', 'chamado') THEN 1 END) as atendidos,
-               COUNT(CASE WHEN status = 'abandonou' THEN 1 END) as abandonos,
-               COUNT(CASE WHEN status = 'chamado' THEN 1 END) as chamados,
-               COUNT(CASE WHEN status = 'atendido' THEN 1 END) as finalizados
+               COUNT(CASE WHEN hcf.status IN ('atendido', 'chamado') THEN 1 END) as atendidos,
+               COUNT(CASE WHEN hcf.status = 'abandonou' THEN 1 END) as abandonos,
+               COUNT(CASE WHEN hcf.status = 'chamado' THEN 1 END) as chamados,
+               COUNT(CASE WHEN hcf.status = 'atendido' THEN 1 END) as finalizados
         FROM historico_clientes_filas hcf
         JOIN filas f ON hcf.queue_id = f.id
         WHERE f.estabelecimento_id = ?
