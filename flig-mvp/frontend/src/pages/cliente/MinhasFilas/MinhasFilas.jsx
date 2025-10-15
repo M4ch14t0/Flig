@@ -174,11 +174,11 @@ function MinhasFilas() {
     // Limite baseado no estabelecimento (max_avancos da fila)
     const establishmentLimit = selectedQueue.max_avancos || 8;
     
-    // Limite baseado no número de pessoas na frente
-    const peopleInFront = selectedQueue.total_pessoas_fila - selectedQueue.posicao_atual;
+    // Limite baseado na posição atual (pode avançar até a posição 1)
+    const maxAdvanceByPosition = selectedQueue.posicao_atual - 1;
     
-    // Retorna o menor entre os dois limites
-    return Math.min(establishmentLimit, peopleInFront);
+    // Retorna o menor entre os dois limites, mas pelo menos 1
+    return Math.max(1, Math.min(establishmentLimit, maxAdvanceByPosition));
   };
 
   const calculateAdvancePrice = (positions) => {
@@ -317,7 +317,7 @@ function MinhasFilas() {
                   Máximo: {getMaxAdvance()} posições
                   {selectedQueue && (
                     <span className={styles.limitDetails}>
-                      (Limite do estabelecimento: {selectedQueue.max_avancos || 8}, Pessoas na frente: {selectedQueue.total_pessoas_fila - selectedQueue.posicao_atual})
+                      (Limite do estabelecimento: {selectedQueue.max_avancos || 8}, Posição atual: {selectedQueue.posicao_atual})
                     </span>
                   )}
                 </p>

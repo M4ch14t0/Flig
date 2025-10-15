@@ -306,27 +306,30 @@ app.get("/api/estabelecimentos/:id/filas", async (req, res) => {
   }
 });
 
-// COMENTADO TEMPORARIAMENTE - Pode estar conflitando com establishmentRoutes
-// app.get("/api/estabelecimentos/:id", (req, res) => {
-//   const estabelecimentoId = req.params.id;
-//   
-//   connection.query(
-//     "SELECT * FROM estabelecimentos WHERE id = ?",
-//     [estabelecimentoId],
-//     (err, results) => {
-//       if (err) {
-//         console.error("Erro ao buscar estabelecimento:", err);
-//         return res.status(500).json({ error: "Erro no servidor" });
-//       }
-//       
-//       if (results.length === 0) {
-//         return res.status(404).json({ error: "Estabelecimento não encontrado" });
-//       }
-//       
-//       res.json(results[0]);
-//     }
-//   );
-// });
+// Rota para buscar estabelecimento por ID
+app.get("/api/estabelecimentos/:id", (req, res) => {
+  const estabelecimentoId = req.params.id;
+  
+  connection.query(
+    "SELECT * FROM estabelecimentos WHERE id = ?",
+    [estabelecimentoId],
+    (err, results) => {
+      if (err) {
+        console.error("Erro ao buscar estabelecimento:", err);
+        return res.status(500).json({ error: "Erro no servidor" });
+      }
+      
+      if (results.length === 0) {
+        return res.status(404).json({ error: "Estabelecimento não encontrado" });
+      }
+      
+      res.json({
+        success: true,
+        data: results[0]
+      });
+    }
+  );
+});
 
 // Rota para buscar filas ativas
 app.get("/api/filas", (req, res) => {

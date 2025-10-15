@@ -86,6 +86,11 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem(keys.email);
           localStorage.removeItem(keys.name);
           localStorage.removeItem(keys.id);
+          localStorage.removeItem(keys.telefone);
+          localStorage.removeItem(keys.dataNascimento);
+          localStorage.removeItem(keys.cidade);
+          localStorage.removeItem(keys.bairro);
+          localStorage.removeItem(keys.uf);
         });
       }
     } catch (error) {
@@ -161,7 +166,9 @@ export const AuthProvider = ({ children }) => {
           hasUserType: !!storedUserType,
           hasEmail: !!storedEmail,
           hasName: !!storedName,
-          hasId: !!storedId
+          hasId: !!storedId,
+          hasTelefone: !!storedTelefone,
+          telefone: storedTelefone
         });
 
         // Verifica se existe token e tipo de usuário, e se o token é válido
@@ -369,14 +376,25 @@ export const AuthProvider = ({ children }) => {
           name: userName,
           email: userEmail,
           type: user.userType,
-          id: user.id
+          id: user.id,
+          telefone: userTelefone,
+          keys: keys
         });
+        
+        console.log('🔍 Objeto user completo recebido:', user);
+        console.log('🔍 user.telefone_usuario:', user.telefone_usuario);
+        console.log('🔍 user.telefone_empresa:', user.telefone_empresa);
 
           // Atualiza os estados
           setUser({
             id: user.id,
             email: user.email_usuario || user.email_empresa,
             name: user.nome_usuario || user.nome_empresa,
+            telefone: user.telefone_usuario || user.telefone_empresa || '',
+            dataNascimento: user.data_nascimento || user.data_nascimento_usuario || '',
+            cidade: user.cidade_usuario || user.cidade_empresa || '',
+            bairro: user.bairro_usuario || user.bairro_empresa || '',
+            uf: user.uf_usuario || user.uf_empresa || '',
             type: user.userType,
             token
           });

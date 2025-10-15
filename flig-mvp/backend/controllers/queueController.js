@@ -338,10 +338,28 @@ async function advanceInQueue(req, res) {
       });
     }
 
-    // Avança cliente na fila
-    const advanceResult = await queue.advanceClient(clientId, positions);
+    // Busca o cliente na fila pelo email do usuário (req.user.email)
+    // Já que o clientId enviado é o ID do banco, precisamos encontrar o UUID na fila
+    const clientInQueue = clients.find(client => {
+      // Verifica se o cliente na fila é o mesmo que está fazendo a requisição
+      // usando o email ou comparando com o clientId
+      return String(client.id).includes(String(clientId)) || 
+             (client.email && client.email === req.user?.email);
+    });
 
-    console.log(`✅ Cliente ${clientId} avançou ${positions} posições na fila ${queue.nome}`);
+    if (!clientInQueue) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cliente não encontrado na fila'
+      });
+    }
+
+    console.log(`🔍 Cliente encontrado na fila: ID ${clientInQueue.id}, Nome: ${clientInQueue.nome}`);
+
+    // Avança cliente na fila usando o ID correto da fila (UUID)
+    const advanceResult = await queue.advanceClient(clientInQueue.id, positions);
+
+    console.log(`✅ Cliente ${clientInQueue.nome} avançou ${positions} posições na fila ${queue.nome}`);
 
     res.json({
       success: true,
@@ -426,6 +444,7 @@ async function leaveQueue(req, res) {
 
     // Marcar como abandonou no histórico
     try {
+      const connection = require('../config/db');
       await new Promise((resolve, reject) => {
         connection.query(
           `UPDATE historico_clientes_filas 
@@ -821,6 +840,7 @@ async function chamarProximoCliente(req, res) {
     
     // Marcar cliente como "chamado" no histórico (aguardando comparecimento)
     try {
+      const connection = require('../config/db');
       await new Promise((resolve, reject) => {
         connection.query(
           `UPDATE historico_clientes_filas 
@@ -870,24 +890,36 @@ async function chamarProximoCliente(req, res) {
     const timeoutMinutes = 5; // 5 minutos para comparecer
     setTimeout(async () => {
       try {
-        const db = require('../config/db');
+        const connection = require('../config/db');
         // Verificar se o cliente ainda está como "chamado" (não compareceu)
-        const [rows] = await db.promise().query(
-          `SELECT id FROM historico_clientes_filas 
-           WHERE queue_id = ? AND email_cliente = ? AND status = 'chamado'`,
-          [queueId, proximoCliente.email]
-        );
-        
-        if (rows.length > 0) {
-          // Cliente não compareceu, marcar como abandonou
-          await db.promise().query(
-            `UPDATE historico_clientes_filas 
-             SET status = 'abandonou' 
+        await new Promise((resolve, reject) => {
+          connection.query(
+            `SELECT id FROM historico_clientes_filas 
              WHERE queue_id = ? AND email_cliente = ? AND status = 'chamado'`,
-            [queueId, proximoCliente.email]
+            [queueId, proximoCliente.email],
+            (err, rows) => {
+              if (err) reject(err);
+              else {
+                if (rows.length > 0) {
+                  // Cliente não compareceu, marcar como abandonou
+                  connection.query(
+                    `UPDATE historico_clientes_filas 
+                     SET status = 'abandonou' 
+                     WHERE queue_id = ? AND email_cliente = ? AND status = 'chamado'`,
+                    [queueId, proximoCliente.email],
+                    (updateErr, updateResult) => {
+                      if (updateErr) reject(updateErr);
+                      else resolve(updateResult);
+                    }
+                  );
+                } else {
+                  resolve();
+                }
+              }
+            }
           );
-          console.log(`⏰ Cliente ${proximoCliente.email} marcado como abandonou (não compareceu em ${timeoutMinutes}min)`);
-        }
+        });
+        console.log(`⏰ Cliente ${proximoCliente.email} marcado como abandonou (não compareceu em ${timeoutMinutes}min)`);
       } catch (timeoutErr) {
         console.error('❌ Erro no timeout de abandono:', timeoutErr);
       }
@@ -958,15 +990,22 @@ async function addTestClient(req, res) {
       const clientId = result.clientId || `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const posicaoInicial = result.position || 1;
       
-      const db = require('../config/db');
-      await db.promise().query(
-        `INSERT INTO historico_clientes_filas 
-         (client_id, queue_id, email_cliente, nome_cliente, telefone_cliente, posicao_inicial, status, data_entrada) 
-         VALUES (?, ?, ?, ?, ?, ?, 'aguardando', NOW())`,
-        [clientId, queueId, email, nome, telefone, posicaoInicial]
-      );
-      
-      console.log(`📝 Cliente ${email} adicionado ao histórico (ID: ${clientId}, Posição: ${posicaoInicial})`);
+      const connection = require('../config/db');
+      await new Promise((resolve, reject) => {
+        connection.query(
+          `INSERT INTO historico_clientes_filas 
+           (client_id, queue_id, email_cliente, nome_cliente, telefone_cliente, posicao_inicial, status, data_entrada) 
+           VALUES (?, ?, ?, ?, ?, ?, 'aguardando', NOW())`,
+          [clientId, queueId, email, nome, telefone, posicaoInicial],
+          (err, results) => {
+            if (err) reject(err);
+            else {
+              console.log(`📝 Cliente ${email} adicionado ao histórico (ID: ${clientId}, Posição: ${posicaoInicial})`);
+              resolve(results);
+            }
+          }
+        );
+      });
     } catch (histErr) {
       console.warn('⚠️ Erro ao adicionar ao histórico:', histErr);
     }

@@ -99,7 +99,7 @@ function DetEstabelecimentos() {
       // Usa dados do usuário logado automaticamente
       const clientData = {
         nome: user.name || user.nome || '',
-        telefone: user.telefone || user.phone || '(11) 99999-9999', // Telefone padrão se não tiver
+        telefone: user.telefone || user.phone || '', // Sem telefone padrão
         email: user.email || user.email_usuario || ''
       };
 
@@ -107,8 +107,8 @@ function DetEstabelecimentos() {
       console.log('🔍 Dados sendo enviados:', clientData);
 
       // Verificar se os dados essenciais estão preenchidos
-      if (!clientData.nome || !clientData.email) {
-        alert('Dados essenciais do usuário incompletos. Verifique seu perfil.');
+      if (!clientData.nome || !clientData.email || !clientData.telefone) {
+        alert('Dados essenciais do usuário incompletos. Verifique seu perfil, especialmente o telefone.');
         return;
       }
 

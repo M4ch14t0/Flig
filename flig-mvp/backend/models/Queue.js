@@ -284,27 +284,24 @@ class Queue {
 
     console.log(`🔍 Movendo cliente ${client.nome} da posição ${oldPosition} para ${newPosition}`);
 
-    // Reorganizar a fila: remover cliente atual e inserir na nova posição
+    // Lógica correta: quando um cliente avança, ele "pula" os outros
+    // Os outros clientes não se movem, apenas o que avança vai para a frente
     const newClients = [...clients];
-    newClients.splice(clientIndex, 1); // Remove o cliente da posição atual
     
-    // Atualizar posição do cliente
-    client.position = newPosition;
+    // Atualizar posição do cliente que está avançando
+    newClients[clientIndex].position = newPosition;
     
-    // Encontrar a nova posição correta baseada na posição numérica
-    let insertIndex = 0;
-    for (let i = 0; i < newClients.length; i++) {
-      if ((newClients[i].position || (i + 1)) >= newPosition) {
-        insertIndex = i;
-        break;
+    // Reorganizar a fila: colocar o cliente avançado na posição correta
+    // e ajustar as posições dos outros clientes que ficaram "atrás"
+    newClients.sort((a, b) => {
+      // Se ambos têm a mesma posição, manter ordem original
+      if (a.position === b.position) {
+        return 0;
       }
-      insertIndex = i + 1;
-    }
+      return (a.position || 0) - (b.position || 0);
+    });
     
-    newClients.splice(insertIndex, 0, client); // Insere na nova posição
-
-    // Reorganizar todas as posições sequencialmente para evitar gaps
-    newClients.sort((a, b) => (a.position || 0) - (b.position || 0));
+    // Reorganizar posições sequencialmente
     newClients.forEach((c, index) => {
       c.position = index + 1;
     });

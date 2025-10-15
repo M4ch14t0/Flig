@@ -142,12 +142,9 @@ async function removeClientFromQueue(queueId, clientData) {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
 
-    // Se já é string, usa diretamente; senão converte para JSON
-    const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
-
     console.log(`🔍 Tentando remover cliente da fila ${queueId}`);
     console.log(`🔍 Queue key: ${queueKey}`);
-    console.log(`🔍 Cliente value: ${value}`);
+    console.log(`🔍 Cliente data:`, clientData);
     
     // Verificar se a fila existe
     const exists = await client.exists(queueKey);
@@ -157,23 +154,29 @@ async function removeClientFromQueue(queueId, clientData) {
       const allClients = await client.zRange(queueKey, 0, -1);
       console.log(`📋 Clientes na fila antes da remoção:`, allClients);
       
-      // Tentar remover usando o valor exato
-      const result = await client.zRem(queueKey, value);
-      console.log(`✅ Resultado da remoção: ${result}`);
-      
-      if (result === 0) {
-        console.log(`⚠️ Cliente não encontrado na fila. Tentando com valor exato...`);
-        // Tentar com o valor exato do Redis
-        if (allClients.length > 0) {
-          const exactValue = allClients[0];
-          console.log(`🔍 Tentando com valor exato: ${exactValue}`);
-          const result2 = await client.zRem(queueKey, exactValue);
-          console.log(`✅ Resultado da remoção com valor exato: ${result2}`);
-          return result2;
+      // Encontrar o cliente específico pelo email
+      let clientToRemove = null;
+      for (const clientStr of allClients) {
+        try {
+          const clientObj = JSON.parse(clientStr);
+          if (clientObj.email === clientData.email) {
+            clientToRemove = clientStr;
+            break;
+          }
+        } catch (parseError) {
+          console.warn('Erro ao fazer parse do cliente:', parseError);
         }
       }
       
-      return result;
+      if (clientToRemove) {
+        console.log(`🔍 Cliente encontrado para remoção: ${clientToRemove}`);
+        const result = await client.zRem(queueKey, clientToRemove);
+        console.log(`✅ Resultado da remoção: ${result}`);
+        return result;
+      } else {
+        console.log(`⚠️ Cliente com email ${clientData.email} não encontrado na fila`);
+        return 0;
+      }
     }
     
     return 0;
