@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/authContextImports.js';
+import { useAuth } from '../contexts/AuthContext';
 import { User, Settings, LogOut, Wrench, FileText, Phone, HelpCircle } from 'lucide-react';
 import styles from './Layout.module.css';
 

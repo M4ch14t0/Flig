@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate, useParams } from 'react-router-dom';
-import { HelpCircle, User, Settings, LogOut, Loader2, Clock, Users, MapPin, ArrowLeft, Phone } from 'lucide-react';
+import { Loader2, Clock, Users, MapPin, ArrowLeft, Phone, Home, List } from 'lucide-react';
+import Layout from '../../../components/Layout';
 import { api } from '../../../services/api';
-import QueueComponent from '../../../components/QueueComponent';
+import { useTheme } from '../../../contexts/ThemeContext';
+import { useAuth } from '../../../contexts/authContextImports';
 import styles from './DetEstabelecimentos.module.css';
 
 function DetEstabelecimentos() {
@@ -10,13 +12,35 @@ function DetEstabelecimentos() {
   const location = useLocation();
   const navigate = useNavigate();
   const estabelecimentoFromState = location.state?.estabelecimento;
+  const { theme } = useTheme();
+  const { user, userType } = useAuth();
+
+  // Configuração da sidebar
+  const sidebarLinks = [
+    {
+      to: '/cliente/home',
+      label: 'Home',
+      icon: <Home size={16} />
+    },
+    {
+      to: '/cliente/estabelecimentos',
+      label: 'Estabelecimentos',
+      icon: <MapPin size={16} />,
+      active: true
+    },
+    {
+      to: '/cliente/minhas-filas',
+      label: 'Minhas Filas',
+      icon: <List size={16} />
+    }
+  ];
   
   // Estados para dados do estabelecimento e filas
   const [establishment, setEstablishment] = useState(estabelecimentoFromState);
   const [filas, setFilas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedQueue, setSelectedQueue] = useState(null);
+  // selectedQueue removido - entrada direta na fila
 
   // Função para carregar dados do estabelecimento e filas
   const loadEstablishmentData = async () => {
@@ -59,60 +83,91 @@ function DetEstabelecimentos() {
     setError(message);
   };
 
+  // Função para entrada direta na fila
+  const handleEnterQueue = async (fila) => {
+    if (!user || userType !== 'cliente') {
+      alert('Usuário não autenticado');
+      return;
+    }
+
+    if (fila.status !== 'ativa') {
+      alert('Esta fila não está ativa no momento');
+      return;
+    }
+
+    try {
+      // Usa dados do usuário logado automaticamente
+      const clientData = {
+        nome: user.name || user.nome || '',
+        telefone: user.telefone || user.phone || '', // Sem telefone padrão
+        email: user.email || user.email_usuario || ''
+      };
+
+      console.log('🔍 Dados do usuário:', user);
+      console.log('🔍 Dados sendo enviados:', clientData);
+
+      // Verificar se os dados essenciais estão preenchidos
+      if (!clientData.nome || !clientData.email || !clientData.telefone) {
+        alert('Dados essenciais do usuário incompletos. Verifique seu perfil, especialmente o telefone.');
+        return;
+      }
+
+      const response = await api.post(`/api/queues/${fila.id}/join`, clientData);
+
+      if (response.data.success) {
+        alert('Você entrou na fila com sucesso!');
+        // Recarrega dados para mostrar a posição
+        await loadEstablishmentData();
+        // Redireciona para minhas filas
+        navigate('/cliente/minhas-filas');
+      } else {
+        alert(`Erro: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error('Erro ao entrar na fila:', error);
+      alert(error.response?.data?.message || 'Erro ao entrar na fila');
+    }
+  };
+
   if (loading) {
     return (
-      <div className={styles.wrapper}>
+      <Layout
+        sidebarLinks={sidebarLinks}
+        userType="cliente"
+        showFooter={false}
+      >
         <div className={styles.loading}>
           <Loader2 className={styles.loader} size={32} />
           <p>Carregando estabelecimento...</p>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   if (error || !establishment) {
     return (
-      <div className={styles.wrapper}>
+      <Layout
+        sidebarLinks={sidebarLinks}
+        userType="cliente"
+        showFooter={false}
+      >
         <div className={styles.error}>
           <p>{error || 'Estabelecimento não encontrado'}</p>
           <button onClick={() => navigate('/cliente/estabelecimentos')}>
             Voltar para Estabelecimentos
           </button>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className={styles.wrapper}>
-      {/* HEADER */}
-      <header className={styles.header}>
-        <div className={styles.logo}>Flig</div>
-        <div className={styles.headerRight}>
-          <Link to="/faq" className={styles.helpIcon}><HelpCircle size={20} /></Link>
-          <div className={styles.userIconWrapper}>
-            <button className={styles.userIcon} onClick={() => navigate('/cliente/perfil')}><User size={20} /></button>
-            <div className={styles.userPopup}>
-              <p onClick={() => navigate('/cliente/perfil')}><User size={16} /> <u>Perfil</u></p>
-              <p onClick={() => navigate('/cliente/configuracoes')}><Settings size={16} /> <u>Configurações</u></p>
-              <p><LogOut size={16} /> <u>Sair</u></p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* CONTEÚDO PRINCIPAL */}
-      <div className={styles.content}>
-        {/* SIDEBAR */}
-        <aside className={styles.sidebar}>
-          <nav className={styles.menu}>
-            <Link to="/cliente/home" className={styles.homeActive}>🏠 Home</Link>
-            <Link to="/cliente/estabelecimentos" className={styles.estabActive}>📍 Estabelecimentos</Link>
-            <Link to="/cliente/minhas-filas" className={styles.filasActive}>👥 Minhas Filas</Link>
-          </nav>
-        </aside>
-
-        <main className={styles.main}>
+    <Layout
+      sidebarLinks={sidebarLinks}
+      userType="cliente"
+      showFooter={false}
+    >
+      <div className={styles.container}>
           {/* Botão Voltar */}
           <button 
             className={styles.backButton}
@@ -126,39 +181,22 @@ function DetEstabelecimentos() {
             <div className={styles.imageBox}></div>
 
             <div className={styles.infoBox}>
-              <div className={styles.infoTop}>
-                <div>
-                  <h2>{establishment.nome_empresa}</h2>
-                  <div className={styles.categoryBadge}>{establishment.categoria}</div>
-                  <p className={styles.label}>Descrição</p>
-                  <p className={styles.desc}>
-                    {establishment.descricao || 'Descrição não disponível.'}
-                  </p>
-                </div>
-                <div>
-                  <p className={styles.label}>
-                    <MapPin size={16} /> Endereço
-                  </p>
-                  <p>{establishment.endereco_empresa}</p>
-                  {establishment.telefone_empresa && (
-                    <p className={styles.tempo}>
-                      <Phone size={16} /> {establishment.telefone_empresa}
-                    </p>
-                  )}
-                  {establishment.horario_funcionamento && (
-                    <p className={styles.tempo}>
-                      <Clock size={16} /> {establishment.horario_funcionamento}
-                    </p>
-                  )}
-                </div>
+              <h2>{establishment.nome_empresa}</h2>
+              
+              <p className={styles.desc}>
+                {establishment.descricao || 'Descrição não disponível.'}
+              </p>
+              
+              <div className={styles.addressSection}>
+                <p className={styles.label}>
+                  <MapPin size={16} /> Endereço
+                </p>
+                <p>{establishment.endereco_empresa}</p>
               </div>
-
-              <div className={styles.avaliacao}>
-                <h3>Status</h3>
-                <p className={styles.status}>
-                  Status: <span className={establishment.status === 'ativo' ? styles.active : styles.inactive}>
-                    {establishment.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                  </span>
+              
+              <div className={styles.waitTimeSection}>
+                <p className={styles.waitTime}>
+                  Tempo médio de espera geral: {establishment.tempo_medio_espera || 15}min
                 </p>
               </div>
 
@@ -174,47 +212,41 @@ function DetEstabelecimentos() {
                     <p>Este estabelecimento não possui filas ativas no momento.</p>
                   </div>
                 ) : (
-                  <div className={styles.queuesList}>
+                  <div className={styles.queuesTable}>
+                    <div className={styles.tableHeader}>
+                      <div className={styles.headerCell}>Filas</div>
+                      <div className={styles.headerCell}>Pessoas</div>
+                      <div className={styles.headerCell}>Média espera</div>
+                      <div className={styles.headerCell}>Horário</div>
+                      <div className={styles.headerCell}>Ação</div>
+                    </div>
+                    
                     {filas.map((fila) => (
-                      <div 
-                        key={fila.id}
-                        className={`${styles.queueCard} ${selectedQueue?.id === fila.id ? styles.selected : ''}`}
-                        onClick={() => setSelectedQueue(fila)}
-                      >
-                        <div className={styles.queueHeader}>
-                          <h4>{fila.nome}</h4>
-                          <span className={`${styles.status} ${styles[fila.status]}`}>
-                            {fila.status}
+                      <div key={fila.id} className={styles.tableRow}>
+                        <div className={styles.tableCell}>
+                          <span className={styles.queueName}>{fila.nome}</span>
+                        </div>
+                        <div className={styles.tableCell}>
+                          <span className={styles.peopleCount}>{fila.clientes_na_fila || fila.total_clientes || 0}</span>
+                        </div>
+                        <div className={styles.tableCell}>
+                          <span className={styles.waitTime}>{Number(fila.tempo_estimado || fila.tempo_medio_espera || 0)}min</span>
+                        </div>
+                        <div className={styles.tableCell}>
+                          <span className={styles.schedule}>
+                            {fila.status === 'ativa' ? 'Agora' : 'Fechada'}
                           </span>
                         </div>
-                        
-                        {fila.descricao && (
-                          <p className={styles.queueDescription}>{fila.descricao}</p>
-                        )}
-                        
-                        <div className={styles.queueInfo}>
-                          <div className={styles.infoItem}>
-                            <Clock size={14} />
-                            <span>{Number(fila.tempo_estimado || 0)} min por posição</span>
-                          </div>
-                          <div className={styles.infoItem}>
-                            <Users size={14} />
-                            <span>{fila.stats?.totalClients || 0} pessoas</span>
-                          </div>
-                          <div className={styles.infoItem}>
-                            <span>R$ {Number(fila.valor_avancos || 0).toFixed(2)} por avanço</span>
-                          </div>
+                        <div className={styles.tableCell}>
+                          <button 
+                            className={styles.enterButton}
+                            onClick={() => handleEnterQueue(fila)}
+                            disabled={fila.status !== 'ativa'}
+                          >
+                            {fila.status === 'ativa' ? 'Entrar' : 'Fechada'}
+                            <ArrowLeft size={16} />
+                          </button>
                         </div>
-                        
-                        <button 
-                          className={styles.selectQueueButton}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedQueue(fila);
-                          }}
-                        >
-                          {selectedQueue?.id === fila.id ? 'Selecionada' : 'Selecionar Fila'}
-                        </button>
                       </div>
                     ))}
                   </div>
@@ -223,21 +255,9 @@ function DetEstabelecimentos() {
             </div>
           </div>
 
-          {/* Componente de Fila */}
-          {selectedQueue && (
-            <div className={styles.queueComponent}>
-              <h3>Fila Selecionada: {selectedQueue.nome}</h3>
-              <QueueComponent
-                queueId={selectedQueue.id}
-                establishmentId={id}
-                onJoinSuccess={handleJoinSuccess}
-                onError={handleError}
-              />
-            </div>
-          )}
-        </main>
+          {/* QueueComponent removido - entrada direta na fila */}
       </div>
-    </div>
+    </Layout>
   );
 }
 

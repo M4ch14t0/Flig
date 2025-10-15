@@ -142,12 +142,9 @@ async function removeClientFromQueue(queueId, clientData) {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
 
-    // Se já é string, usa diretamente; senão converte para JSON
-    const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
-
     console.log(`🔍 Tentando remover cliente da fila ${queueId}`);
     console.log(`🔍 Queue key: ${queueKey}`);
-    console.log(`🔍 Cliente value: ${value}`);
+    console.log(`🔍 Cliente data:`, clientData);
     
     // Verificar se a fila existe
     const exists = await client.exists(queueKey);
@@ -157,23 +154,29 @@ async function removeClientFromQueue(queueId, clientData) {
       const allClients = await client.zRange(queueKey, 0, -1);
       console.log(`📋 Clientes na fila antes da remoção:`, allClients);
       
-      // Tentar remover usando o valor exato
-      const result = await client.zRem(queueKey, value);
-      console.log(`✅ Resultado da remoção: ${result}`);
-      
-      if (result === 0) {
-        console.log(`⚠️ Cliente não encontrado na fila. Tentando com valor exato...`);
-        // Tentar com o valor exato do Redis
-        if (allClients.length > 0) {
-          const exactValue = allClients[0];
-          console.log(`🔍 Tentando com valor exato: ${exactValue}`);
-          const result2 = await client.zRem(queueKey, exactValue);
-          console.log(`✅ Resultado da remoção com valor exato: ${result2}`);
-          return result2;
+      // Encontrar o cliente específico pelo email
+      let clientToRemove = null;
+      for (const clientStr of allClients) {
+        try {
+          const clientObj = JSON.parse(clientStr);
+          if (clientObj.email === clientData.email) {
+            clientToRemove = clientStr;
+            break;
+          }
+        } catch (parseError) {
+          console.warn('Erro ao fazer parse do cliente:', parseError);
         }
       }
       
-      return result;
+      if (clientToRemove) {
+        console.log(`🔍 Cliente encontrado para remoção: ${clientToRemove}`);
+        const result = await client.zRem(queueKey, clientToRemove);
+        console.log(`✅ Resultado da remoção: ${result}`);
+        return result;
+      } else {
+        console.log(`⚠️ Cliente com email ${clientData.email} não encontrado na fila`);
+        return 0;
+      }
     }
     
     return 0;
@@ -275,16 +278,55 @@ async function getQueueSize(queueId) {
   }
 }
 
-// Move cliente na fila
+// Move cliente na fila (com renumeração completa)
 async function moveClientInQueue(queueId, clientData, newPosition) {
   try {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
 
-    const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
+    console.log(`🔍 Movendo cliente ${clientData.nome} para posição ${newPosition} na fila ${queueId}`);
 
-    const result = await client.zAdd(queueKey, { score: newPosition, value });
-    return result > 0;
+    // 1️⃣ Obter todos os clientes atuais
+    const clients = await getQueueClients(queueId);
+    if (!Array.isArray(clients) || clients.length === 0) {
+      console.log('⚠️ Fila vazia ou inválida');
+      return false;
+    }
+
+    console.log(`📋 Clientes antes da movimentação:`, clients.map(c => ({ nome: c.nome, position: c.position })));
+
+    // 2️⃣ Remover cliente da lista
+    const filtered = clients.filter(c => c.id !== clientData.id);
+    console.log(`🔍 Clientes após remoção:`, filtered.map(c => ({ nome: c.nome, position: c.position })));
+
+    // 3️⃣ Calcular nova posição dentro dos limites
+    const insertIndex = Math.max(0, Math.min(newPosition - 1, filtered.length));
+    console.log(`🔍 Índice de inserção: ${insertIndex}`);
+
+    // 4️⃣ Inserir o cliente na nova posição
+    filtered.splice(insertIndex, 0, { ...clientData, position: newPosition });
+    console.log(`🔍 Clientes após inserção:`, filtered.map(c => ({ nome: c.nome, position: c.position })));
+
+    // 5️⃣ Renumerar TODAS as posições (garante unicidade)
+    const renumbered = filtered.map((c, index) => ({
+      ...c,
+      position: index + 1
+    }));
+
+    console.log(`🔍 Clientes após renumeração:`, renumbered.map(c => ({ nome: c.nome, position: c.position })));
+
+    // 6️⃣ Atualizar Redis ZSET completamente
+    // (limpa a fila e regrava com scores únicos)
+    await client.del(queueKey);
+
+    for (const c of renumbered) {
+      await client.zAdd(queueKey, { score: c.position, value: JSON.stringify(c) });
+    }
+
+    console.log(`✅ Fila ${queueId} renumerada com ${renumbered.length} clientes.`);
+    console.table(renumbered.map(c => ({ nome: c.nome, position: c.position })));
+
+    return true;
   } catch (error) {
     console.error('Erro ao mover cliente na fila:', error);
     throw new Error('Falha ao mover cliente na fila');

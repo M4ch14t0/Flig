@@ -139,14 +139,11 @@ class Queue {
     const clientId = uuidUtils.generateClientId();
     const clientWithId = { ...clientData, id: clientId, timestamp: new Date().toISOString() };
 
-    // Calcular posição única baseada na maior posição existente + 1
-    let maxPosition = 0;
-    if (queueClients.length > 0) {
-      maxPosition = Math.max(...queueClients.map(client => client.position || 0));
-    }
-    const position = maxPosition + 1;
+    // Calcular posição única baseada no tamanho atual da fila + 1
+    // Isso garante posições sequenciais sem duplicatas
+    const position = queueClients.length + 1;
 
-    console.log(`🔍 Adicionando cliente ${clientData.nome} na posição ${position} (maxPosition: ${maxPosition})`);
+    console.log(`🔍 Adicionando cliente ${clientData.nome} na posição ${position} (total clientes: ${queueClients.length})`);
 
     await redisService.addClientToQueue(this.id, position, clientWithId);
 
@@ -263,9 +260,14 @@ class Queue {
       throw new Error('Erro ao buscar clientes da fila');
     }
 
-    // Encontrar o cliente
-    const clientIndex = clients.findIndex(client => client.id === clientId);
+    // Encontrar o cliente - comparação mais robusta
+    const clientIndex = clients.findIndex(client => {
+      // Compara tanto string quanto número para garantir compatibilidade
+      return client.id === clientId || client.id === String(clientId);
+    });
     console.log(`🔍 Cliente encontrado no índice: ${clientIndex}`);
+    console.log(`🔍 Buscando clientId: ${clientId}, tipo: ${typeof clientId}`);
+    console.log(`🔍 Clientes disponíveis:`, clients.map(c => ({ id: c.id, nome: c.nome, tipo: typeof c.id })));
     
     if (clientIndex === -1) {
       throw new Error('Cliente não encontrado na fila');
@@ -282,31 +284,18 @@ class Queue {
 
     console.log(`🔍 Movendo cliente ${client.nome} da posição ${oldPosition} para ${newPosition}`);
 
-    // Reorganizar a fila: remover cliente atual e inserir na nova posição
-    const newClients = [...clients];
-    newClients.splice(clientIndex, 1); // Remove o cliente da posição atual
+    // LÓGICA SIMPLES: Usar Redis ZSET nativo
+    // O Redis ZSET automaticamente reorganiza quando você muda o score
+    // 1. Atualizar o score (posição) do cliente no Redis
+    // 2. O Redis automaticamente reorganiza a fila
     
-    // Encontrar a nova posição correta baseada na posição numérica
-    let insertIndex = 0;
-    for (let i = 0; i < newClients.length; i++) {
-      if ((newClients[i].position || (i + 1)) >= newPosition) {
-        insertIndex = i;
-        break;
-      }
-      insertIndex = i + 1;
-    }
+    // Usar a função moveClientInQueue que já existe no redisService
+    await redisService.moveClientInQueue(this.id, client, newPosition);
     
-    newClients.splice(insertIndex, 0, client); // Insere na nova posição
-
-    // Reorganizar todas as posições sequencialmente
-    newClients.forEach((c, index) => {
-      c.position = index + 1;
-    });
+    // Buscar clientes atualizados do Redis
+    const newClients = await redisService.getQueueClients(this.id);
 
     console.log(`🔍 Posições após reorganização:`, newClients.map(c => ({ nome: c.nome, position: c.position })));
-
-    // Salvar no Redis
-    await redisService.setQueueClients(this.id, newClients);
 
     // Calcular tempo estimado
     const estimatedTime = (newPosition - 1) * this.tempo_estimado;

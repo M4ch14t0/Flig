@@ -10,6 +10,7 @@
 
 const jwt = require('jsonwebtoken');
 const tokenBlacklist = require('../services/tokenBlacklist');
+const sessionManager = require('../services/sessionManager');
 
 // Configurações JWT
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -19,9 +20,9 @@ if (!JWT_SECRET) {
 }
 
 /**
- * Middleware de autenticação JWT
+ * Middleware de autenticação JWT com gerenciamento de sessões
  * 
- * Verifica se o token JWT é válido e extrai informações do usuário
+ * Verifica se o token JWT é válido e se a sessão está ativa
  * Adiciona req.user com dados do usuário autenticado
  */
 async function authenticateToken(req, res, next) {
@@ -48,7 +49,7 @@ async function authenticateToken(req, res, next) {
       }
 
       try {
-        // Verifica se o token está na blacklist (CORRIGIDO: dentro do try-catch)
+        // Verificar se token está na blacklist
         const isBlacklisted = await tokenBlacklist.isTokenBlacklisted(token);
 
         if (isBlacklisted) {
@@ -59,7 +60,8 @@ async function authenticateToken(req, res, next) {
           });
         }
 
-        // Adiciona dados do usuário ao objeto req
+        // Adicionar dados do usuário ao objeto req
+        // Garantir consistência entre id e userId
         req.user = {
           id: decoded.userId,
           userId: decoded.userId,
@@ -82,10 +84,9 @@ async function authenticateToken(req, res, next) {
         next();
       }
     });
-
   } catch (error) {
     console.error('❌ Erro no middleware de autenticação:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Erro interno do servidor'
     });

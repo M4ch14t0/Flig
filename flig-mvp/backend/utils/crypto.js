@@ -11,8 +11,12 @@
 
 const crypto = require('crypto');
 
-// Chave de criptografia - em produção deve vir de variável de ambiente
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'flig-encryption-key-32-chars-long!!';
+// Chave de criptografia - DEVE vir de variável de ambiente em produção
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+
+if (!ENCRYPTION_KEY) {
+  throw new Error('ENCRYPTION_KEY environment variable is required for security');
+}
 const ALGORITHM = 'aes-256-gcm';
 
 /**

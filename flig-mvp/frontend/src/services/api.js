@@ -3,8 +3,8 @@ import axios from 'axios';
 // ========================================
 // CONFIGURAÇÃO DA API
 // ========================================
-// URL base do backend - ajuste conforme necessário
-const API_BASE_URL = 'http://localhost:5000';
+// URL base do backend - configuração dinâmica baseada no ambiente
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // ========================================
 // INSTÂNCIA DO AXIOS

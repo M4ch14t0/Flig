@@ -5,8 +5,51 @@
  * Previne ataques de injeção e garante integridade dos dados.
  * 
  * @author Flig Team
- * @version 1.0.0
+ * @version 1.0.1
  */
+
+/**
+ * Sanitiza string removendo caracteres perigosos
+ * @param {string} input - String a ser sanitizada
+ * @returns {string} - String sanitizada
+ */
+function sanitizeString(input) {
+  if (typeof input !== 'string') return input;
+  
+  // Remove caracteres de controle e potencialmente perigosos
+  return input
+    .replace(/[\x00-\x1F\x7F]/g, '') // Remove caracteres de controle
+    .replace(/[<>]/g, '') // Remove < e > para prevenir XSS
+    .replace(/['"]/g, '') // Remove aspas para prevenir SQL injection
+    .trim();
+}
+
+/**
+ * Sanitiza objeto recursivamente
+ * @param {Object} obj - Objeto a ser sanitizado
+ * @returns {Object} - Objeto sanitizado
+ */
+function sanitizeObject(obj) {
+  if (obj === null || obj === undefined) return obj;
+  
+  if (typeof obj === 'string') {
+    return sanitizeString(obj);
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeObject(item));
+  }
+  
+  if (typeof obj === 'object') {
+    const sanitized = {};
+    for (const [key, value] of Object.entries(obj)) {
+      sanitized[sanitizeString(key)] = sanitizeObject(value);
+    }
+    return sanitized;
+  }
+  
+  return obj;
+}
 
 /**
  * Valida CPF usando algoritmo oficial
@@ -498,7 +541,33 @@ function validatePhone(phone) {
   return phoneRegex.test(phone);
 }
 
+/**
+ * Middleware global de sanitização
+ * Sanitiza todos os inputs da requisição
+ */
+function sanitizeInputs(req, res, next) {
+  // Sanitiza body
+  if (req.body) {
+    req.body = sanitizeObject(req.body);
+  }
+  
+  // Sanitiza query parameters
+  if (req.query) {
+    req.query = sanitizeObject(req.query);
+  }
+  
+  // Sanitiza params
+  if (req.params) {
+    req.params = sanitizeObject(req.params);
+  }
+  
+  next();
+}
+
 module.exports = {
+  sanitizeString,
+  sanitizeObject,
+  sanitizeInputs,
   validateUserRegistration,
   validateEstablishmentRegistration,
   validateLogin,

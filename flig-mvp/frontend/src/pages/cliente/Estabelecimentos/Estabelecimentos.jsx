@@ -1,7 +1,7 @@
 // Estabelecimentos.jsx - Lista de estabelecimentos para clientes
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Home, MapPin, List } from 'lucide-react';
+import { Loader2, Home, MapPin, List, Filter } from 'lucide-react';
 import Layout from '../../../components/Layout';
 import { api } from '../../../services/api';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -76,17 +76,14 @@ function Estabelecimentos() {
                 ...estabelecimento,
                 filas: filasData.filter(fila => fila.status === 'ativa').length,
                 pessoas: totalPessoas,
-                nota: 4.5 + Math.random() * 0.5, // Simula nota (em produção viria de avaliações reais)
-                avaliacoes: Math.floor(Math.random() * 200) + 50 // Simula avaliações
+                // Sistema de avaliações será implementado futuramente
               };
             } catch (error) {
               console.error(`Erro ao buscar filas do estabelecimento ${estabelecimento.id}:`, error);
               return {
                 ...estabelecimento,
                 filas: 0,
-                pessoas: 0,
-                nota: 4.5,
-                avaliacoes: 0
+                pessoas: 0
               };
             }
           })
@@ -105,8 +102,7 @@ function Estabelecimentos() {
         id: i + 1,
         nome_empresa: `Estabelecimento ${String.fromCharCode(65 + (i % 26))}${i + 1}`,
         categoria: ['Restaurante', 'Barbearia', 'Clínica', 'Academia'][i],
-        nota: 4.5 + Math.random() * 0.5,
-        avaliacoes: Math.floor(Math.random() * 200) + 50,
+        // Sistema de avaliações será implementado futuramente
         filas: Math.floor(Math.random() * 3) + 1,
         pessoas: Math.floor(Math.random() * 50) + 10,
       }));
@@ -127,8 +123,18 @@ function Estabelecimentos() {
   // Filtra estabelecimentos baseado na pesquisa e filtros
   const filtrados = estabelecimentos.filter((est) => {
     const nomeMatch = est.nome_empresa.toLowerCase().includes(pesquisa.toLowerCase());
-    const categoriaMatch = filtro ? est.categoria === filtro : true;
-    return nomeMatch && categoriaMatch;
+    
+    // Filtro por categoria
+    const categoriaMatch = filtro && ['Restaurante', 'Barbearia', 'Saúde', 'Academia'].includes(filtro) 
+      ? est.categoria === filtro 
+      : true;
+    
+    // Filtro por status
+    const statusMatch = filtro && ['ativo', 'inativo'].includes(filtro)
+      ? est.status === filtro
+      : true;
+    
+    return nomeMatch && categoriaMatch && statusMatch;
   });
 
   const totalPaginas = Math.ceil(filtrados.length / itemsPorPagina);
@@ -157,7 +163,20 @@ function Estabelecimentos() {
       showFooter={false}
     >
       <div className={styles.container}>
-          <h2 className={styles.pageTitle}>Estabelecimentos</h2>
+          <div className={styles.pageHeader}>
+            <h2 className={styles.pageTitle}>Estabelecimentos</h2>
+            {filtro && (
+              <div className={styles.activeFilter}>
+                <span>Filtro ativo: {filtro}</span>
+                <button 
+                  onClick={() => setFiltro(null)}
+                  className={styles.removeFilter}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Barra de busca e filtros */}
           <div className={styles.searchFilterWrapper}>
@@ -174,71 +193,108 @@ function Estabelecimentos() {
             <button
               className={styles.filtersIcon}
               onClick={() => setShowFilters(!showFilters)}
+              title="Filtrar estabelecimentos"
             >
-              %
+              <Filter size={20} />
             </button>
             {showFilters && (
               <div className={styles.filtersPopup}>
-                <h3>Filtrar</h3>
-                <p><strong>Avaliações:</strong></p>
-                {[4, 3, 2, 1].map((n) => (
-                  <label key={n}>
-                    <input
-                      type="checkbox"
-                      onChange={() => {
-                        handleFiltro(filtro === n ? null : n);
-                        setPaginaAtual(1);
-                      }}
-                      checked={filtro === n}
-                    />{' '}
-                    {'⭐'.repeat(n)} e acima
-                  </label>
-                ))}
-                <p><strong>Categoria:</strong></p>
-                <label>
-                  <input 
-                    type="radio" 
-                    name="categoria"
-                    onChange={() => {
-                      handleFiltro(filtro === 'Restaurante' ? null : 'Restaurante');
+                <div className={styles.filtersHeader}>
+                  <h3>Filtrar</h3>
+                  <button 
+                    className={styles.clearFilters}
+                    onClick={() => {
+                      setFiltro(null);
                       setPaginaAtual(1);
                     }}
-                    checked={filtro === 'Restaurante'}
-                  /> Restaurantes
-                </label>
-                <label>
-                  <input 
-                    type="radio" 
-                    name="categoria"
-                    onChange={() => {
-                      handleFiltro(filtro === 'Barbearia' ? null : 'Barbearia');
-                      setPaginaAtual(1);
-                    }}
-                    checked={filtro === 'Barbearia'}
-                  /> Barbearias
-                </label>
-                <label>
-                  <input 
-                    type="radio" 
-                    name="categoria"
-                    onChange={() => {
-                      handleFiltro(filtro === 'Saúde' ? null : 'Saúde');
-                      setPaginaAtual(1);
-                    }}
-                    checked={filtro === 'Saúde'}
-                  /> Clínicas/Saúde
-                </label>
-                <label>
-                  <input 
-                    type="radio" 
-                    name="categoria"
-                    onChange={() => {
-                      handleFiltro(filtro === 'Academia' ? null : 'Academia');
-                      setPaginaAtual(1);
-                    }}
-                    checked={filtro === 'Academia'}
-                  /> Academias
-                </label>
+                  >
+                    Limpar
+                  </button>
+                </div>
+                
+                <div className={styles.filterSection}>
+                  <p><strong>Categoria:</strong></p>
+                  <div className={styles.filterOptions}>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="categoria"
+                        onChange={() => {
+                          handleFiltro(filtro === 'Restaurante' ? null : 'Restaurante');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'Restaurante'}
+                      /> 
+                      <span>🍽️ Restaurantes</span>
+                    </label>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="categoria"
+                        onChange={() => {
+                          handleFiltro(filtro === 'Barbearia' ? null : 'Barbearia');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'Barbearia'}
+                      /> 
+                      <span>💇 Barbearias</span>
+                    </label>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="categoria"
+                        onChange={() => {
+                          handleFiltro(filtro === 'Saúde' ? null : 'Saúde');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'Saúde'}
+                      /> 
+                      <span>🏥 Clínicas/Saúde</span>
+                    </label>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="categoria"
+                        onChange={() => {
+                          handleFiltro(filtro === 'Academia' ? null : 'Academia');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'Academia'}
+                      /> 
+                      <span>💪 Academias</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className={styles.filterSection}>
+                  <p><strong>Status:</strong></p>
+                  <div className={styles.filterOptions}>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="status"
+                        onChange={() => {
+                          handleFiltro(filtro === 'ativo' ? null : 'ativo');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'ativo'}
+                      /> 
+                      <span>✅ Apenas Ativos</span>
+                    </label>
+                    <label>
+                      <input 
+                        type="radio" 
+                        name="status"
+                        onChange={() => {
+                          handleFiltro(filtro === 'inativo' ? null : 'inativo');
+                          setPaginaAtual(1);
+                        }}
+                        checked={filtro === 'inativo'}
+                      /> 
+                      <span>❌ Apenas Inativos</span>
+                    </label>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -275,7 +331,7 @@ function Estabelecimentos() {
                   <div className={styles.cardDetails}>
                     <div className={styles.cardLeft}>
                       <h4>{est.nome_empresa}</h4>
-                      <small>⭐ {Number(est.nota || 0).toFixed(1)} ({est.avaliacoes} avaliações)</small>
+                      <small>Estabelecimento ativo</small>
                       <p className={styles.address}>{est.endereco_empresa}</p>
                     </div>
                     <div className={styles.cardRight}>

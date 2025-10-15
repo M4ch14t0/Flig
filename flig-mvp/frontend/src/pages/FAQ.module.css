@@ -1,16 +1,322 @@
-.wrapper {
-  padding: 2rem;
-  max-width: 700px;
-  margin: 0 auto;
+/* Container principal */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
-.title {
-  display: flex;
+
+/* Header da página */
+.header {
+  background: linear-gradient(135deg, #152E60 0%, #0A2A5D 100%);
+  color: white;
+  padding: 2rem 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.backButton {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
 }
-.section {
-  margin: 2rem 0;
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(-2px);
 }
-.section h2 {
-  margin-top: 1.5rem;
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.titleIcon {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0.5rem 0 0 0;
+  font-weight: 400;
+}
+
+/* Conteúdo principal */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.faqContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Categoria */
+.category {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.category:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.categoryHeader {
+  background: linear-gradient(135deg, #152E60 0%, #0A2A5D 100%);
+  color: white;
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.categoryIcon {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.75rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.categoryTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Perguntas */
+.questions {
+  padding: 0;
+}
+
+.questionItem {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.questionItem:last-child {
+  border-bottom: none;
+}
+
+.questionButton {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 1.5rem 2rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.questionButton:hover {
+  background: #f8fafc;
+  color: #152E60;
+}
+
+.questionText {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.answer {
+  padding: 0 2rem 1.5rem 2rem;
+  background: #f8fafc;
+  color: #555;
+  line-height: 1.6;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Seção de contato */
+.contactSection {
+  margin-top: 4rem;
+  display: flex;
+  justify-content: center;
+}
+
+.contactCard {
+  background: white;
+  border-radius: 20px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+}
+
+.contactCard svg {
+  color: #152E60;
+  margin-bottom: 1rem;
+}
+
+.contactCard h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 1rem 0;
+}
+
+.contactCard p {
+  color: #666;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.contactButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.contactButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.contactButton:first-child {
+  background: linear-gradient(135deg, #152E60 0%, #0A2A5D 100%);
+  color: white;
+}
+
+.contactButton:first-child:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(21, 46, 96, 0.3);
+}
+
+.contactButton:last-child {
+  background: white;
+  color: #152E60;
+  border-color: #152E60;
+}
+
+.contactButton:last-child:hover {
+  background: #152E60;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .headerContent {
+    padding: 0 1rem;
+  }
+  
+  .titleSection {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+  
+  .content {
+    padding: 2rem 1rem;
+  }
+  
+  .categoryHeader {
+    padding: 1rem 1.5rem;
+  }
+  
+  .questionButton {
+    padding: 1rem 1.5rem;
+  }
+  
+  .answer {
+    padding: 0 1.5rem 1rem 1.5rem;
+  }
+  
+  .contactCard {
+    padding: 2rem;
+  }
+  
+  .contactButtons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .contactButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.75rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .categoryTitle {
+    font-size: 1.25rem;
+  }
+  
+  .questionButton {
+    font-size: 0.9rem;
+  }
 } 

@@ -4,6 +4,7 @@ const connection = require("./config/db");
 const redisService = require("./services/redis");
 const Queue = require("./models/Queue");
 const { generalLimiter, authLimiter, queueLimiter, cnpjLimiter, paymentLimiter, notificationLimiter } = require("./middleware/rateLimiting");
+const { sanitizeInputs } = require("./middleware/validation");
 require('dotenv').config();
 
 const app = express();
@@ -70,6 +71,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(express.json());
+
+// Middleware de sanitização global
+app.use(sanitizeInputs);
 
 // Middleware de debug para todas as requisições
 app.use((req, res, next) => {
@@ -302,27 +306,30 @@ app.get("/api/estabelecimentos/:id/filas", async (req, res) => {
   }
 });
 
-// COMENTADO TEMPORARIAMENTE - Pode estar conflitando com establishmentRoutes
-// app.get("/api/estabelecimentos/:id", (req, res) => {
-//   const estabelecimentoId = req.params.id;
-//   
-//   connection.query(
-//     "SELECT * FROM estabelecimentos WHERE id = ?",
-//     [estabelecimentoId],
-//     (err, results) => {
-//       if (err) {
-//         console.error("Erro ao buscar estabelecimento:", err);
-//         return res.status(500).json({ error: "Erro no servidor" });
-//       }
-//       
-//       if (results.length === 0) {
-//         return res.status(404).json({ error: "Estabelecimento não encontrado" });
-//       }
-//       
-//       res.json(results[0]);
-//     }
-//   );
-// });
+// Rota para buscar estabelecimento por ID
+app.get("/api/estabelecimentos/:id", (req, res) => {
+  const estabelecimentoId = req.params.id;
+  
+  connection.query(
+    "SELECT * FROM estabelecimentos WHERE id = ?",
+    [estabelecimentoId],
+    (err, results) => {
+      if (err) {
+        console.error("Erro ao buscar estabelecimento:", err);
+        return res.status(500).json({ error: "Erro no servidor" });
+      }
+      
+      if (results.length === 0) {
+        return res.status(404).json({ error: "Estabelecimento não encontrado" });
+      }
+      
+      res.json({
+        success: true,
+        data: results[0]
+      });
+    }
+  );
+});
 
 // Rota para buscar filas ativas
 app.get("/api/filas", (req, res) => {

@@ -53,11 +53,11 @@ export default function Plano() {
                   <span className="plano-periodo">/mês</span>
                 </div>
                 {hasActivePlan ? (
-                  <button onClick={() => navigate('/estabelecimento/planos/renovar', { state: { planoId: 1 } })} className="plano-btn renovar">
+                  <button onClick={() => navigate('/estabelecimento/planos/detalhes-essencial')} className="plano-btn renovar">
                     Renovar Contrato
                   </button>
                 ) : (
-                  <button onClick={() => navigate('/estabelecimento/planos/assinar', { state: { planoId: 1 } })} className="plano-btn assinar">
+                  <button onClick={() => navigate('/estabelecimento/planos/detalhes-essencial')} className="plano-btn assinar">
                     Assinar Plano
                   </button>
                 )}
@@ -66,15 +66,15 @@ export default function Plano() {
               <div className="plano-card">
                 <h2>Profissional</h2>
                 <div className="plano-preco-container">
-                  <span className="plano-preco">R$: 189,90</span>
+                  <span className="plano-preco">R$: 129,90</span>
                   <span className="plano-periodo">/mês</span>
                 </div>
                 {hasActivePlan ? (
-                  <button onClick={() => navigate('/estabelecimento/planos/renovar', { state: { planoId: 2 } })} className="plano-btn renovar">
+                  <button onClick={() => navigate('/estabelecimento/planos/detalhes-profissional')} className="plano-btn renovar">
                     Renovar Contrato
                   </button>
                 ) : (
-                  <button onClick={() => navigate('/estabelecimento/planos/assinar', { state: { planoId: 2 } })} className="plano-btn assinar">
+                  <button onClick={() => navigate('/estabelecimento/planos/detalhes-profissional')} className="plano-btn assinar">
                     Assinar Plano
                   </button>
                 )}

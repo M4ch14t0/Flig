@@ -9,7 +9,7 @@ const createPaymentPreference = async (req, res) => {
   try {
     console.log('🔍 Simulando criação de preferência de pagamento...');
     const { subscription_id, plano_id } = req.body;
-    const estabelecimentoId = req.user?.id || req.user?.userId;
+    const estabelecimentoId = req.user?.userId;
     
     if (!estabelecimentoId) {
       return res.status(400).json({

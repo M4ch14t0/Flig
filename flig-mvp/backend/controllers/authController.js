@@ -13,6 +13,7 @@ const bcrypt = require('bcryptjs');
 const connection = require('../config/db');
 const cryptoUtils = require('../utils/crypto');
 const tokenBlacklist = require('../services/tokenBlacklist');
+const sessionManager = require('../services/sessionManager');
 
 /**
  * Valida CPF usando algoritmo oficial
@@ -68,16 +69,25 @@ async function registerUser(req, res) {
   try {
     console.log('🔍 registerUser - Starting user registration');
     console.log('🔍 Request body:', req.body);
+    console.log('🔍 Campos de endereço recebidos:', {
+      cidade_usuario: req.body.cidade_usuario,
+      bairro_usuario: req.body.bairro_usuario,
+      uf_usuario: req.body.uf_usuario
+    });
     
     const {
       nome_usuario,
       cpf,
+      data_nascimento,
       telefone_usuario,
       email_usuario,
       senha_usuario,
       cep_usuario,
       endereco_usuario,
-      numero_usuario
+      numero_usuario,
+      cidade_usuario,
+      bairro_usuario,
+      uf_usuario
     } = req.body;
 
     // Validações obrigatórias
@@ -140,16 +150,29 @@ async function registerUser(req, res) {
     // Criptografa a senha
     const hashedPassword = cryptoUtils.hashPassword(senha_usuario);
 
+    // Converte data de nascimento de DDMMAAAA para YYYY-MM-DD
+    let formattedDataNascimento = null;
+    if (data_nascimento) {
+      const day = data_nascimento.slice(0, 2);
+      const month = data_nascimento.slice(2, 4);
+      const year = data_nascimento.slice(4, 8);
+      formattedDataNascimento = `${year}-${month}-${day}`;
+    }
+
     // Prepara parâmetros com valores padrão
     const params = [
       nome_usuario,
       cpf,
+      formattedDataNascimento,
       telefone_usuario || null,
       email_usuario,
       hashedPassword,
       cep_usuario || null,
       endereco_usuario || null,
-      numero_usuario || null
+      numero_usuario || null,
+      cidade_usuario || null,
+      bairro_usuario || null,
+      uf_usuario || null
     ];
 
     console.log('🔍 Parâmetros para inserção:', params);
@@ -157,8 +180,8 @@ async function registerUser(req, res) {
     // Insere usuário no banco
     const sql = `
       INSERT INTO usuarios 
-      (nome_usuario, cpf, telefone_usuario, email_usuario, senha_usuario, cep_usuario, endereco_usuario, numero_usuario)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (nome_usuario, cpf, data_nascimento, telefone_usuario, email_usuario, senha_usuario, cep_usuario, endereco_usuario, numero_usuario, cidade_usuario, bairro_usuario, uf_usuario)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const result = await new Promise((resolve, reject) => {
@@ -383,7 +406,7 @@ async function loginUser(req, res) {
     // Busca usuário no banco
     const users = await new Promise((resolve, reject) => {
       connection.query(
-        'SELECT id, nome_usuario, email_usuario, senha_usuario FROM usuarios WHERE email_usuario = ?',
+        'SELECT id, nome_usuario, email_usuario, senha_usuario, telefone_usuario, data_nascimento, cidade_usuario, bairro_usuario, uf_usuario FROM usuarios WHERE email_usuario = ?',
         [email_usuario],
         (err, results) => err ? reject(err) : resolve(results)
       );
@@ -436,6 +459,11 @@ async function loginUser(req, res) {
           id: user.id,
           nome_usuario: user.nome_usuario,
           email_usuario: user.email_usuario,
+          telefone_usuario: user.telefone_usuario,
+          data_nascimento: user.data_nascimento,
+          cidade_usuario: user.cidade_usuario,
+          bairro_usuario: user.bairro_usuario,
+          uf_usuario: user.uf_usuario,
           userType: 'cliente'
         }
       }
@@ -554,7 +582,7 @@ async function getCurrentUser(req, res) {
     if (userType === 'cliente') {
       const users = await new Promise((resolve, reject) => {
         connection.query(
-          'SELECT id, nome_usuario, email_usuario, cpf, telefone_usuario, cep_usuario, endereco_usuario, numero_usuario FROM usuarios WHERE id = ?',
+          'SELECT id, nome_usuario, email_usuario, cpf, telefone_usuario, cep_usuario, endereco_usuario, numero_usuario, cidade_usuario, bairro_usuario, uf_usuario FROM usuarios WHERE id = ?',
           [userId],
           (err, results) => err ? reject(err) : resolve(results)
         );
@@ -576,6 +604,9 @@ async function getCurrentUser(req, res) {
         cep_usuario: users[0].cep_usuario,
         endereco_usuario: users[0].endereco_usuario,
         numero_usuario: users[0].numero_usuario,
+        cidade_usuario: users[0].cidade_usuario,
+        bairro_usuario: users[0].bairro_usuario,
+        uf_usuario: users[0].uf_usuario,
         userType: 'cliente'
       };
     } else {

@@ -1,7 +1,7 @@
 /* Container principal */
 .plano-container {
-  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
-  color: white;
+  background: var(--bg-primary, linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%));
+  color: var(--text-primary, white);
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   display: flex;
@@ -27,7 +27,7 @@
   font-weight: 700;
   margin: 0;
   text-align: center;
-  background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+  background: var(--text-gradient, linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -44,29 +44,29 @@
 
 /* Cartões */
 .plano-card {
-  background: linear-gradient(145deg, #1e1e1e 0%, #2a2a2a 100%);
+  background: var(--card-bg, linear-gradient(145deg, #1e1e1e 0%, #2a2a2a 100%));
   padding: 2.5rem;
   border-radius: 16px;
   text-align: center;
-  box-shadow: 
+  box-shadow: var(--card-shadow, 
     0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+    0 0 0 1px rgba(255, 255, 255, 0.05));
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
 }
 
 .plano-card:hover {
   transform: translateY(-4px);
-  box-shadow: 
+  box-shadow: var(--card-hover-shadow,
     0 12px 40px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
+    0 0 0 1px rgba(255, 255, 255, 0.1));
 }
 
 .plano-card h2 {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: white;
+  color: var(--text-primary, white);
 }
 
 /* Container do preço */
@@ -81,32 +81,32 @@
 .plano-preco {
   font-size: 2rem;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary, white);
 }
 
 .plano-periodo {
   font-size: 1rem;
-  color: #a0a0a0;
+  color: var(--text-secondary, #a0a0a0);
   font-weight: 400;
 }
 
 .plano-btn {
   padding: 1rem 2rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid var(--border-color, rgba(255, 255, 255, 0.2));
   border-radius: 12px;
   font-size: 1rem;
   cursor: pointer;
   font-weight: 600;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  color: white;
+  background: var(--btn-bg, linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%));
+  color: var(--text-primary, white);
   transition: all 0.3s ease;
   width: 100%;
   backdrop-filter: blur(10px);
 }
 
 .plano-btn:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: var(--btn-hover-bg, linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%));
+  border-color: var(--border-hover-color, rgba(255, 255, 255, 0.4));
   transform: translateY(-2px);
 }
 
@@ -116,14 +116,14 @@
 }
 
 .plano-contact-link {
-  color: #a0a0a0;
+  color: var(--text-secondary, #a0a0a0);
   text-decoration: none;
   font-size: 0.9rem;
   transition: color 0.3s ease;
 }
 
 .plano-contact-link:hover {
-  color: white;
+  color: var(--text-primary, white);
   text-decoration: underline;
 }
 
@@ -132,7 +132,7 @@
   text-align: center;
   padding: 2rem;
   font-size: 0.9rem;
-  color: #a0a0a0;
+  color: var(--text-secondary, #a0a0a0);
   width: 100%;
   margin-top: 3rem;
 }
@@ -140,7 +140,7 @@
 .plano-footer-line {
   width: 60%;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  background: var(--footer-line-bg, linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%));
   margin: 0 auto 1.5rem auto;
 }
 
@@ -186,4 +186,44 @@
   .plano-btn {
     padding: 0.8rem 1.5rem;
   }
+}
+
+/* Modo Claro */
+:root {
+  --bg-primary: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-gradient: linear-gradient(135deg, #212529 0%, #495057 100%);
+  --card-bg: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  --card-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  --card-hover-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.1);
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-hover-color: rgba(0, 0, 0, 0.2);
+  --btn-bg: linear-gradient(135deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.02) 100%);
+  --btn-hover-bg: linear-gradient(135deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.05) 100%);
+  --footer-line-bg: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+}
+
+/* Modo Escuro */
+.dark-theme {
+  --bg-primary: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+  --text-primary: white;
+  --text-secondary: #a0a0a0;
+  --text-gradient: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+  --card-bg: linear-gradient(145deg, #1e1e1e 0%, #2a2a2a 100%);
+  --card-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  --card-hover-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-hover-color: rgba(255, 255, 255, 0.4);
+  --btn-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  --btn-hover-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  --footer-line-bg: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
 }

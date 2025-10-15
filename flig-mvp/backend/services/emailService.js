@@ -13,45 +13,49 @@ require('dotenv').config();
 
 const nodemailer = require('nodemailer');
 
-// Configuração do transporter (em produção, usar variáveis de ambiente)
+// Configuração do transporter (usando variáveis de ambiente consistentes)
 const createTransporter = () => {
-  // Configuração padrão do Flig
-  const fligEmail = 'FligPTI@gmail.com';
-  const fligPassword = process.env.FLIG_EMAIL_PASSWORD || 'sua_senha_app_aqui';
+  // Usar variáveis de ambiente padronizadas
+  const email = process.env.EMAIL_USER || process.env.MAIL_USER;
+  const password = process.env.EMAIL_PASS || process.env.MAIL_PASS;
+  const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.EMAIL_PORT) || 587;
+  const secure = process.env.EMAIL_SECURE === 'true' || false;
   
-  // Se não há configuração de email, usar configuração padrão do Flig
-  const email = process.env.MAIL_USER || fligEmail;
-  const password = process.env.MAIL_PASS || fligPassword;
+  if (!email || !password) {
+    console.warn('⚠️ Configuração de email não encontrada. Usando configuração de fallback.');
+    return null;
+  }
   
-  // Detectar provedor baseado no email
+  // Detectar provedor baseado no email (usando configuração fornecida)
   let service = 'gmail'; // padrão
-  let host = 'smtp.gmail.com';
-  let port = 587;
-  let secure = false;
+  let detectedHost = host;
+  let detectedPort = port;
+  let detectedSecure = secure;
 
   if (email.includes('@outlook.com') || email.includes('@hotmail.com') || email.includes('@live.com')) {
     service = 'hotmail';
-    host = 'smtp-mail.outlook.com';
-    port = 587;
-    secure = false;
+    detectedHost = 'smtp-mail.outlook.com';
+    detectedPort = 587;
+    detectedSecure = false;
   } else if (email.includes('@gmail.com')) {
     service = 'gmail';
-    host = 'smtp.gmail.com';
-    port = 587;
-    secure = false;
+    detectedHost = 'smtp.gmail.com';
+    detectedPort = 587;
+    detectedSecure = false;
   } else if (email.includes('@yahoo.com')) {
     service = 'yahoo';
-    host = 'smtp.mail.yahoo.com';
-    port = 587;
-    secure = false;
+    detectedHost = 'smtp.mail.yahoo.com';
+    detectedPort = 587;
+    detectedSecure = false;
   }
 
   // Configuração com timeout reduzido
   return nodemailer.createTransport({
     service: process.env.SMTP_SERVICE || service,
-    host: process.env.SMTP_HOST || host,
-    port: parseInt(process.env.SMTP_PORT) || port,
-    secure: process.env.SMTP_SECURE === 'true' || secure,
+    host: process.env.SMTP_HOST || detectedHost,
+    port: parseInt(process.env.SMTP_PORT) || detectedPort,
+    secure: process.env.SMTP_SECURE === 'true' || detectedSecure,
     auth: {
       user: email,
       pass: password

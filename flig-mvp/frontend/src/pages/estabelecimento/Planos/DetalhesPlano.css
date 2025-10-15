@@ -1,0 +1,225 @@
+/* Container principal */
+.plano-container {
+  background: var(--bg-primary, linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%));
+  color: var(--text-primary, white);
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Conteúdo principal */
+.detalhes-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 2rem;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Botão voltar */
+.detalhes-back {
+  background: none;
+  border: none;
+  color: var(--text-primary, white);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  align-self: flex-start;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.detalhes-back:hover {
+  color: var(--accent-color, #f0d85a);
+}
+
+/* Card principal */
+.detalhes-card {
+  display: flex;
+  gap: 2rem;
+  background-color: var(--card-bg-color, #1e1e1e);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: var(--card-shadow, 0 0 10px rgba(255, 255, 255, 0.05));
+  max-width: 900px;
+  width: 100%;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  border: 1px solid var(--border-color, #333);
+}
+
+/* Informações do plano */
+.detalhes-info {
+  flex: 1;
+  min-width: 280px;
+  padding-right: 2rem;
+  border-right: 1px solid var(--border-color, #333);
+}
+
+.detalhes-info h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary, white);
+}
+
+.detalhes-info span {
+  color: var(--accent-color, #f0d85a);
+}
+
+.detalhes-info p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: var(--text-primary, white);
+}
+
+.detalhes-info p strong {
+  text-decoration: underline;
+}
+
+/* Botão de ação */
+.detalhes-btn {
+  margin-top: 1.5rem;
+  background-color: var(--accent-color, #f0d85a);
+  color: var(--btn-text-color, black);
+  border: none;
+  padding: 0.7rem 2rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+.detalhes-btn:hover {
+  background-color: var(--accent-hover-color, #e6c94f);
+}
+
+/* Benefícios do plano */
+.detalhes-beneficios {
+  flex: 1;
+  min-width: 280px;
+  padding-left: 2rem;
+}
+
+.detalhes-beneficios h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary, white);
+  font-weight: bold;
+}
+
+.detalhes-beneficios ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.detalhes-beneficios li {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: var(--text-primary, white);
+  display: flex;
+  align-items: center;
+}
+
+.detalhes-beneficios li::before {
+  content: "✔";
+  color: var(--text-primary, white);
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+/* Rodapé */
+.plano-footer {
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #a0a0a0);
+  width: 100%;
+  margin-top: 3rem;
+}
+
+.plano-footer-line {
+  width: 60%;
+  height: 1px;
+  background: var(--footer-line-bg, linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%));
+  margin: 0 auto 1.5rem auto;
+}
+
+.plano-footer p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .detalhes-main {
+    padding: 2rem 1rem;
+    gap: 1.5rem;
+  }
+  
+  .detalhes-card {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .detalhes-info {
+    padding-right: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color, #333);
+    padding-bottom: 1.5rem;
+  }
+  
+  .detalhes-beneficios {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .detalhes-main {
+    padding: 1.5rem 1rem;
+  }
+  
+  .detalhes-card {
+    padding: 1.5rem;
+  }
+  
+  .detalhes-btn {
+    padding: 0.8rem 1.5rem;
+  }
+}
+
+/* Modo Claro */
+:root {
+  --bg-primary: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --card-bg-color: #ffffff;
+  --card-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  --border-color: #dee2e6;
+  --accent-color: #007bff;
+  --accent-hover-color: #0056b3;
+  --btn-text-color: white;
+  --footer-line-bg: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+}
+
+/* Modo Escuro */
+.dark-theme {
+  --bg-primary: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+  --text-primary: white;
+  --text-secondary: #a0a0a0;
+  --card-bg-color: #1e1e1e;
+  --card-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  --border-color: #333;
+  --accent-color: #f0d85a;
+  --accent-hover-color: #e6c94f;
+  --btn-text-color: black;
+  --footer-line-bg: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+}

@@ -32,6 +32,9 @@ async function processPayment(paymentData) {
       cardData = {}
     } = paymentData;
 
+    // Normaliza o método de pagamento para valores aceitos pelo banco
+    const normalizedPaymentMethod = paymentMethod === 'simulated' ? 'credit_card' : paymentMethod;
+
     console.log(`🔄 Processando pagamento simulado: ${positions} posições por R$ ${amount}`);
 
     // Simula validação de dados do cartão (apenas se dados foram fornecidos)
@@ -64,7 +67,7 @@ async function processPayment(paymentData) {
       queueId,
       positions,
       amount,
-      paymentMethod,
+      paymentMethod: normalizedPaymentMethod,
       status: 'approved',
       createdAt: new Date()
     });
