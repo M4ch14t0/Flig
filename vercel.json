@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "cd flig-mvp/frontend && npm install && npm run build",
+  "outputDirectory": "flig-mvp/frontend/dist",
   "framework": "vite",
   "rewrites": [
     {
