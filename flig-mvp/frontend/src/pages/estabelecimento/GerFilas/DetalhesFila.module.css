@@ -1,21 +1,29 @@
 .wrapper {
   padding: 2rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 .backBtn {
   background: none;
   border: none;
-  color: #152E60;
+  color: var(--accent);
   font-size: 18px;
   display: flex;
   align-items: center;
   gap: 4px;
   margin-bottom: 16px;
   cursor: pointer;
+  transition: color 0.3s ease;
+}
+.backBtn:hover {
+  color: var(--accent-light);
 }
 .title {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--text-primary);
 }
 .cards {
   display: flex;
@@ -23,49 +31,62 @@
   margin: 2rem 0;
 }
 .card {
-  background: #f5f7fa;
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 24px;
   min-width: 200px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .card h2 {
   margin: 8px 0 0 0;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 .card p {
   font-size: 20px;
   font-weight: 700;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 .main {
-  background: #fff;
+  background: var(--bg-secondary);
   border-radius: 12px;
   padding: 32px;
   min-height: 200px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .loading, .error {
   text-align: center;
   padding: 2rem;
   font-size: 1.2rem;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .error {
-  color: #e74c3c;
+  color: var(--danger);
 }
 
 .statusActive {
-  color: #27ae60;
+  color: var(--success);
   font-weight: bold;
 }
 
 .statusPaused {
-  color: #f39c12;
+  color: var(--warning);
   font-weight: bold;
 }
 
 .emptyState {
   text-align: center;
   padding: 2rem;
-  color: #7f8c8d;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
 }
 
 .clientsTable {
@@ -76,19 +97,26 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
 .clientsTable th,
 .clientsTable td {
   padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .clientsTable th {
-  background-color: #f8f9fa;
+  background-color: var(--bg-tertiary);
   font-weight: 600;
-  color: #495057;
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .position {
@@ -96,51 +124,58 @@
 }
 
 .positionBadge {
-  background: #152E60;
+  background: var(--accent);
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.9rem;
   font-weight: bold;
+  transition: background-color 0.3s ease;
 }
 
 .name {
   font-weight: 600;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .email {
-  color: #6c757d;
+  color: var(--text-secondary);
   font-size: 0.9rem;
+  transition: color 0.3s ease;
 }
 
 .phone {
-  color: #6c757d;
+  color: var(--text-secondary);
   font-size: 0.9rem;
+  transition: color 0.3s ease;
 }
 
 .waitTime {
-  color: #e67e22;
+  color: var(--warning);
   font-weight: 600;
 }
 
 .timestamp {
-  color: #6c757d;
+  color: var(--text-secondary);
   font-size: 0.85rem;
+  transition: color 0.3s ease;
 }
 
 /* Tempo Médio de Espera */
 .tempoMedio {
-  color: #27ae60;
+  color: var(--success);
   font-weight: 700;
   font-size: 24px;
 }
 
 .totalAtendidos {
-  color: #6c757d;
+  color: var(--text-secondary);
   font-size: 0.85rem;
   font-weight: 400;
   margin-top: 4px;
   display: block;
+  transition: color 0.3s ease;
 }
 
 /* Header com botão de edição */

@@ -38,13 +38,35 @@ export default function Dashboard() {
   const [atendimentosPorHora, setAtendimentosPorHora] = useState([]);
   const [tempoMedioEspera, setTempoMedioEspera] = useState([]);
   const [dadosRadial, setDadosRadial] = useState([]);
+  const [chartLoading, setChartLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300'];
+  // Cores que se adaptam ao tema
+  const getChartColors = () => {
+    const isDark = document.documentElement.classList.contains('dark-theme');
+    return isDark 
+      ? ['#4a9eff', '#6bb6ff', '#ffc658', '#ff7300', '#9c27b0', '#4caf50']
+      : ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#9c27b0', '#4caf50'];
+  };
+
+  // Função para gerar dados de fallback
+  const generateFallbackData = () => {
+    const horas = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'];
+    const dadosSimulados = horas.map(hora => ({
+      hora,
+      pessoas: Math.floor(Math.random() * 20) + 5 // Entre 5 e 25 pessoas
+    }));
+    setAtendimentosPorHora(dadosSimulados);
+  };
 
   // Função para buscar dados do dashboard
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (showRefreshIndicator = false) => {
     try {
-      setLoading(true);
+      if (showRefreshIndicator) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
 
       // Verifica se o usuário está logado
@@ -58,21 +80,26 @@ export default function Dashboard() {
 
       // Busca estatísticas do estabelecimento
       const statsResponse = await api.get(`/api/establishments/stats`);
-      console.log('📊 Stats response:', statsResponse.data);
+      console.log('📊 Stats data:', statsResponse.data);
 
       if (statsResponse.data && statsResponse.data.success) {
         const stats = statsResponse.data.data;
-        setDashboardData({
+        const dashboardData = {
           totalAtendimentos: parseInt(stats.totalClientesAtendidos) || 0,
-          tempoMedioEspera: Math.round(parseFloat(stats.tempoMedioReal) || 0),
+          tempoMedioEspera: Math.round(parseFloat(stats.tempoMedioReal) || parseFloat(stats.tempoMedioEstimado) || 0),
           totalAvanços: parseInt(stats.totalClientesAtendidos) || 0,
           receitaTotal: parseFloat(stats.receitaTotal) || 0,
           filasAtivas: parseInt(stats.filasAtivas) || 0,
           filasEncerradas: parseInt(stats.totalFilas) - parseInt(stats.filasAtivas) || 0,
           totalFilas: parseInt(stats.totalFilas) || 0,
           clientesEmFila: 0, // Será calculado das filas
-          abandonoRate: parseFloat(stats.taxa_abandono) || 0 // Taxa real calculada pelo backend
-        });
+          abandonoRate: stats.totalAbandonos > 0 ? (stats.totalAbandonos / (stats.totalClientesAtendidos + stats.totalAbandonos)) * 100 : 0
+        };
+        
+        console.log('📊 Dashboard atualizado:', dashboardData);
+        setDashboardData(dashboardData);
+      } else {
+        console.warn('⚠️ Stats response não foi bem-sucedida:', statsResponse.data);
       }
 
       // Busca filas do estabelecimento
@@ -124,17 +151,28 @@ export default function Dashboard() {
         setTempoEsperaStats(tempoStats);
 
         // Busca dados históricos de atendimentos por hora
+        setChartLoading(true);
         try {
           const atendimentosResponse = await api.get(`/api/establishments/${user.id}/atendimentos-por-hora`);
           console.log('📊 Atendimentos por hora response:', atendimentosResponse.data);
           
           if (atendimentosResponse.data.success && Array.isArray(atendimentosResponse.data.data)) {
-            setAtendimentosPorHora(atendimentosResponse.data.data);
+            // Formatar dados para o gráfico
+            const dadosFormatados = atendimentosResponse.data.data.map(item => ({
+              hora: `${item.hora.toString().padStart(2, '0')}:00`,
+              pessoas: item.total_atendimentos || 0
+            }));
+            setAtendimentosPorHora(dadosFormatados);
+          } else {
+            // Dados de fallback se não houver dados reais
+            generateFallbackData();
           }
         } catch (error) {
           console.warn('⚠️ Erro ao buscar atendimentos por hora:', error);
           // Usa dados simulados se a API falhar
-          prepareChartData(filasData);
+          generateFallbackData();
+        } finally {
+          setChartLoading(false);
         }
       }
 
@@ -143,6 +181,7 @@ export default function Dashboard() {
       setError('Erro ao carregar dados do dashboard');
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -195,7 +234,7 @@ export default function Dashboard() {
     if (filas.length > 0) {
       prepareChartData(filas);
     }
-  }, [filas, dashboardData.totalAtendimentos, dashboardData.clientesEmFila]);
+  }, [filas]);
 
   // Função para ver detalhes da fila
   const handleVerDetalhes = (filaId) => {
@@ -210,15 +249,22 @@ export default function Dashboard() {
   // Função para chamar próximo cliente
   const handleChamarProximo = async (filaId) => {
     try {
+      console.log('📞 Chamando próximo cliente da fila:', filaId);
       const response = await api.post(`/api/queues/${filaId}/chamar-proximo`);
+      console.log('📞 Resposta da chamada:', response.data);
       
       if (response.data.success) {
         const cliente = response.data.data;
         showClientCalled(cliente.nome);
-        // Atualiza os dados do dashboard
-        fetchDashboardData();
+        
+        // Atualiza os dados do dashboard após chamar cliente
+        console.log('🔄 Atualizando dashboard após chamar cliente...');
+        setTimeout(() => {
+          fetchDashboardData(true);
+        }, 1000);
+        
       } else {
-        console.warn('Não há clientes na fila ou erro ao chamar próximo');
+        console.warn('Não há clientes na fila ou erro ao chamar próximo:', response.data.message);
       }
     } catch (error) {
       console.error('Erro ao chamar próximo:', error);
@@ -246,7 +292,15 @@ export default function Dashboard() {
           <>
             {/* Header com título e botão exportar */}
             <div className={styles.dashboardHeader}>
-              <h1 className={styles.dashboardTitle}>Dashboard de Gerenciamento</h1>
+              <div className={styles.titleSection}>
+                <h1 className={styles.dashboardTitle}>Dashboard de Gerenciamento</h1>
+                {isRefreshing && (
+                  <div className={styles.refreshIndicator}>
+                    <div className={styles.loader}></div>
+                    <span>Atualizando...</span>
+                  </div>
+                )}
+              </div>
               <button className={styles.exportButton}>
                 <FiDownload size={16} />
                 Exportar
@@ -327,22 +381,72 @@ export default function Dashboard() {
               <div className={styles.chartCard}>
                 <h3 className={styles.chartTitle}>Atendimentos por Hora</h3>
                 <div className={styles.chartContainer}>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={atendimentosPorHora}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="hora" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="pessoas" 
-                        stroke="#8884d8" 
-                        strokeWidth={3}
-                        fill="#8884d8"
-                        fillOpacity={0.3}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {chartLoading ? (
+                    <div className={styles.chartLoading}>
+                      <div className={styles.loader}></div>
+                      <p>Carregando dados...</p>
+                    </div>
+                  ) : atendimentosPorHora.length === 0 ? (
+                    <div className={styles.emptyChart}>
+                      <p>Nenhum dado de atendimento disponível</p>
+                      <small>Os dados aparecerão conforme os atendimentos forem registrados</small>
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={atendimentosPorHora}>
+                        <CartesianGrid 
+                          strokeDasharray="3 3" 
+                          stroke="var(--border-color)"
+                          opacity={0.3}
+                        />
+                        <XAxis 
+                          dataKey="hora" 
+                          tick={{ fill: 'var(--text-primary)', fontSize: 12 }}
+                          axisLine={{ stroke: 'var(--border-color)' }}
+                          tickLine={{ stroke: 'var(--border-color)' }}
+                        />
+                        <YAxis 
+                          tick={{ fill: 'var(--text-primary)', fontSize: 12 }}
+                          axisLine={{ stroke: 'var(--border-color)' }}
+                          tickLine={{ stroke: 'var(--border-color)' }}
+                        />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'var(--bg-secondary)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '8px',
+                            color: 'var(--text-primary)'
+                          }}
+                          labelStyle={{ color: 'var(--text-primary)' }}
+                          formatter={(value, name) => [value, 'Pessoas Atendidas']}
+                          labelFormatter={(label) => `Hora: ${label}`}
+                        />
+                        <Legend 
+                          verticalAlign="top" 
+                          height={36}
+                          formatter={(value, entry) => (
+                            <span style={{ 
+                              color: 'var(--text-primary)', 
+                              fontSize: '12px' 
+                            }}>
+                              Pessoas Atendidas
+                            </span>
+                          )}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="pessoas" 
+                          stroke={getChartColors()[0]}
+                          strokeWidth={3}
+                          fill={getChartColors()[0]}
+                          fillOpacity={0.3}
+                          name="Pessoas Atendidas"
+                          dot={{ fill: getChartColors()[0], strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: getChartColors()[0], strokeWidth: 2 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
               </div>
 
@@ -352,11 +456,36 @@ export default function Dashboard() {
                 <div className={styles.chartContainer}>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={tempoMedioEspera}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="fila" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="tempo" fill="#8884d8" />
+                      <CartesianGrid 
+                        strokeDasharray="3 3" 
+                        stroke="var(--border-color)"
+                        opacity={0.3}
+                      />
+                      <XAxis 
+                        dataKey="fila" 
+                        tick={{ fill: 'var(--text-primary)', fontSize: 12 }}
+                        axisLine={{ stroke: 'var(--border-color)' }}
+                        tickLine={{ stroke: 'var(--border-color)' }}
+                      />
+                      <YAxis 
+                        tick={{ fill: 'var(--text-primary)', fontSize: 12 }}
+                        axisLine={{ stroke: 'var(--border-color)' }}
+                        tickLine={{ stroke: 'var(--border-color)' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          color: 'var(--text-primary)'
+                        }}
+                        labelStyle={{ color: 'var(--text-primary)' }}
+                      />
+                      <Bar 
+                        dataKey="tempo" 
+                        fill={getChartColors()[1]}
+                        radius={[4, 4, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -379,18 +508,28 @@ export default function Dashboard() {
                         nameKey="name"
                       >
                         {dadosRadial.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell key={`cell-${index}`} fill={getChartColors()[index % getChartColors().length]} />
                         ))}
                       </Pie>
                       <Tooltip 
                         formatter={(value, name) => [value, name]}
                         labelFormatter={(label) => `Categoria: ${label}`}
+                        contentStyle={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          color: 'var(--text-primary)'
+                        }}
+                        labelStyle={{ color: 'var(--text-primary)' }}
                       />
                       <Legend 
                         verticalAlign="bottom" 
                         height={36}
                         formatter={(value, entry) => (
-                          <span style={{ color: entry.color, fontSize: '12px' }}>
+                          <span style={{ 
+                            color: 'var(--text-primary)', 
+                            fontSize: '12px' 
+                          }}>
                             {value}: {entry.payload.value}
                           </span>
                         )}

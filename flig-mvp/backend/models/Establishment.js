@@ -404,6 +404,9 @@ class Establishment {
    */
   static async getStats(establishmentId) {
     try {
+      console.log('🔍 getStats chamada para establishmentId:', establishmentId);
+      
+      // Query melhorada para incluir dados reais do histórico
       const sql = `
         SELECT 
           COUNT(DISTINCT f.id) as total_filas,
@@ -411,28 +414,80 @@ class Establishment {
           SUM(f.total_clientes_atendidos) as total_clientes_atendidos,
           SUM(f.receita_total) as receita_total,
           AVG(f.tempo_estimado) as tempo_medio_estimado,
-          COUNT(DISTINCT hcf.client_id) as total_clientes_unicos
+          COUNT(DISTINCT hcf.client_id) as total_clientes_unicos,
+          COUNT(CASE WHEN hcf.status IN ('atendido', 'chamado') THEN 1 END) as total_atendidos_real,
+          COUNT(CASE WHEN hcf.status = 'abandonou' THEN 1 END) as total_abandonos,
+          AVG(CASE 
+            WHEN hcf.status = 'atendido' AND hcf.data_saida IS NOT NULL 
+            THEN TIMESTAMPDIFF(MINUTE, hcf.data_entrada, hcf.data_saida) 
+          END) as tempo_medio_real
         FROM estabelecimentos e
         LEFT JOIN filas f ON e.id = f.estabelecimento_id
         LEFT JOIN historico_clientes_filas hcf ON f.id = hcf.queue_id
         WHERE e.id = ?
       `;
 
-      const results = await new Promise((resolve, reject) => {
-        connection.query(sql, [establishmentId], (err, results) => {
-          if (err) reject(err);
-          else resolve(results);
+      console.log('🔍 Executando query SQL para establishmentId:', establishmentId);
+      console.log('📝 Query SQL:', sql);
+
+      // Primeiro, vamos verificar se há dados na tabela historico_clientes_filas
+      const checkHistorySql = `
+        SELECT COUNT(*) as total_records, 
+               COUNT(CASE WHEN status IN ('atendido', 'chamado') THEN 1 END) as atendidos,
+               COUNT(CASE WHEN status = 'abandonou' THEN 1 END) as abandonos,
+               COUNT(CASE WHEN status = 'chamado' THEN 1 END) as chamados,
+               COUNT(CASE WHEN status = 'atendido' THEN 1 END) as finalizados
+        FROM historico_clientes_filas hcf
+        JOIN filas f ON hcf.queue_id = f.id
+        WHERE f.estabelecimento_id = ?
+      `;
+      
+      console.log('🔍 Verificando dados do histórico...');
+      const historyCheck = await new Promise((resolve, reject) => {
+        connection.query(checkHistorySql, [establishmentId], (err, results) => {
+          if (err) {
+            console.error('❌ Erro ao verificar histórico:', err);
+            reject(err);
+          } else {
+            console.log('📊 Dados do histórico encontrados:', results[0]);
+            resolve(results);
+          }
         });
       });
 
-      return {
+      const results = await new Promise((resolve, reject) => {
+        connection.query(sql, [establishmentId], (err, results) => {
+          if (err) {
+            console.error('❌ Erro na query SQL:', err);
+            reject(err);
+          } else {
+            console.log('📊 Resultados brutos da query:', results);
+            resolve(results);
+          }
+        });
+      });
+
+      console.log('📊 Resultado da query para establishmentId', establishmentId, ':', results[0]);
+
+      const stats = {
         totalFilas: results[0].total_filas || 0,
         filasAtivas: results[0].filas_ativas || 0,
-        totalClientesAtendidos: results[0].total_clientes_atendidos || 0,
+        totalClientesAtendidos: results[0].total_atendidos_real || results[0].total_clientes_atendidos || 0,
         receitaTotal: parseFloat(results[0].receita_total) || 0,
         tempoMedioEstimado: parseFloat(results[0].tempo_medio_estimado) || 0,
-        totalClientesUnicos: results[0].total_clientes_unicos || 0
+        tempoMedioReal: parseFloat(results[0].tempo_medio_real) || 0,
+        totalClientesUnicos: results[0].total_clientes_unicos || 0,
+        totalAbandonos: results[0].total_abandonos || 0
       };
+
+      console.log('📊 Stats calculadas:', stats);
+      console.log('🔍 Detalhes dos campos:');
+      console.log('  - total_atendidos_real:', results[0].total_atendidos_real);
+      console.log('  - total_clientes_atendidos:', results[0].total_clientes_atendidos);
+      console.log('  - total_abandonos:', results[0].total_abandonos);
+      console.log('  - tempo_medio_real:', results[0].tempo_medio_real);
+      
+      return stats;
 
     } catch (error) {
       console.error('❌ Erro ao obter estatísticas do estabelecimento:', error);

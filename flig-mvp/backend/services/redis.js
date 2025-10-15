@@ -50,7 +50,13 @@ async function connectRedis() {
     // Forçar configuração explícita
     if (REDIS_CONFIG.url) {
       console.log('🔗 Usando URL do Redis:', REDIS_CONFIG.url);
-      redisClient = redis.createClient({ url: REDIS_CONFIG.url });
+      redisClient = redis.createClient({ 
+        url: REDIS_CONFIG.url,
+        socket: {
+          connectTimeout: 15000,
+          lazyConnect: false
+        }
+      });
     } else {
       console.log('🔧 Usando configuração individual do Redis');
       console.log('Host:', REDIS_CONFIG.host);
@@ -61,8 +67,8 @@ async function connectRedis() {
         socket: {
           host: REDIS_CONFIG.host,
           port: REDIS_CONFIG.port,
-          connectTimeout: 10000,
-          lazyConnect: true
+          connectTimeout: 15000,
+          lazyConnect: false
         },
         password: REDIS_CONFIG.password,
         database: REDIS_CONFIG.db
@@ -79,7 +85,9 @@ async function connectRedis() {
     return redisClient;
   } catch (error) {
     console.error('❌ Falha ao conectar com Redis:', error);
-    throw new Error('Não foi possível conectar com Redis');
+    console.log('⚠️ Continuando sem Redis...');
+    // Não falhar a aplicação, retornar null
+    return null;
   }
 }
 
@@ -92,7 +100,7 @@ async function disconnectRedis() {
 
 async function getRedisClient() {
   if (!redisClient || !redisClient.isOpen) {
-    await connectRedis();
+    redisClient = await connectRedis();
   }
   return redisClient;
 }
@@ -100,6 +108,10 @@ async function getRedisClient() {
 async function isRedisAvailable() {
   try {
     const client = await getRedisClient();
+    if (!client) {
+      console.log('⚠️ Redis não disponível');
+      return false;
+    }
     await client.ping();
     return true;
   } catch (error) {
@@ -124,15 +136,18 @@ function getQueueStatsKey(queueId) {
 async function addClientToQueue(queueId, position, clientData) {
   try {
     const client = await getRedisClient();
+    if (!client) {
+      console.log('⚠️ Redis não disponível, pulando operação');
+      return false;
+    }
+    
     const queueKey = getQueueKey(queueId);
-
     const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
-
     const result = await client.zAdd(queueKey, { score: position, value });
     return result;
   } catch (error) {
     console.error('Erro ao adicionar cliente à fila:', error);
-    throw new Error('Falha ao adicionar cliente à fila');
+    return false;
   }
 }
 
@@ -140,6 +155,11 @@ async function addClientToQueue(queueId, position, clientData) {
 async function removeClientFromQueue(queueId, clientData) {
   try {
     const client = await getRedisClient();
+    if (!client) {
+      console.log('⚠️ Redis não disponível, pulando operação');
+      return false;
+    }
+    
     const queueKey = getQueueKey(queueId);
 
     console.log(`🔍 Tentando remover cliente da fila ${queueId}`);
@@ -182,7 +202,7 @@ async function removeClientFromQueue(queueId, clientData) {
     return 0;
   } catch (error) {
     console.error('Erro ao remover cliente da fila:', error);
-    throw new Error('Falha ao remover cliente da fila');
+    return false;
   }
 }
 
