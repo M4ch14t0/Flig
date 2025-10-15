@@ -132,6 +132,16 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug endpoint (temporário)
+app.get('/debug', (req, res) => {
+  res.json({
+    PROTOTYPE_MODE: process.env.PROTOTYPE_MODE,
+    NODE_ENV: process.env.NODE_ENV,
+    DB_HOST: process.env.DB_HOST,
+    REDIS_HOST: process.env.REDIS_HOST
+  });
+});
+
 // ROTA DE TESTE DIRETA
 app.post('/test-debug', (req, res) => {
   console.log('🔍 [TEST] Rota de teste chamada');
