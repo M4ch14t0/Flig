@@ -8,6 +8,7 @@ import './Plano.css';
 export default function Plano() {
   const navigate = useNavigate();
   const [hasActivePlan, setHasActivePlan] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const sidebarLinks = [
@@ -26,6 +27,7 @@ export default function Plano() {
       const response = await api.get('/api/plans/status');
       if (response.data.success && response.data.data.hasActivePlan) {
         setHasActivePlan(true);
+        setCurrentPlan(response.data.data.subscription);
       }
     } catch (error) {
       console.error('Erro ao verificar status do plano:', error);
@@ -52,7 +54,7 @@ export default function Plano() {
                   <span className="plano-preco">R$: 89,90</span>
                   <span className="plano-periodo">/mês</span>
                 </div>
-                {hasActivePlan ? (
+                {hasActivePlan && currentPlan?.plano_id === 1 ? (
                   <button onClick={() => navigate('/estabelecimento/planos/detalhes-essencial')} className="plano-btn renovar">
                     Renovar Contrato
                   </button>
@@ -69,7 +71,7 @@ export default function Plano() {
                   <span className="plano-preco">R$: 129,90</span>
                   <span className="plano-periodo">/mês</span>
                 </div>
-                {hasActivePlan ? (
+                {hasActivePlan && currentPlan?.plano_id === 2 ? (
                   <button onClick={() => navigate('/estabelecimento/planos/detalhes-profissional')} className="plano-btn renovar">
                     Renovar Contrato
                   </button>

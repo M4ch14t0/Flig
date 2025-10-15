@@ -125,6 +125,19 @@ router.get('/:id/queues',
 );
 
 /**
+ * @route GET /api/establishments/:id/atendimentos-por-hora
+ * @desc Obtém atendimentos por hora de um estabelecimento
+ * @access Private (Estabelecimento)
+ * @headers { Authorization: Bearer <token> }
+ */
+router.get('/:id/atendimentos-por-hora',
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  sanitizeParams,
+  establishmentController.getAtendimentosPorHora
+);
+
+/**
  * @route DELETE /api/establishments/account
  * @desc Deleta conta do estabelecimento
  * @access Private (Estabelecimento)
@@ -215,6 +228,27 @@ router.use((error, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? error.message : undefined
   });
 });
+
+/**
+ * @route PUT /api/establishments/:id
+ * @desc Atualiza estabelecimento por ID
+ * @access Private (Estabelecimento)
+ * @headers { Authorization: Bearer <token> }
+ * @body { nome_empresa, telefone_empresa, cep_empresa, endereco_empresa, bairro_empresa, cidade_empresa, uf_empresa, numero_empresa, descricao_empresa, imagem_empresa }
+ */
+router.put('/:id',
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  rateLimit(60000, 10), // 10 tentativas por minuto
+  establishmentController.updateEstablishmentById
+);
+
+/**
+ * @route GET /api/establishments/:id/image
+ * @desc Obtém imagem do estabelecimento
+ * @access Public
+ */
+router.get('/:id/image', establishmentController.getEstablishmentImage);
 
 /**
  * @route GET /api/establishments/:id

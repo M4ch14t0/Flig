@@ -547,6 +547,165 @@ async function deleteAccount(req, res) {
   }
 }
 
+/**
+ * Atualiza estabelecimento por ID
+ * 
+ * PUT /api/establishments/:id
+ * Headers: { Authorization: Bearer <token> }
+ * Body: { nome_empresa, telefone_empresa, cep_empresa, endereco_empresa, bairro_empresa, cidade_empresa, uf_empresa, numero_empresa, descricao_empresa, imagem_empresa }
+ */
+async function updateEstablishmentById(req, res) {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    // Verificar se o usuário pode atualizar este estabelecimento
+    if (req.user.userId !== parseInt(id)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Você só pode atualizar seu próprio estabelecimento'
+      });
+    }
+
+    // Remove campos que não podem ser atualizados
+    delete updateData.id;
+    delete updateData.cnpj;
+    delete updateData.email_empresa;
+    delete updateData.senha_empresa;
+    delete updateData.status;
+    delete updateData.created_at;
+    delete updateData.updated_at;
+
+    // Se há uma imagem, processar upload
+    if (req.file) {
+      // Converter arquivo para buffer (BLOB)
+      const fs = require('fs');
+      const imageBuffer = fs.readFileSync(req.file.path);
+      updateData.imagem_empresa = imageBuffer;
+      
+      // Remover arquivo temporário
+      fs.unlinkSync(req.file.path);
+    }
+
+    const updatedEstablishment = await Establishment.update(id, updateData);
+
+    res.json({
+      success: true,
+      message: 'Estabelecimento atualizado com sucesso',
+      data: updatedEstablishment.toPublicObject()
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao atualizar estabelecimento:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+}
+
+// Endpoint para servir imagem do estabelecimento
+async function getEstablishmentImage(req, res) {
+  try {
+    const { id } = req.params;
+    
+    const establishment = await Establishment.findById(id);
+    if (!establishment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Estabelecimento não encontrado'
+      });
+    }
+
+    if (!establishment.imagem_empresa) {
+      return res.status(404).json({
+        success: false,
+        message: 'Imagem não encontrada'
+      });
+    }
+
+    // Definir tipo de conteúdo baseado no buffer
+    res.set({
+      'Content-Type': 'image/jpeg', // ou detectar o tipo real
+      'Cache-Control': 'public, max-age=3600'
+    });
+
+    res.send(establishment.imagem_empresa);
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar imagem:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+}
+
+// Endpoint para obter atendimentos por hora
+async function getAtendimentosPorHora(req, res) {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // Verificar se o estabelecimento pertence ao usuário
+    if (parseInt(id) !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Acesso negado'
+      });
+    }
+
+    // Buscar atendimentos por hora do estabelecimento
+    const connection = require('../config/db');
+    
+    const sql = `
+      SELECT 
+        HOUR(created_at) as hora,
+        COUNT(*) as total_atendimentos
+      FROM filas 
+      WHERE estabelecimento_id = ? 
+        AND status = 'encerrada'
+        AND DATE(created_at) = CURDATE()
+      GROUP BY HOUR(created_at)
+      ORDER BY hora
+    `;
+
+    connection.query(sql, [id], (error, results) => {
+      if (error) {
+        console.error('❌ Erro ao buscar atendimentos por hora:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Erro interno do servidor'
+        });
+      }
+
+      // Criar array com todas as horas (0-23) preenchido com 0
+      const atendimentosPorHora = Array.from({ length: 24 }, (_, index) => ({
+        hora: index,
+        total_atendimentos: 0
+      }));
+
+      // Preencher com os dados reais
+      results.forEach(row => {
+        atendimentosPorHora[row.hora].total_atendimentos = row.total_atendimentos;
+      });
+
+      res.json({
+        success: true,
+        data: atendimentosPorHora
+      });
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao buscar atendimentos por hora:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+}
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -558,7 +717,10 @@ module.exports = {
   getEstablishmentById,
   getEstablishmentQueuesPublic,
   listAllEstablishments,
+  updateEstablishmentById,
   updateEstablishmentStatus,
   deleteEstablishment,
-  deleteAccount
+  deleteAccount,
+  getEstablishmentImage,
+  getAtendimentosPorHora
 };

@@ -1,8 +1,5 @@
 {
   "version": 2,
-  "env": {
-    "VITE_API_URL": "https://flig-production.up.railway.app/api"
-  },
   "builds": [
     {
       "src": "package.json",
@@ -14,12 +11,11 @@
   ],
   "routes": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

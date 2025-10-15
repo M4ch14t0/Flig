@@ -55,16 +55,16 @@ function Estabelecimentos() {
       setError(null);
       
       // Busca estabelecimentos usando a nova API
-      const response = await api.get('/api/estabelecimentos');
+      const response = await api.get('/api/establishments');
       
-      if (response.data && Array.isArray(response.data)) {
-        const data = response.data;
+      if (response.data && response.data.success && Array.isArray(response.data.data)) {
+        const data = response.data.data;
         
         // Para cada estabelecimento, busca suas filas ativas
         const estabelecimentosComFilas = await Promise.all(
           data.map(async (estabelecimento) => {
             try {
-              const filasResponse = await api.get(`/api/estabelecimentos/${estabelecimento.id}/filas`);
+              const filasResponse = await api.get(`/api/establishments/${estabelecimento.id}/queues`);
               const filasData = Array.isArray(filasResponse.data) ? filasResponse.data : [];
               
               // Calcula total de pessoas em filas ativas

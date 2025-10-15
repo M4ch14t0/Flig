@@ -4,6 +4,14 @@ const Plan = require('../models/Plan');
 // Middleware para verificar se o estabelecimento tem plano ativo
 const checkPlanActive = async (req, res, next) => {
   try {
+    // Se estiver em modo protótipo, pula a verificação
+    if (process.env.PROTOTYPE_MODE === 'true') {
+      console.log('🔓 Modo protótipo ativo - verificações de plano desabilitadas');
+      req.subscription = null;
+      req.plan = null;
+      return next();
+    }
+
     const estabelecimentoId = req.user?.id;
     
     if (!estabelecimentoId) {
@@ -81,6 +89,12 @@ const checkPlanFeature = (feature) => {
 // Middleware para verificar limites do plano
 const checkPlanLimits = async (req, res, next) => {
   try {
+    // Se estiver em modo protótipo, pula a verificação
+    if (process.env.PROTOTYPE_MODE === 'true') {
+      console.log('🔓 Modo protótipo ativo - verificações de limites desabilitadas');
+      return next();
+    }
+
     if (!req.subscription || !req.plan) {
       return res.status(403).json({
         success: false,
