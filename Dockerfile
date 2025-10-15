@@ -7,11 +7,11 @@ RUN apk add --no-cache curl
 # Set working directory
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY flig-mvp/backend/package*.json ./
+# Copy package.json first for better caching
+COPY flig-mvp/backend/package.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies - let npm resolve version conflicts
+RUN npm install --only=production
 
 # Copy the rest of the backend code
 COPY flig-mvp/backend/ ./
