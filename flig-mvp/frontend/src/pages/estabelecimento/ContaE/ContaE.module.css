@@ -43,6 +43,32 @@
   gap: 0.75rem;
 }
 
+/* Layout de duas colunas dentro da seção */
+.contaE-layout {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.contaE-form-section {
+  flex: 2;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.contaE-image-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
 /* Formulário */
 .contaE-form-box {
   background-color: var(--form-bg);
@@ -228,6 +254,36 @@
 }
 
 @media (max-width: 768px) {
+  .contaE-layout {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .contaE-form-section {
+    flex: none;
+  }
+  
+  .contaE-image-section {
+    flex: none;
+    order: -1;
+    padding: 1.5rem;
+  }
+  
+  .contaE-image-placeholder {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .contaE-image-circle {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .contaE-image-preview {
+    width: 120px;
+    height: 120px;
+  }
+
   .contaE-grid {
     grid-template-columns: 1fr;
   }
@@ -421,4 +477,141 @@
   max-width: 1000px;
   width: 100%;
   transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Container da imagem */
+.contaE-image-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.contaE-image-placeholder {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.contaE-image-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.contaE-image-preview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para novos campos */
+.contaE-image-section-old {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  background-color: var(--card-bg-color);
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.contaE-image-label {
+  display: block;
+  cursor: pointer;
+  width: 100%;
+}
+
+.contaE-image-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--accent-color);
+  color: var(--btn-text-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.contaE-image-button:hover {
+  background-color: var(--accent-hover-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.contaE-edit-icon {
+  font-size: 1rem;
+}
+
+.contaE-image-preview {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.contaE-image-preview img {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.contaE-remove-image {
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.3s ease;
+}
+
+.contaE-remove-image:hover {
+  background-color: #c82333;
+}
+
+/* Estilo para textarea - usando os mesmos estilos dos inputs */
+.contaE-container textarea {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid var(--form-border);
+  border-radius: 5px;
+  background-color: var(--form-bg);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  resize: none;
+  min-height: 80px;
+  height: 80px;
+}
+
+.contaE-container textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.contaE-container textarea::placeholder {
+  color: var(--text-secondary);
 }

@@ -18,10 +18,15 @@ class Establishment {
     this.cnpj = data.cnpj || '';
     this.cep_empresa = data.cep_empresa || '';
     this.endereco_empresa = data.endereco_empresa || '';
+    this.bairro_empresa = data.bairro_empresa || '';
+    this.cidade_empresa = data.cidade_empresa || '';
+    this.uf_empresa = data.uf_empresa || '';
+    this.numero_empresa = data.numero_empresa || '';
     this.telefone_empresa = data.telefone_empresa || '';
     this.email_empresa = data.email_empresa || '';
     this.senha_empresa = data.senha_empresa || '';
-    this.descricao = data.descricao || '';
+    this.descricao = data.descricao_empresa || data.descricao || '';
+    this.imagem_empresa = data.imagem_empresa || null;
     this.categoria = data.categoria || '';
     this.horario_funcionamento = data.horario_funcionamento || '';
     this.capacidade_maxima = data.capacidade_maxima || 100;
@@ -166,7 +171,7 @@ class Establishment {
       
       let sql = `
         SELECT id, nome_empresa, cnpj, cep_empresa, endereco_empresa, telefone_empresa, 
-               email_empresa, descricao, categoria, horario_funcionamento, capacidade_maxima, 
+               email_empresa, descricao_empresa, categoria, horario_funcionamento, capacidade_maxima, 
                status, created_at, updated_at
         FROM estabelecimentos 
         WHERE status = 'ativo'
@@ -174,7 +179,7 @@ class Establishment {
       let params = [];
 
       if (search) {
-        sql += ' AND (nome_empresa LIKE ? OR descricao LIKE ? OR categoria LIKE ?)';
+        sql += ' AND (nome_empresa LIKE ? OR descricao_empresa LIKE ? OR categoria LIKE ?)';
         params.push(`%${search}%`, `%${search}%`, `%${search}%`);
       }
 
@@ -257,8 +262,9 @@ class Establishment {
     try {
       const allowedFields = [
         'nome_empresa', 'cep_empresa', 'endereco_empresa', 'telefone_empresa', 
-        'email_empresa', 'descricao', 'categoria', 'horario_funcionamento', 
-        'capacidade_maxima', 'status'
+        'email_empresa', 'descricao', 'descricao_empresa', 'imagem_empresa',
+        'bairro_empresa', 'cidade_empresa', 'uf_empresa', 'numero_empresa',
+        'categoria', 'horario_funcionamento', 'capacidade_maxima', 'status'
       ];
 
       const fields = [];
@@ -518,9 +524,15 @@ class Establishment {
       cnpj: this.cnpj,
       cep_empresa: this.cep_empresa,
       endereco_empresa: this.endereco_empresa,
+      bairro_empresa: this.bairro_empresa,
+      cidade_empresa: this.cidade_empresa,
+      uf_empresa: this.uf_empresa,
+      numero_empresa: this.numero_empresa,
       telefone_empresa: this.telefone_empresa,
       email_empresa: this.email_empresa,
       descricao: this.descricao,
+      descricao_empresa: this.descricao, // Adicionar campo para compatibilidade
+      imagem_empresa: this.imagem_empresa ? true : null, // Indica se há imagem, sem retornar o BLOB
       categoria: this.categoria,
       horario_funcionamento: this.horario_funcionamento,
       capacidade_maxima: this.capacidade_maxima,

@@ -57,7 +57,7 @@ export default function Dashboard() {
       console.log('🔍 Buscando dados do dashboard para estabelecimento:', user.id);
 
       // Busca estatísticas do estabelecimento
-      const statsResponse = await api.get(`/api/estabelecimentos/${user.id}/estatisticas`);
+      const statsResponse = await api.get(`/api/establishments/${user.id}/stats`);
       console.log('📊 Stats response:', statsResponse.data);
 
       if (statsResponse.data && statsResponse.data.success) {
@@ -125,7 +125,7 @@ export default function Dashboard() {
 
         // Busca dados históricos de atendimentos por hora
         try {
-          const atendimentosResponse = await api.get(`/api/estabelecimentos/${user.id}/atendimentos-por-hora`);
+          const atendimentosResponse = await api.get(`/api/establishments/${user.id}/atendimentos-por-hora`);
           console.log('📊 Atendimentos por hora response:', atendimentosResponse.data);
           
           if (atendimentosResponse.data.success && Array.isArray(atendimentosResponse.data.data)) {

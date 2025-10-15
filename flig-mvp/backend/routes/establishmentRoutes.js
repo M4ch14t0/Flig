@@ -217,6 +217,27 @@ router.use((error, req, res, next) => {
 });
 
 /**
+ * @route PUT /api/establishments/:id
+ * @desc Atualiza estabelecimento por ID
+ * @access Private (Estabelecimento)
+ * @headers { Authorization: Bearer <token> }
+ * @body { nome_empresa, telefone_empresa, cep_empresa, endereco_empresa, bairro_empresa, cidade_empresa, uf_empresa, numero_empresa, descricao_empresa, imagem_empresa }
+ */
+router.put('/:id',
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  rateLimit(60000, 10), // 10 tentativas por minuto
+  establishmentController.updateEstablishmentById
+);
+
+/**
+ * @route GET /api/establishments/:id/image
+ * @desc Obtém imagem do estabelecimento
+ * @access Public
+ */
+router.get('/:id/image', establishmentController.getEstablishmentImage);
+
+/**
  * @route GET /api/establishments/:id
  * @desc Obtém estabelecimento por ID (público)
  * @access Public
