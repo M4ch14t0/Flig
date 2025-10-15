@@ -278,16 +278,55 @@ async function getQueueSize(queueId) {
   }
 }
 
-// Move cliente na fila
+// Move cliente na fila (com renumeração completa)
 async function moveClientInQueue(queueId, clientData, newPosition) {
   try {
     const client = await getRedisClient();
     const queueKey = getQueueKey(queueId);
 
-    const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
+    console.log(`🔍 Movendo cliente ${clientData.nome} para posição ${newPosition} na fila ${queueId}`);
 
-    const result = await client.zAdd(queueKey, { score: newPosition, value });
-    return result > 0;
+    // 1️⃣ Obter todos os clientes atuais
+    const clients = await getQueueClients(queueId);
+    if (!Array.isArray(clients) || clients.length === 0) {
+      console.log('⚠️ Fila vazia ou inválida');
+      return false;
+    }
+
+    console.log(`📋 Clientes antes da movimentação:`, clients.map(c => ({ nome: c.nome, position: c.position })));
+
+    // 2️⃣ Remover cliente da lista
+    const filtered = clients.filter(c => c.id !== clientData.id);
+    console.log(`🔍 Clientes após remoção:`, filtered.map(c => ({ nome: c.nome, position: c.position })));
+
+    // 3️⃣ Calcular nova posição dentro dos limites
+    const insertIndex = Math.max(0, Math.min(newPosition - 1, filtered.length));
+    console.log(`🔍 Índice de inserção: ${insertIndex}`);
+
+    // 4️⃣ Inserir o cliente na nova posição
+    filtered.splice(insertIndex, 0, { ...clientData, position: newPosition });
+    console.log(`🔍 Clientes após inserção:`, filtered.map(c => ({ nome: c.nome, position: c.position })));
+
+    // 5️⃣ Renumerar TODAS as posições (garante unicidade)
+    const renumbered = filtered.map((c, index) => ({
+      ...c,
+      position: index + 1
+    }));
+
+    console.log(`🔍 Clientes após renumeração:`, renumbered.map(c => ({ nome: c.nome, position: c.position })));
+
+    // 6️⃣ Atualizar Redis ZSET completamente
+    // (limpa a fila e regrava com scores únicos)
+    await client.del(queueKey);
+
+    for (const c of renumbered) {
+      await client.zAdd(queueKey, { score: c.position, value: JSON.stringify(c) });
+    }
+
+    console.log(`✅ Fila ${queueId} renumerada com ${renumbered.length} clientes.`);
+    console.table(renumbered.map(c => ({ nome: c.nome, position: c.position })));
+
+    return true;
   } catch (error) {
     console.error('Erro ao mover cliente na fila:', error);
     throw new Error('Falha ao mover cliente na fila');

@@ -284,32 +284,18 @@ class Queue {
 
     console.log(`🔍 Movendo cliente ${client.nome} da posição ${oldPosition} para ${newPosition}`);
 
-    // Lógica correta: quando um cliente avança, ele "pula" os outros
-    // Os outros clientes não se movem, apenas o que avança vai para a frente
-    const newClients = [...clients];
+    // LÓGICA SIMPLES: Usar Redis ZSET nativo
+    // O Redis ZSET automaticamente reorganiza quando você muda o score
+    // 1. Atualizar o score (posição) do cliente no Redis
+    // 2. O Redis automaticamente reorganiza a fila
     
-    // Atualizar posição do cliente que está avançando
-    newClients[clientIndex].position = newPosition;
+    // Usar a função moveClientInQueue que já existe no redisService
+    await redisService.moveClientInQueue(this.id, client, newPosition);
     
-    // Reorganizar a fila: colocar o cliente avançado na posição correta
-    // e ajustar as posições dos outros clientes que ficaram "atrás"
-    newClients.sort((a, b) => {
-      // Se ambos têm a mesma posição, manter ordem original
-      if (a.position === b.position) {
-        return 0;
-      }
-      return (a.position || 0) - (b.position || 0);
-    });
-    
-    // Reorganizar posições sequencialmente
-    newClients.forEach((c, index) => {
-      c.position = index + 1;
-    });
+    // Buscar clientes atualizados do Redis
+    const newClients = await redisService.getQueueClients(this.id);
 
     console.log(`🔍 Posições após reorganização:`, newClients.map(c => ({ nome: c.nome, position: c.position })));
-
-    // Salvar no Redis
-    await redisService.setQueueClients(this.id, newClients);
 
     // Calcular tempo estimado
     const estimatedTime = (newPosition - 1) * this.tempo_estimado;
