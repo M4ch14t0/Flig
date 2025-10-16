@@ -24,8 +24,8 @@ class Queue {
     this.max_avancos = data.max_avancos || 8;
     this.valor_avancos = data.valor_avancos || 0;
     this.tempo_estimado = data.tempo_estimado || 5;
-    this.created_at = data.created_at || new Date();
-    this.updated_at = data.updated_at || new Date();
+    this.created_at = data.created_at ? new Date(data.created_at) : new Date();
+    this.updated_at = data.updated_at ? new Date(data.updated_at) : new Date();
   }
 
   /** Cria uma nova fila */
@@ -39,8 +39,12 @@ class Queue {
     const values = [
       queue.id, queue.nome, queue.estabelecimento_id, queue.descricao,
       queue.status, queue.max_avancos, queue.valor_avancos,
-      queue.tempo_estimado, queue.created_at.toISOString(), queue.updated_at.toISOString()
+      queue.tempo_estimado, queue.created_at, queue.updated_at
     ];
+    
+    console.log('🔍 SQL Values:', values);
+    console.log('🔍 Created at:', queue.created_at, typeof queue.created_at);
+    console.log('🔍 Updated at:', queue.updated_at, typeof queue.updated_at);
 
     await new Promise((resolve, reject) =>
       connection.query(sql, values, (err, result) => err ? reject(err) : resolve(result))

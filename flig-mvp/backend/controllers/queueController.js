@@ -58,6 +58,15 @@ async function createQueue(req, res) {
     }
 
     // Cria a fila
+    console.log('🔍 Criando fila com dados:', {
+      nome,
+      estabelecimento_id,
+      descricao,
+      max_avancos,
+      valor_avancos,
+      tempo_estimado
+    });
+    
     const queue = await Queue.create({
       nome,
       estabelecimento_id,
