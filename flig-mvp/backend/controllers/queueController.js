@@ -38,7 +38,15 @@ async function createQueue(req, res) {
       descricao,
       max_avancos = 8,
       valor_avancos = 2.00,
-      tempo_estimado = 5
+      tempo_estimado = 5,
+      // Campos do frontend
+      tipo_fila,
+      limitar_fila,
+      max_integrantes,
+      abrir_agora,
+      horario_abertura,
+      chamada_automatica,
+      intervalo_chamada
     } = req.body;
 
     // Validações obrigatórias
