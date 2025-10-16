@@ -39,7 +39,7 @@ class Queue {
     const values = [
       queue.id, queue.nome, queue.estabelecimento_id, queue.descricao,
       queue.status, queue.max_avancos, queue.valor_avancos,
-      queue.tempo_estimado, queue.created_at, queue.updated_at
+      queue.tempo_estimado, queue.created_at.toISOString(), queue.updated_at.toISOString()
     ];
 
     await new Promise((resolve, reject) =>
