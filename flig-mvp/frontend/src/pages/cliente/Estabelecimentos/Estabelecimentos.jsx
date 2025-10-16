@@ -65,7 +65,9 @@ function Estabelecimentos() {
           data.map(async (estabelecimento) => {
             try {
               const filasResponse = await api.get(`/api/establishments/${estabelecimento.id}/queues`);
-              const filasData = Array.isArray(filasResponse.data) ? filasResponse.data : [];
+              const filasData = (filasResponse.data && filasResponse.data.success && Array.isArray(filasResponse.data.data)) 
+                ? filasResponse.data.data 
+                : [];
               
               // Calcula total de pessoas em filas ativas
               const totalPessoas = filasData
