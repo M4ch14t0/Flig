@@ -5,7 +5,8 @@ const Plan = require('../models/Plan');
 const checkPlanActive = async (req, res, next) => {
   try {
     // Se estiver em modo protótipo, pula a verificação
-    if (process.env.PROTOTYPE_MODE === 'true') {
+    // Forçar modo protótipo em produção (temporário)
+    if (process.env.PROTOTYPE_MODE === 'true' || process.env.NODE_ENV === 'production') {
       console.log('🔓 Modo protótipo ativo - verificações de plano desabilitadas');
       req.subscription = null;
       req.plan = null;
@@ -90,7 +91,8 @@ const checkPlanFeature = (feature) => {
 const checkPlanLimits = async (req, res, next) => {
   try {
     // Se estiver em modo protótipo, pula a verificação
-    if (process.env.PROTOTYPE_MODE === 'true') {
+    // Forçar modo protótipo em produção (temporário)
+    if (process.env.PROTOTYPE_MODE === 'true' || process.env.NODE_ENV === 'production') {
       console.log('🔓 Modo protótipo ativo - verificações de limites desabilitadas');
       return next();
     }
