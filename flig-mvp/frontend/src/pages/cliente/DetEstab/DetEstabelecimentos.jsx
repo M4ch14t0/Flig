@@ -58,8 +58,12 @@ function DetEstabelecimentos() {
 
       // Busca filas do estabelecimento
       const queuesResponse = await api.get(`/api/establishments/${id}/queues`);
-      if (queuesResponse.data && Array.isArray(queuesResponse.data)) {
-        setFilas(queuesResponse.data);
+      console.log('🔍 Queues response:', queuesResponse.data);
+      if (queuesResponse.data && queuesResponse.data.success && Array.isArray(queuesResponse.data.data)) {
+        setFilas(queuesResponse.data.data);
+      } else {
+        console.warn('⚠️ Queues response não foi bem-sucedida ou não é array:', queuesResponse.data);
+        setFilas([]);
       }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
