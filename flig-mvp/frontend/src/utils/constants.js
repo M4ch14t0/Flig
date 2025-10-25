@@ -52,7 +52,7 @@ export const ROUTES = {
     minhasFilas: '/cliente/minhas-filas', // Filas que o cliente participa
     perfil: '/cliente/perfil', // Perfil e dados pessoais do cliente
     configuracoes: '/cliente/configuracoes', // Configurações da conta
-    pagamento: '/cliente/pagamento' // Página de pagamento
+    // pagamento: '/cliente/pagamento' // Página de pagamento removida
   },
 
   // Rotas do estabelecimento - acessíveis após login como estabelecimento

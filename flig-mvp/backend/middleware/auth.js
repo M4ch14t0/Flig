@@ -8,9 +8,9 @@
  * @version 1.0.0
  */
 
-const jwt = require('jsonwebtoken');
-const tokenBlacklist = require('../services/tokenBlacklist');
-const sessionManager = require('../services/sessionManager');
+import jwt from 'jsonwebtoken';
+import { isTokenBlacklisted } from '../services/tokenBlacklist.js';
+import sessionManager from '../services/sessionManager.js';
 
 // Configurações JWT
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -50,7 +50,7 @@ async function authenticateToken(req, res, next) {
 
       try {
         // Verificar se token está na blacklist
-        const isBlacklisted = await tokenBlacklist.isTokenBlacklisted(token);
+        const isBlacklisted = await isTokenBlacklisted(token);
 
         if (isBlacklisted) {
           console.error('❌ Token na blacklist - logout realizado');
@@ -200,7 +200,7 @@ function requireQueueOwnership(req, res, next) {
   next();
 }
 
-module.exports = {
+export {
   authenticateToken,
   requireUserType,
   optionalAuth,

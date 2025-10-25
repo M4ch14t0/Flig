@@ -8,9 +8,10 @@
  * @version 1.0.0
  */
 
-const Establishment = require('../models/Establishment');
-const Queue = require('../models/Queue');
-const connection = require('../config/db');
+import fs from 'fs';
+import Establishment from '../models/Establishment.js';
+import Queue from '../models/Queue.js';
+import connection from '../config/db.js';
 
 /**
  * Obtém perfil do estabelecimento atual
@@ -579,7 +580,6 @@ async function updateEstablishmentById(req, res) {
     // Se há uma imagem, processar upload
     if (req.file) {
       // Converter arquivo para buffer (BLOB)
-      const fs = require('fs');
       const imageBuffer = fs.readFileSync(req.file.path);
       updateData.imagem_empresa = imageBuffer;
       
@@ -657,7 +657,6 @@ async function getAtendimentosPorHora(req, res) {
     }
 
     // Buscar atendimentos por hora do estabelecimento
-    const connection = require('../config/db');
     
     const sql = `
       SELECT 
@@ -706,7 +705,26 @@ async function getAtendimentosPorHora(req, res) {
   }
 }
 
-module.exports = {
+export {
+  getProfile,
+  updateProfile,
+  changePassword,
+  getEstablishmentStats,
+  getEstablishmentQueues,
+  getDailyReport,
+  listEstablishments,
+  getEstablishmentById,
+  getEstablishmentQueuesPublic,
+  listAllEstablishments,
+  updateEstablishmentById,
+  updateEstablishmentStatus,
+  deleteEstablishment,
+  deleteAccount,
+  getEstablishmentImage,
+  getAtendimentosPorHora
+};
+
+export default {
   getProfile,
   updateProfile,
   changePassword,

@@ -662,6 +662,53 @@
   background: #0056b3;
 }
 
+/* Botão de Visualizar Fila */
+.viewBtn {
+  padding: 8px 16px;
+  background: #28a745;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+  min-width: 100px;
+}
+
+.viewBtn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+/* Visualização da Fila */
+.queueView {
+  margin-top: 2rem;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #152E60;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+.backButton:hover {
+  background: #0A2A5D;
+  transform: translateX(-2px);
+}
+
 /* Responsividade do Popup */
 @media (max-width: 768px) {
   .popupContent {

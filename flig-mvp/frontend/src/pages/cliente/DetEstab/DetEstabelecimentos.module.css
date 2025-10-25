@@ -332,6 +332,15 @@ html, body {
   background: var(--primary-hover);
 }
 
+/* Visualização da Fila */
+.queueView {
+  margin-top: 2rem;
+}
+
+.queueView .backButton {
+  margin-bottom: 1rem;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .container {

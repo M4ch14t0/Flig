@@ -389,7 +389,7 @@ function validateJoinQueue(req, res, next) {
  * Middleware para validar dados de pagamento
  */
 function validatePayment(req, res, next) {
-  const { clientId, positions, paymentData } = req.body;
+  const { clientId, positions } = req.body;
   const errors = [];
 
   if (!clientId || (typeof clientId !== 'string' && typeof clientId !== 'number')) {
@@ -398,10 +398,6 @@ function validatePayment(req, res, next) {
 
   if (!positions || positions < 1 || positions > 8) {
     errors.push('Número de posições deve estar entre 1 e 8');
-  }
-
-  if (!paymentData || !paymentData.paymentMethod) {
-    errors.push('Dados de pagamento são obrigatórios');
   }
 
   if (errors.length > 0) {
@@ -475,37 +471,6 @@ function rateLimit(windowMs = 60000, maxRequests = 100) {
 
 // Funções auxiliares de validação
 
-function validateEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-function validateCPF(cpf) {
-  if (!cpf) return false;
-  
-  cpf = cpf.replace(/[^\d]/g, '');
-  
-  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-  
-  let soma = 0;
-  for (let i = 0; i < 9; i++) {
-    soma += parseInt(cpf[i]) * (10 - i);
-  }
-  let resto = (soma * 10) % 11;
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf[9])) return false;
-  
-  soma = 0;
-  for (let i = 0; i < 10; i++) {
-    soma += parseInt(cpf[i]) * (11 - i);
-  }
-  resto = (soma * 10) % 11;
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf[10])) return false;
-  
-  return true;
-}
-
 function validateCNPJ(cnpj) {
   if (!cnpj) return false;
   
@@ -564,7 +529,7 @@ function sanitizeInputs(req, res, next) {
   next();
 }
 
-module.exports = {
+export {
   sanitizeString,
   sanitizeObject,
   sanitizeInputs,

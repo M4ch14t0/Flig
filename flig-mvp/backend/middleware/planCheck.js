@@ -1,5 +1,5 @@
-const Subscription = require('../models/Subscription');
-const Plan = require('../models/Plan');
+import Subscription from '../models/Subscription.js';
+import Plan from '../models/Plan.js';
 
 // Middleware para verificar se o estabelecimento tem plano ativo
 const checkPlanActive = async (req, res, next) => {
@@ -174,7 +174,7 @@ const optionalPlanCheck = async (req, res, next) => {
   }
 };
 
-module.exports = {
+export {
   checkPlanActive,
   checkPlanFeature,
   checkPlanLimits,

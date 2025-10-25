@@ -8,8 +8,9 @@
  * @version 1.0.0
  */
 
-const User = require('../models/User');
-const connection = require('../config/db');
+import User from '../models/User.js';
+import connection from '../config/db.js';
+import redisService from '../services/redis.js';
 
 /**
  * Obtém perfil do usuário atual
@@ -239,7 +240,6 @@ async function getQueueHistory(req, res) {
 async function getActiveQueues(req, res) {
   try {
     const { userId, email } = req.user;
-    const redisService = require('../services/redis');
     
     console.log(`🔍 Buscando filas ativas para usuário: ID ${userId}, Email: ${email}`);
     
@@ -587,7 +587,22 @@ async function getUserPassword(req, res) {
   }
 }
 
-module.exports = {
+export {
+  getProfile,
+  updateProfile,
+  changePassword,
+  getUserStats,
+  getQueueHistory,
+  getActiveQueues,
+  deleteAccount,
+  listUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+  getUserPassword
+};
+
+export default {
   getProfile,
   updateProfile,
   changePassword,

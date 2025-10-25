@@ -5,8 +5,8 @@
  * @version 1.0.0
  */
 
-const crypto = require('crypto');
-const connection = require('../config/db');
+import crypto from 'crypto';
+import connection from '../config/db.js';
 
 /**
  * Solicita recuperação de senha - VERSÃO SIMPLES
@@ -23,6 +23,10 @@ async function forgotPasswordSimple(req, res) {
   console.log('🔍 [SIMPLE] Resposta enviada!');
 }
 
-module.exports = {
+export {
+  forgotPasswordSimple
+};
+
+export default {
   forgotPasswordSimple
 };

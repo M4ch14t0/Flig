@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate, useParams } from 'react-router-dom';
 import { Loader2, Clock, Users, MapPin, ArrowLeft, Phone, Home, List } from 'lucide-react';
 import Layout from '../../../components/Layout';
+import GroupQueueComponent from '../../../components/GroupQueueComponent';
 import { api } from '../../../services/api';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useAuth } from '../../../contexts/authContextImports';
@@ -40,7 +41,7 @@ function DetEstabelecimentos() {
   const [filas, setFilas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // selectedQueue removido - entrada direta na fila
+  const [selectedQueue, setSelectedQueue] = useState(null);
 
   // Função para carregar dados do estabelecimento e filas
   const loadEstablishmentData = async () => {
@@ -78,59 +79,36 @@ function DetEstabelecimentos() {
     loadEstablishmentData();
   }, [id]);
 
-  const handleJoinSuccess = (data) => {
-    // Recarrega dados após entrar na fila
-    loadEstablishmentData();
-  };
-
   const handleError = (message) => {
     setError(message);
   };
 
-  // Função para entrada direta na fila
-  const handleEnterQueue = async (fila) => {
-    if (!user || userType !== 'cliente') {
-      alert('Usuário não autenticado');
-      return;
-    }
-
+  // Função para visualizar fila
+  const handleViewQueue = (fila) => {
     if (fila.status !== 'ativa') {
       alert('Esta fila não está ativa no momento');
       return;
     }
+    setSelectedQueue(fila);
+  };
 
-    try {
-      // Usa dados do usuário logado automaticamente
-      const clientData = {
-        nome: user.name || user.nome || '',
-        telefone: user.telefone || user.phone || '', // Sem telefone padrão
-        email: user.email || user.email_usuario || ''
-      };
+  // Função para voltar à lista de filas
+  const handleBackToQueues = () => {
+    setSelectedQueue(null);
+  };
 
-      console.log('🔍 Dados do usuário:', user);
-      console.log('🔍 Dados sendo enviados:', clientData);
+  // Função para sucesso na entrada na fila
+  const handleJoinSuccess = (data) => {
+    alert('Você entrou na fila com sucesso!');
+    // Recarrega dados para mostrar a posição
+    loadEstablishmentData();
+    // Volta para a lista de filas
+    setSelectedQueue(null);
+  };
 
-      // Verificar se os dados essenciais estão preenchidos
-      if (!clientData.nome || !clientData.email || !clientData.telefone) {
-        alert('Dados essenciais do usuário incompletos. Verifique seu perfil, especialmente o telefone.');
-        return;
-      }
-
-      const response = await api.post(`/api/queues/${fila.id}/join`, clientData);
-
-      if (response.data.success) {
-        alert('Você entrou na fila com sucesso!');
-        // Recarrega dados para mostrar a posição
-        await loadEstablishmentData();
-        // Redireciona para minhas filas
-        navigate('/cliente/minhas-filas');
-      } else {
-        alert(`Erro: ${response.data.message}`);
-      }
-    } catch (error) {
-      console.error('Erro ao entrar na fila:', error);
-      alert(error.response?.data?.message || 'Erro ao entrar na fila');
-    }
+  // Função para erro na entrada na fila
+  const handleJoinError = (message) => {
+    alert(`Erro: ${message}`);
   };
 
   if (loading) {
@@ -244,11 +222,11 @@ function DetEstabelecimentos() {
                         <div className={styles.tableCell}>
                           <button 
                             className={styles.enterButton}
-                            onClick={() => handleEnterQueue(fila)}
+                            onClick={() => handleViewQueue(fila)}
                             disabled={fila.status !== 'ativa'}
                           >
-                            {fila.status === 'ativa' ? 'Entrar' : 'Fechada'}
-                            <ArrowLeft size={16} />
+                            {fila.status === 'ativa' ? 'Ver Fila' : 'Fechada'}
+                            <Users size={16} />
                           </button>
                         </div>
                       </div>
@@ -259,7 +237,25 @@ function DetEstabelecimentos() {
             </div>
           </div>
 
-          {/* QueueComponent removido - entrada direta na fila */}
+          {/* Componente de Fila Bidimensional */}
+          {selectedQueue && (
+            <div className={styles.queueView}>
+              <button 
+                className={styles.backButton}
+                onClick={handleBackToQueues}
+              >
+                <ArrowLeft size={16} />
+                Voltar para Filas
+              </button>
+              
+              <GroupQueueComponent
+                queueId={selectedQueue.id}
+                establishmentId={id}
+                onJoinSuccess={handleJoinSuccess}
+                onError={handleJoinError}
+              />
+            </div>
+          )}
       </div>
     </Layout>
   );

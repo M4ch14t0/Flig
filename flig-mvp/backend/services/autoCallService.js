@@ -1,5 +1,5 @@
-const { pool } = require('../config/database');
-const redisService = require('./redis');
+import { pool } from '../config/database.js';
+import redisService from './redis.js';
 
 class AutoCallService {
   /**
@@ -220,7 +220,6 @@ class AutoCallService {
    */
   static async chamarProximoClienteDireto(queueId) {
     try {
-      const redisService = require('./redis');
       
       // Obter clientes da fila
       const clients = await redisService.getQueueClients(queueId);
@@ -261,4 +260,4 @@ class AutoCallService {
   }
 }
 
-module.exports = AutoCallService;
+export default AutoCallService;

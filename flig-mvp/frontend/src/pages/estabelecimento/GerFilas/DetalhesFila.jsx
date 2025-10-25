@@ -11,6 +11,7 @@ export default function DetalhesFila() {
   const { id } = useParams();
   const [fila, setFila] = useState(null);
   const [clients, setClients] = useState([]);
+  const [groupedClients, setGroupedClients] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tempoEsperaStats, setTempoEsperaStats] = useState(null);
@@ -48,6 +49,12 @@ export default function DetalhesFila() {
       const clientsResponse = await api.get(`/api/queues/${id}/clients?isEstablishment=true`);
       if (clientsResponse.data.success) {
         setClients(clientsResponse.data.data.clients || []);
+      }
+
+      // Buscar clientes agrupados para visualização bidimensional
+      const groupedResponse = await api.get(`/api/queues/${id}/grouped`);
+      if (groupedResponse.data.success) {
+        setGroupedClients(groupedResponse.data.data.groupedClients || {});
       }
 
       // Buscar estatísticas de tempo de espera
@@ -99,6 +106,20 @@ export default function DetalhesFila() {
     
     // Se não há dados, mostrar "Sem dados"
     return "Sem dados";
+  }
+
+  const getTotalPeopleInQueue = () => {
+    let total = 0;
+    for (const position in groupedClients) {
+      for (const client of groupedClients[position]) {
+        if (client.isGroupLeader) {
+          total += client.groupSize || 1;
+        } else {
+          total += 1;
+        }
+      }
+    }
+    return total;
   }
 
   // Funções para gerenciar o popup de edição
@@ -193,8 +214,8 @@ export default function DetalhesFila() {
           <div className={styles.cards}>
             <div className={styles.card}>
               <Users size={28} />
-              <h2>Total de Clientes</h2>
-              <p>{clients.length}</p>
+              <h2>Total de Pessoas</h2>
+              <p>{getTotalPeopleInQueue()}</p>
             </div>
             <div className={styles.card}>
               <DollarSign size={28} />
@@ -253,54 +274,92 @@ export default function DetalhesFila() {
         )}
 
         <div className={styles.main}>
-          <h2>Clientes na Fila</h2>
+          <h2>Fila Bidimensional - Visão do Estabelecimento</h2>
           
-          {clients.length === 0 ? (
+          {Object.keys(groupedClients).length === 0 ? (
             <div className={styles.emptyState}>
               <p>Nenhum cliente na fila no momento.</p>
             </div>
           ) : (
-            <div className={styles.clientsTable}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Posição</th>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Telefone</th>
-                    <th>Tempo Estimado</th>
-                    <th>Entrou em</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clients.map((client, index) => (
-                    <tr key={client.id || index}>
-                      <td className={styles.position}>
-                        <span className={styles.positionBadge}>
-                          {index + 1}
-                        </span>
-                      </td>
-                      <td className={styles.name}>{client.nome}</td>
-                      <td className={styles.email}>{client.email}</td>
-                      <td className={styles.phone}>{client.telefone}</td>
-                      <td className={styles.waitTime}>
-                        {(() => {
-                          const resultado = calculateWaitTime(index + 1);
-                          if (typeof resultado === 'number') {
-                            return `~${resultado} min`;
-                          } else if (typeof resultado === 'string' && resultado.includes('s')) {
-                            return `~${resultado}`;
-                          }
-                          return resultado;
-                        })()}
-                      </td>
-                      <td className={styles.timestamp}>
-                        {formatTimestamp(client.timestamp)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className={styles.bidimensionalQueue}>
+              {Object.entries(groupedClients).map(([position, clientsAtPosition]) => (
+                <div key={position} className={styles.positionGroup}>
+                  <div className={styles.positionHeader}>
+                    <h4>Posição {position}</h4>
+                    <span className={styles.positionCount}>
+                      {clientsAtPosition.length} cliente{clientsAtPosition.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className={styles.clientsAtPosition}>
+                    {clientsAtPosition.map((client, index) => (
+                      <div 
+                        key={client.id} 
+                        className={`${styles.clientCard} ${client.paidAdvance ? styles.paidClient : ''} ${client.isGroupLeader ? styles.groupLeader : ''}`}
+                      >
+                        <div className={styles.clientPosition}>
+                          <span className={styles.positionNumber}>
+                            {position}{client.subPosition || 'a'}
+                          </span>
+                          {client.paidAdvance && (
+                            <span className={styles.paidBadge}>PAGOU</span>
+                          )}
+                          {client.isGroupLeader && (
+                            <span className={styles.groupBadge}>GRUPO</span>
+                          )}
+                        </div>
+                        <div className={styles.clientInfo}>
+                          <h4>{client.nome}</h4>
+                          <div className={styles.clientContact}>
+                            <div className={styles.contactItem}>
+                              <span>📧 {client.email}</span>
+                            </div>
+                            <div className={styles.contactItem}>
+                              <span>📱 {client.telefone}</span>
+                            </div>
+                          </div>
+                          
+                          {client.isGroupLeader && (
+                            <div className={styles.groupInfo}>
+                              <Users size={12} />
+                              <span>Líder ({client.groupSize} pessoas)</span>
+                            </div>
+                          )}
+                          
+                          {client.isGroupLeader && client.groupMembers && (
+                            <div className={styles.groupMembers}>
+                              <strong>Membros do grupo:</strong>
+                              <ul>
+                                {client.groupMembers.map((member, memberIndex) => (
+                                  <li key={memberIndex}>
+                                    <strong>{member.nome}</strong>
+                                    <br />
+                                    <small>
+                                      📧 {member.email} | 📱 {member.telefone}
+                                    </small>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          <div className={styles.clientDetails}>
+                            <div className={styles.detailItem}>
+                              <Clock size={12} />
+                              <span>{calculateWaitTime(client.position)} min</span>
+                            </div>
+                            {client.isGroupLeader && (
+                              <div className={styles.detailItem}>
+                                <Users size={12} />
+                                <span>{client.groupSize} pessoas</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

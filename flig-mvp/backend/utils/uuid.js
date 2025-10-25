@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-const { v4: uuidv4, v1: uuidv1 } = require('uuid');
+import { v4 as uuidv4, v1 as uuidv1 } from 'uuid';
 
 /**
  * Gera um UUID v4 (aleatório) para filas
@@ -30,6 +30,15 @@ function generateQueueId() {
  * @returns {string} - UUID v4 único para cliente
  */
 function generateClientId() {
+  return uuidv4();
+}
+
+/**
+ * Gera um UUID v4 para grupos na fila
+ * 
+ * @returns {string} - UUID v4 único para grupo
+ */
+function generateGroupId() {
   return uuidv4();
 }
 
@@ -85,9 +94,20 @@ function generateAccessToken() {
   return uuidv4().replace(/-/g, '');
 }
 
-module.exports = {
+export {
   generateQueueId,
   generateClientId,
+  generateGroupId,
+  generateSessionId,
+  generateShortCode,
+  isValidUUID,
+  generateAccessToken
+};
+
+export default {
+  generateQueueId,
+  generateClientId,
+  generateGroupId,
   generateSessionId,
   generateShortCode,
   isValidUUID,

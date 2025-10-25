@@ -1,4 +1,4 @@
-const { pool } = require('../config/database');
+import { pool } from '../config/database.js';
 
 class Payment {
   constructor(data) {
@@ -112,4 +112,4 @@ class Payment {
   }
 }
 
-module.exports = Payment;
+export default Payment;

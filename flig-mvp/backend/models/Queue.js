@@ -10,9 +10,9 @@
  * @version 1.0.2
  */
 
-const redisService = require('../services/redis');
-const uuidUtils = require('../utils/uuid');
-const connection = require('../config/db');
+import redisService from '../services/redis.js';
+import * as uuidUtils from '../utils/uuid.js';
+import connection from '../config/db.js';
 
 class Queue {
   constructor(data = {}) {
@@ -155,6 +155,57 @@ class Queue {
     return { success: true, clientId, position, estimatedTime: this.calculateEstimatedTime(position) };
   }
 
+  /** Adiciona grupo à fila */
+  async addGroup(groupData) {
+    if (this.status !== 'ativa') throw new Error('Fila não está ativa');
+
+    let queueClients = await redisService.getQueueClients(this.id);
+    if (!Array.isArray(queueClients)) queueClients = [];
+
+    // Verificar se algum membro já está na fila
+    const allEmails = [groupData.leader.email, ...groupData.members.map(m => m.email)];
+    const allPhones = [groupData.leader.telefone, ...groupData.members.map(m => m.telefone)];
+    
+    const isDuplicate = queueClients.some((existingClient) => {
+      return allEmails.includes(existingClient.email) || 
+             allPhones.includes(existingClient.telefone);
+    });
+
+    if (isDuplicate) throw new Error('Algum membro do grupo já está nesta fila');
+
+    const groupId = uuidUtils.generateGroupId();
+    const leaderId = uuidUtils.generateClientId();
+    
+    // Criar dados do líder do grupo
+    const leaderData = {
+      ...groupData.leader,
+      id: leaderId,
+      groupId: groupId,
+      isGroupLeader: true,
+      groupMembers: groupData.members,
+      groupSize: groupData.members.length + 1,
+      timestamp: new Date().toISOString()
+    };
+
+    // Calcular posição única
+    const position = queueClients.length + 1;
+
+    console.log(`🔍 Adicionando grupo ${leaderData.nome} na posição ${position} (${leaderData.groupSize} pessoas)`);
+
+    await redisService.addClientToQueue(this.id, position, leaderData);
+
+    console.log(`✅ Grupo adicionado à fila ${this.nome}: ${leaderData.nome} + ${groupData.members.length} membros (Posição: ${position})`);
+    
+    return { 
+      success: true, 
+      clientId: leaderId, 
+      groupId: groupId,
+      position, 
+      estimatedTime: this.calculateEstimatedTime(position),
+      groupSize: leaderData.groupSize
+    };
+  }
+
   /** Lista clientes da fila */
   async getClients(isEstablishment = false) {
     let clients = await redisService.getQueueClients(this.id);
@@ -243,7 +294,7 @@ class Queue {
     };
   }
 
-  /** Avança cliente na fila */
+  /** Avança cliente na fila (método legado - mantido para compatibilidade) */
   async advanceClient(clientId, positions) {
     console.log(`🔍 advanceClient - clientId: ${clientId}, positions: ${positions}`);
     
@@ -311,6 +362,89 @@ class Queue {
       estimatedTime
     };
   }
+
+  /** Avança cliente verticalmente (muda posição principal) */
+  async advanceClientVertically(clientId, positions) {
+    console.log(`🔍 advanceClientVertically - clientId: ${clientId}, positions: ${positions}`);
+    
+    if (this.status !== 'ativa') {
+      throw new Error('Fila não está ativa');
+    }
+
+    if (positions < 1 || positions > this.max_avancos) {
+      throw new Error(`Número de posições deve estar entre 1 e ${this.max_avancos}`);
+    }
+
+    // Buscar clientes atuais
+    const clients = await redisService.getQueueClients(this.id);
+    if (!Array.isArray(clients)) {
+      throw new Error('Erro ao buscar clientes da fila');
+    }
+
+    // Encontrar o cliente
+    const client = clients.find(c => c.id === clientId || c.id === String(clientId));
+    if (!client) {
+      throw new Error('Cliente não encontrado na fila');
+    }
+
+    console.log(`🔍 Avançando cliente ${client.nome} verticalmente ${positions} posições`);
+
+    // Usar nova função de avanço vertical
+    const result = await redisService.advanceClientVertically(this.id, client, positions);
+    
+    return {
+      success: true,
+      oldPosition: client.position,
+      newPosition: result.newPosition,
+      positionsAdvanced: result.positionsAdvanced,
+      estimatedTime: this.calculateEstimatedTime(result.newPosition)
+    };
+  }
+
+  /** Avança cliente horizontalmente (prioridade local) */
+  async advanceClientHorizontally(clientId, targetPosition) {
+    console.log(`🔍 advanceClientHorizontally - clientId: ${clientId}, targetPosition: ${targetPosition}`);
+    
+    if (this.status !== 'ativa') {
+      throw new Error('Fila não está ativa');
+    }
+
+    // Buscar clientes atuais
+    const clients = await redisService.getQueueClients(this.id);
+    if (!Array.isArray(clients)) {
+      throw new Error('Erro ao buscar clientes da fila');
+    }
+
+    // Encontrar o cliente
+    const client = clients.find(c => c.id === clientId || c.id === String(clientId));
+    if (!client) {
+      throw new Error('Cliente não encontrado na fila');
+    }
+
+    console.log(`🔍 Avançando cliente ${client.nome} horizontalmente para posição ${targetPosition}`);
+
+    // Usar nova função de avanço horizontal
+    const result = await redisService.advanceClientHorizontally(this.id, client, targetPosition);
+    
+    return {
+      success: true,
+      oldPosition: client.position,
+      newPosition: result.newPosition,
+      subPosition: result.subPosition,
+      estimatedTime: this.calculateEstimatedTime(result.newPosition)
+    };
+  }
+
+  /** Obtém clientes agrupados por posição (exibição bidimensional) */
+  async getClientsGrouped() {
+    try {
+      const groupedClients = await redisService.getQueueClientsGrouped(this.id);
+      return groupedClients;
+    } catch (error) {
+      console.error('❌ Erro ao obter clientes agrupados:', error);
+      throw new Error('Falha ao obter clientes agrupados');
+    }
+  }
 }
 
-module.exports = Queue;
+export default Queue;

@@ -1,6 +1,6 @@
-const Plan = require('../models/Plan');
-const Subscription = require('../models/Subscription');
-const Payment = require('../models/Payment');
+import Plan from '../models/Plan.js';
+import Subscription from '../models/Subscription.js';
+import Payment from '../models/Payment.js';
 
 // Listar todos os planos disponíveis
 const getPlans = async (req, res) => {
@@ -197,7 +197,16 @@ const cancelSubscription = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
+  getPlans,
+  getPlanById,
+  getPlanStatus,
+  createSubscription,
+  getSubscriptionHistory,
+  cancelSubscription
+};
+
+export default {
   getPlans,
   getPlanById,
   getPlanStatus,

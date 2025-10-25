@@ -8,12 +8,12 @@
  * @version 1.0.0
  */
 
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const connection = require('../config/db');
-const cryptoUtils = require('../utils/crypto');
-const tokenBlacklist = require('../services/tokenBlacklist');
-const sessionManager = require('../services/sessionManager');
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import connection from '../config/db.js';
+import { hashPassword, verifyPassword } from '../utils/crypto.js';
+import { addToBlacklist, isTokenBlacklisted } from '../services/tokenBlacklist.js';
+import sessionManager from '../services/sessionManager.js';
 
 /**
  * Valida CPF usando algoritmo oficial
@@ -148,7 +148,7 @@ async function registerUser(req, res) {
     }
 
     // Criptografa a senha
-    const hashedPassword = cryptoUtils.hashPassword(senha_usuario);
+    const hashedPassword = hashPassword(senha_usuario);
 
     // Converte data de nascimento de DDMMAAAA para YYYY-MM-DD
     let formattedDataNascimento = null;
@@ -332,7 +332,7 @@ async function registerEstablishment(req, res) {
     }
 
     // Criptografa a senha
-    const hashedPassword = cryptoUtils.hashPassword(senha_empresa);
+    const hashedPassword = hashPassword(senha_empresa);
 
     // Insere estabelecimento no banco
     const sql = `
@@ -426,7 +426,7 @@ async function loginUser(req, res) {
     console.log('🔍 Senha fornecida:', senha_usuario);
     console.log('🔍 Hash no banco:', user.senha_usuario);
     
-    const isValidPassword = cryptoUtils.verifyPassword(senha_usuario, user.senha_usuario);
+    const isValidPassword = verifyPassword(senha_usuario, user.senha_usuario);
     console.log('🔍 Resultado da verificação:', isValidPassword);
     
     if (!isValidPassword) {
@@ -522,7 +522,7 @@ async function loginEstablishment(req, res) {
     }
 
     // Verifica senha
-    const isValidPassword = cryptoUtils.verifyPassword(senha_empresa, establishment.senha_empresa);
+    const isValidPassword = verifyPassword(senha_empresa, establishment.senha_empresa);
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
@@ -669,7 +669,7 @@ async function logout(req, res) {
 
     if (token) {
       // Adiciona token à blacklist para invalidá-lo
-      await tokenBlacklist.addToBlacklist(token);
+      await addToBlacklist(token);
       console.log(`✅ Token invalidado na blacklist: ${userType} ID ${userId}`);
     }
     
@@ -703,7 +703,7 @@ async function logoutAll(req, res) {
 
     if (token) {
       // Adiciona token atual à blacklist
-      await tokenBlacklist.addToBlacklist(token);
+      await addToBlacklist(token);
       console.log(`✅ Token atual invalidado na blacklist: ${userType} ID ${userId}`);
     }
 
@@ -730,69 +730,18 @@ async function logoutAll(req, res) {
   }
 }
 
-/**
- * Valida CPF usando algoritmo oficial
- */
-function validateCPF(cpf) {
-  if (!cpf) return false;
-  
-  cpf = cpf.replace(/[^\d]/g, '');
-  
-  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
-  
-  let soma = 0;
-  for (let i = 0; i < 9; i++) {
-    soma += parseInt(cpf[i]) * (10 - i);
-  }
-  let resto = (soma * 10) % 11;
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf[9])) return false;
-  
-  soma = 0;
-  for (let i = 0; i < 10; i++) {
-    soma += parseInt(cpf[i]) * (11 - i);
-  }
-  resto = (soma * 10) % 11;
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf[10])) return false;
-  
-  return true;
-}
 
-/**
- * Valida CNPJ usando algoritmo oficial
- */
-function validateCNPJ(cnpj) {
-  if (!cnpj) return false;
-  
-  cnpj = cnpj.replace(/[^\d]/g, '');
-  
-  if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
-  
-  let soma = 0;
-  let peso = 2;
-  for (let i = 11; i >= 0; i--) {
-    soma += parseInt(cnpj[i]) * peso;
-    peso = peso === 9 ? 2 : peso + 1;
-  }
-  let resto = soma % 11;
-  let digito1 = resto < 2 ? 0 : 11 - resto;
-  if (digito1 !== parseInt(cnpj[12])) return false;
-  
-  soma = 0;
-  peso = 2;
-  for (let i = 12; i >= 0; i--) {
-    soma += parseInt(cnpj[i]) * peso;
-    peso = peso === 9 ? 2 : peso + 1;
-  }
-  resto = soma % 11;
-  let digito2 = resto < 2 ? 0 : 11 - resto;
-  if (digito2 !== parseInt(cnpj[13])) return false;
-  
-  return true;
-}
+export {
+  registerUser,
+  registerEstablishment,
+  loginUser,
+  loginEstablishment,
+  getCurrentUser,
+  logout,
+  logoutAll
+};
 
-module.exports = {
+export default {
   registerUser,
   registerEstablishment,
   loginUser,

@@ -1,7 +1,8 @@
-const app = require('./app');
-const redisService = require('./services/redis');
-const cronService = require('./services/cronService');
-require('dotenv').config();
+import app from './app.js';
+import redisService from './services/redis.js';
+import cronService from './services/cronService.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 

@@ -9,9 +9,10 @@
  */
 
 // Carregar variáveis de ambiente
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 // Configuração do transporter (usando variáveis de ambiente consistentes)
 const createTransporter = () => {
@@ -396,7 +397,12 @@ async function sendPasswordResetConfirmation(email, userName) {
   }
 }
 
-module.exports = {
+export {
+  sendPasswordResetEmail,
+  sendPasswordResetConfirmation
+};
+
+export default {
   sendPasswordResetEmail,
   sendPasswordResetConfirmation
 };

@@ -8,8 +8,8 @@
  * @version 1.0.0
  */
 
-const connection = require('../config/db');
-const cryptoUtils = require('../utils/crypto');
+import connection from '../config/db.js';
+import { hashPassword, verifyPassword } from '../utils/crypto.js';
 
 class Establishment {
   constructor(data = {}) {
@@ -43,7 +43,7 @@ class Establishment {
   static async create(establishmentData) {
     try {
       // Criptografa a senha
-      const hashedPassword = cryptoUtils.hashPassword(establishmentData.senha_empresa);
+      const hashedPassword = hashPassword(establishmentData.senha_empresa);
 
       const sql = `
         INSERT INTO estabelecimentos 
@@ -272,7 +272,7 @@ class Establishment {
 
       // Se senha for fornecida, criptografa
       if (updateData.senha_empresa) {
-        updateData.senha_empresa = cryptoUtils.hashPassword(updateData.senha_empresa);
+        updateData.senha_empresa = hashPassword(updateData.senha_empresa);
         allowedFields.push('senha_empresa');
       }
 
@@ -565,7 +565,7 @@ class Establishment {
    * @returns {boolean} - True se senha é válida
    */
   static validatePassword(password, hashedPassword) {
-    return cryptoUtils.verifyPassword(password, hashedPassword);
+    return verifyPassword(password, hashedPassword);
   }
 
   /**
@@ -598,5 +598,5 @@ class Establishment {
   }
 }
 
-module.exports = Establishment;
+export default Establishment;
 

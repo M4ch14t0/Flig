@@ -34,7 +34,7 @@ import UserHome from '../pages/cliente/UserHome/UserHome'; // Página inicial do
 import Estabelecimentos from '../pages/cliente/Estabelecimentos/Estabelecimentos'; // Lista de estabelecimentos disponíveis
 import DetEstabelecimentos from '../pages/cliente/DetEstab/DetEstabelecimentos'; // Detalhes de um estabelecimento específico
 import MinhasFilas from '../pages/cliente/MinhasFilas/MinhasFilas'; // Filas que o cliente está participando
-import Pagamento from '../pages/cliente/Pagamento/Pagamento'; // Página de pagamento para clientes
+// import Pagamento from '../pages/cliente/Pagamento/Pagamento'; // Página de pagamento removida
 import ContaU from '../pages/cliente/ContaU/ContaU'; // Perfil e dados pessoais do cliente
 import ConfigU from '../pages/cliente/ConfigU/ConfigU'; // Configurações da conta do cliente
 
@@ -108,11 +108,7 @@ function AppRoutes() {
           <MinhasFilas />
         </ProtectedRoute>
       } />
-      <Route path="/cliente/pagamento" element={
-        <ProtectedRoute requiredUserType="cliente">
-          <Pagamento />
-        </ProtectedRoute>
-      } />
+      {/* Rota de pagamento removida - redirecionamento direto para Mercado Pago */}
       <Route path="/cliente/perfil" element={
         <ProtectedRoute requiredUserType="cliente">
           <ContaU />

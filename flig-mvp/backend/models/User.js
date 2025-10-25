@@ -8,8 +8,8 @@
  * @version 1.0.0
  */
 
-const connection = require('../config/db');
-const cryptoUtils = require('../utils/crypto');
+import connection from '../config/db.js';
+import { hashPassword, verifyPassword } from '../utils/crypto.js';
 
 class User {
   constructor(data = {}) {
@@ -38,7 +38,7 @@ class User {
   static async create(userData) {
     try {
       // Criptografa a senha
-      const hashedPassword = cryptoUtils.hashPassword(userData.senha_usuario);
+      const hashedPassword = hashPassword(userData.senha_usuario);
 
       const sql = `
         INSERT INTO usuarios 
@@ -205,7 +205,7 @@ class User {
 
       // Se senha for fornecida, criptografa
       if (updateData.senha_usuario) {
-        updateData.senha_usuario = cryptoUtils.hashPassword(updateData.senha_usuario);
+        updateData.senha_usuario = hashPassword(updateData.senha_usuario);
         allowedFields.push('senha_usuario');
       }
 
@@ -378,7 +378,7 @@ class User {
    * @returns {boolean} - True se senha é válida
    */
   static validatePassword(password, hashedPassword) {
-    return cryptoUtils.verifyPassword(password, hashedPassword);
+    return verifyPassword(password, hashedPassword);
   }
 
   /**
@@ -387,7 +387,7 @@ class User {
    * @returns {boolean} - True se senha é válida
    */
   async verifyPassword(password) {
-    return cryptoUtils.verifyPassword(password, this.senha_usuario);
+    return verifyPassword(password, this.senha_usuario);
   }
 
   /**
@@ -422,5 +422,5 @@ class User {
   }
 }
 
-module.exports = User;
+export default User;
 

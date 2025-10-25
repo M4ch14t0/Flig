@@ -1,4 +1,4 @@
-const AutoCallService = require('./autoCallService');
+import AutoCallService from './autoCallService.js';
 
 class CronService {
   constructor() {
@@ -85,4 +85,4 @@ class CronService {
 // Instância singleton
 const cronService = new CronService();
 
-module.exports = cronService;
+export default cronService;

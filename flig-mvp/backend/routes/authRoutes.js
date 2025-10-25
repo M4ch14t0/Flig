@@ -11,19 +11,19 @@
  * @version 1.0.0
  */
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const authController = require('../controllers/authController');
-const passwordResetController = require('../controllers/passwordResetController');
-const passwordResetControllerSimple = require('../controllers/passwordResetControllerSimple');
-const { authenticateToken } = require('../middleware/auth');
-const { 
+import authController from '../controllers/authController.js';
+import passwordResetController from '../controllers/passwordResetController.js';
+import passwordResetControllerSimple from '../controllers/passwordResetControllerSimple.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { 
   validateUserRegistration, 
   validateEstablishmentRegistration,
   validateLogin,
   rateLimit 
-} = require('../middleware/validation');
-const cnpjValidation = require('../services/cnpjValidation');
+} from '../middleware/validation.js';
+import cnpjValidation from '../services/cnpjValidation.js';
 
 /**
  * @route POST /api/auth/register/user
@@ -240,5 +240,5 @@ router.get('/validate-reset-token/:token', passwordResetController.validateReset
 // Redefinir senha com token
 router.post('/reset-password', rateLimit(60000, 5), passwordResetController.resetPassword);
 
-module.exports = router;
+export default router;
 

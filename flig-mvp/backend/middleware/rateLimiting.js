@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-const rateLimit = require('express-rate-limit');
+import rateLimit from 'express-rate-limit';
 
 /**
  * Rate limiter geral para todas as rotas
@@ -154,7 +154,7 @@ const notificationLimiter = rateLimit({
   }
 });
 
-module.exports = {
+export {
   generalLimiter,
   authLimiter,
   queueLimiter,

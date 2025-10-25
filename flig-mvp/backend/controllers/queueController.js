@@ -16,13 +16,15 @@
  * @version 1.0.0
  */
 
-const Queue = require('../models/Queue');
-const paymentService = require('../services/payment');
-const redisService = require('../services/redis');
-const TempoEsperaService = require('../services/tempoEsperaService');
-const AutoCallService = require('../services/autoCallService');
-const cryptoUtils = require('../utils/crypto');
-const uuidUtils = require('../utils/uuid');
+import Queue from '../models/Queue.js';
+import paymentService from '../services/payment.js';
+import connection from '../config/db.js';
+import { pool } from '../config/database.js';
+import redisService from '../services/redis.js';
+import TempoEsperaService from '../services/tempoEsperaService.js';
+import AutoCallService from '../services/autoCallService.js';
+import { encryptClientData, decryptClientData } from '../utils/crypto.js';
+import uuidUtils from '../utils/uuid.js';
 
 /**
  * Cria uma nova fila para um estabelecimento
@@ -210,13 +212,28 @@ async function getQueueById(req, res) {
 async function joinQueue(req, res) {
   try {
     const { queueId } = req.params;
-    const { nome, telefone, email } = req.body;
+    const { 
+      nome, 
+      telefone, 
+      email, 
+      // Novos campos para grupos
+      groupMembers = [],
+      isGroup = false
+    } = req.body;
 
     // Validações obrigatórias
     if (!nome || !telefone || !email) {
       return res.status(400).json({
         success: false,
         message: 'Nome, telefone e email são obrigatórios'
+      });
+    }
+
+    // Validações para grupos
+    if (isGroup && (!groupMembers || groupMembers.length === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Grupo deve ter pelo menos um membro além do líder'
       });
     }
 
@@ -237,12 +254,22 @@ async function joinQueue(req, res) {
       });
     }
 
-    // Adiciona cliente à fila
-    const result = await queue.addClient({
-      nome,
-      telefone,
-      email
-    });
+    let result;
+    
+    if (isGroup) {
+      // Adicionar grupo à fila
+      result = await queue.addGroup({
+        leader: { nome, telefone, email },
+        members: groupMembers
+      });
+    } else {
+      // Adicionar cliente individual à fila
+      result = await queue.addClient({
+        nome,
+        telefone,
+        email
+      });
+    }
 
     // Registrar tempo de entrada para cálculo de espera
     try {
@@ -252,21 +279,24 @@ async function joinQueue(req, res) {
       // Não falhar a operação por causa do tempo de entrada
     }
 
-    console.log(`✅ Cliente ${nome} entrou na fila ${queue.nome}`);
+    console.log(`✅ ${isGroup ? 'Grupo' : 'Cliente'} ${nome} entrou na fila ${queue.nome}`);
 
     res.status(201).json({
       success: true,
-      message: 'Cliente adicionado à fila com sucesso',
+      message: isGroup ? 'Grupo adicionado à fila com sucesso' : 'Cliente adicionado à fila com sucesso',
       data: {
         clientId: result.clientId,
+        groupId: result.groupId,
         position: result.position,
         estimatedTime: result.estimatedTime,
-        queueName: queue.nome
+        queueName: queue.nome,
+        groupSize: result.groupSize,
+        isGroup: isGroup
       }
     });
 
   } catch (error) {
-    console.error('❌ Erro ao adicionar cliente à fila:', error);
+    console.error('❌ Erro ao adicionar à fila:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Erro interno do servidor'
@@ -275,7 +305,7 @@ async function joinQueue(req, res) {
 }
 
 /**
- * Avança cliente na fila via pagamento
+ * Avança cliente na fila via pagamento (método legado)
  * 
  * POST /api/queues/:queueId/advance
  * Body: { clientId, positions, paymentData }
@@ -373,8 +403,8 @@ async function advanceInQueue(req, res) {
 
     console.log(`🔍 Cliente encontrado na fila: ID ${clientInQueue.id}, Nome: ${clientInQueue.nome}`);
 
-    // Avança cliente na fila usando o ID correto da fila (UUID)
-    const advanceResult = await queue.advanceClient(clientInQueue.id, positions);
+    // Avança cliente na fila usando a lógica bidimensional
+    const advanceResult = await queue.advanceClientVertically(clientInQueue.id, positions);
 
     console.log(`✅ Cliente ${clientInQueue.nome} avançou ${positions} posições na fila ${queue.nome}`);
 
@@ -461,7 +491,6 @@ async function leaveQueue(req, res) {
 
     // Marcar como abandonou no histórico
     try {
-      const connection = require('../config/db');
       await new Promise((resolve, reject) => {
         connection.query(
           `UPDATE historico_clientes_filas 
@@ -857,7 +886,6 @@ async function chamarProximoCliente(req, res) {
     
     // Marcar cliente como "chamado" no histórico (aguardando comparecimento)
     try {
-      const connection = require('../config/db');
       await new Promise((resolve, reject) => {
         connection.query(
           `UPDATE historico_clientes_filas 
@@ -907,7 +935,6 @@ async function chamarProximoCliente(req, res) {
     const timeoutMinutes = 5; // 5 minutos para comparecer
     setTimeout(async () => {
       try {
-        const connection = require('../config/db');
         // Verificar se o cliente ainda está como "chamado" (não compareceu)
         await new Promise((resolve, reject) => {
           connection.query(
@@ -1007,7 +1034,6 @@ async function addTestClient(req, res) {
       const clientId = result.clientId || `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const posicaoInicial = result.position || 1;
       
-      const connection = require('../config/db');
       await new Promise((resolve, reject) => {
         connection.query(
           `INSERT INTO historico_clientes_filas 
@@ -1071,7 +1097,6 @@ async function getTempoEsperaStats(req, res) {
     const stats = await TempoEsperaService.obterEstatisticasTempo(queueId);
     
     // Buscar intervalo médio entre chamadas
-    const { pool } = require('../config/database');
     const [intervaloRows] = await pool.execute(
       `SELECT tempo_medio_atendimento, total_atendimentos_calculados FROM filas WHERE id = ?`,
       [queueId]
@@ -1201,7 +1226,195 @@ async function executarChamadaAutomatica(req, res) {
   }
 }
 
-module.exports = {
+/**
+ * Avança cliente verticalmente (muda posição principal)
+ * 
+ * POST /api/queues/:queueId/advance-vertical
+ * Body: { clientId, positions, paymentData }
+ */
+async function advanceVertically(req, res) {
+  try {
+    const { queueId } = req.params;
+    const { clientId, positions } = req.body;
+
+    // Validações obrigatórias
+    if (!clientId || !positions) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID do cliente e número de posições são obrigatórios'
+      });
+    }
+
+    // Valida número de posições
+    if (positions < 1 || positions > 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Número de posições deve estar entre 1 e 8'
+      });
+    }
+
+    // Busca a fila
+    const queue = await Queue.findById(queueId);
+    if (!queue) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fila não encontrada'
+      });
+    }
+
+    // Verifica se a fila está ativa
+    if (queue.status !== 'ativa') {
+      return res.status(400).json({
+        success: false,
+        message: 'Fila não está ativa'
+      });
+    }
+
+    // Avançar cliente verticalmente (sem processamento de pagamento)
+    const result = await queue.advanceClientVertically(clientId, positions);
+
+    console.log(`✅ Cliente ${clientId} avançou verticalmente ${positions} posições`);
+
+    res.json({
+      success: true,
+      message: 'Cliente avançado verticalmente com sucesso',
+      data: {
+        oldPosition: result.oldPosition,
+        newPosition: result.newPosition,
+        positionsAdvanced: result.positionsAdvanced,
+        estimatedTime: result.estimatedTime
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao avançar cliente verticalmente:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Erro interno do servidor'
+    });
+  }
+}
+
+/**
+ * Avança cliente horizontalmente (prioridade local)
+ * 
+ * POST /api/queues/:queueId/advance-horizontal
+ * Body: { clientId, targetPosition, paymentData }
+ */
+async function advanceHorizontally(req, res) {
+  try {
+    const { queueId } = req.params;
+    const { clientId, targetPosition, paymentData } = req.body;
+
+    // Validações obrigatórias
+    if (!clientId || !targetPosition || !paymentData) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID do cliente, posição alvo e dados de pagamento são obrigatórios'
+      });
+    }
+
+    // Valida posição alvo
+    if (targetPosition < 4) {
+      return res.status(400).json({
+        success: false,
+        message: 'Top 3 posições são protegidas contra avanço'
+      });
+    }
+
+    // Busca a fila
+    const queue = await Queue.findById(queueId);
+    if (!queue) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fila não encontrada'
+      });
+    }
+
+    // Verifica se a fila está ativa
+    if (queue.status !== 'ativa') {
+      return res.status(400).json({
+        success: false,
+        message: 'Fila não está ativa'
+      });
+    }
+
+    // Processar pagamento (lógica existente)
+    const paymentResult = await paymentService.processPayment(paymentData);
+    if (!paymentResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Falha no processamento do pagamento'
+      });
+    }
+
+    // Avançar cliente horizontalmente
+    const result = await queue.advanceClientHorizontally(clientId, targetPosition);
+
+    console.log(`✅ Cliente ${clientId} avançou horizontalmente para posição ${targetPosition}`);
+
+    res.json({
+      success: true,
+      message: 'Cliente avançado horizontalmente com sucesso',
+      data: {
+        oldPosition: result.oldPosition,
+        newPosition: result.newPosition,
+        subPosition: result.subPosition,
+        estimatedTime: result.estimatedTime,
+        paymentId: paymentResult.paymentId
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao avançar cliente horizontalmente:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Erro interno do servidor'
+    });
+  }
+}
+
+/**
+ * Obtém fila com clientes agrupados (exibição bidimensional)
+ * 
+ * GET /api/queues/:queueId/grouped
+ */
+async function getQueueGrouped(req, res) {
+  try {
+    const { queueId } = req.params;
+
+    // Busca a fila
+    const queue = await Queue.findById(queueId);
+    if (!queue) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fila não encontrada'
+      });
+    }
+
+    // Obter clientes agrupados
+    const groupedClients = await queue.getClientsGrouped();
+
+    res.json({
+      success: true,
+      data: {
+        queueId: queue.id,
+        queueName: queue.nome,
+        status: queue.status,
+        groupedClients: groupedClients
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao obter fila agrupada:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Erro interno do servidor'
+    });
+  }
+}
+
+export {
   createQueue,
   getEstablishmentQueues,
   getQueueById,
@@ -1220,6 +1433,36 @@ module.exports = {
   getTempoEstimado,
   configurarChamadaAutomatica,
   verificarChamadaAutomatica,
-  executarChamadaAutomatica
+  executarChamadaAutomatica,
+  // Novos endpoints para filas bidimensionais
+  advanceVertically,
+  advanceHorizontally,
+  getQueueGrouped
+};
+
+export default {
+  createQueue,
+  getEstablishmentQueues,
+  getQueueById,
+  joinQueue,
+  advanceInQueue,
+  leaveQueue,
+  getClientPosition,
+  getQueueClients,
+  removeClientFromQueue,
+  updateQueueStatus,
+  closeQueue,
+  getQueueStats,
+  chamarProximoCliente,
+  addTestClient,
+  getTempoEsperaStats,
+  getTempoEstimado,
+  configurarChamadaAutomatica,
+  verificarChamadaAutomatica,
+  executarChamadaAutomatica,
+  // Novos endpoints para filas bidimensionais
+  advanceVertically,
+  advanceHorizontally,
+  getQueueGrouped
 };
 

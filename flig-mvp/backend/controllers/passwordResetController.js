@@ -5,10 +5,10 @@
  * @version 1.0.0
  */
 
-const crypto = require('crypto');
-const connection = require('../config/db');
-const cryptoUtils = require('../utils/crypto');
-const emailService = require('../services/emailService');
+import crypto from 'crypto';
+import connection from '../config/db.js';
+import { hashPassword } from '../utils/crypto.js';
+import emailService from '../services/emailService.js';
 
 /**
  * Solicita recuperação de senha
@@ -318,7 +318,7 @@ async function resetPassword(req, res) {
     }
 
     // Hash da nova senha
-    const hashedPassword = cryptoUtils.hashPassword(password);
+    const hashedPassword = hashPassword(password);
 
     // Atualiza senha e limpa token
     if (userType === 'cliente') {
@@ -355,7 +355,13 @@ async function resetPassword(req, res) {
   }
 }
 
-module.exports = {
+export {
+  forgotPassword,
+  validateResetToken,
+  resetPassword
+};
+
+export default {
   forgotPassword,
   validateResetToken,
   resetPassword
