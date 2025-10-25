@@ -1,4 +1,4 @@
-const { pool } = require('../config/database');
+import { pool } from '../config/database.js';
 
 class Subscription {
   constructor(data) {
@@ -124,4 +124,4 @@ class Subscription {
   }
 }
 
-module.exports = Subscription;
+export default Subscription;

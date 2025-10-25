@@ -1,11 +1,12 @@
-const express = require("express");
-const cors = require("cors");
-const connection = require("./config/db");
-const redisService = require("./services/redis");
-const Queue = require("./models/Queue");
-const { generalLimiter, authLimiter, queueLimiter, cnpjLimiter, paymentLimiter, notificationLimiter } = require("./middleware/rateLimiting");
-const { sanitizeInputs } = require("./middleware/validation");
-require('dotenv').config();
+import express from "express";
+import cors from "cors";
+import connection from "./config/db.js";
+import redisService from "./services/redis.js";
+import Queue from "./models/Queue.js";
+import { generalLimiter, authLimiter, queueLimiter, cnpjLimiter, paymentLimiter, notificationLimiter } from "./middleware/rateLimiting.js";
+import { sanitizeInputs } from "./middleware/validation.js";
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -86,11 +87,12 @@ app.use((req, res, next) => {
 });
 
 // Importar rotas
-const authRoutes = require('./routes/authRoutes');
-const queueRoutes = require('./routes/queueRoutes');
-const userRoutes = require('./routes/userRoutes');
-const establishmentRoutes = require('./routes/establishmentRoutes');
-const planRoutes = require('./routes/planRoutes');
+import authRoutes from './routes/authRoutes.js';
+import queueRoutes from './routes/queueRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import establishmentRoutes from './routes/establishmentRoutes.js';
+import planRoutes from './routes/planRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 // Aplicar rate limiting geral
 app.use(generalLimiter);
@@ -109,7 +111,8 @@ app.get('/', (req, res) => {
       queues: '/api/queues',
       users: '/api/users',
       establishments: '/api/establishments',
-      plans: '/api/plans'
+      plans: '/api/plans',
+      payments: '/api/payments'
     }
   });
 });
@@ -248,6 +251,7 @@ app.use('/api/queues', queueLimiter, queueRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/establishments', establishmentRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/payments', paymentLimiter, paymentRoutes);
 
 // Rota para buscar estabelecimentos
 app.get("/api/estabelecimentos", (req, res) => {
@@ -703,7 +707,7 @@ app.put("/api/configuracoes/:chave", (req, res) => {
 });
 
 // Importar middleware de tratamento de erros
-const { globalErrorHandler, notFoundHandler } = require('./utils/errorHandler');
+import { globalErrorHandler, notFoundHandler } from './utils/errorHandler.js';
 
 // Rota 404 - deve vir antes do middleware de erro
 app.use('*', notFoundHandler);
@@ -711,5 +715,5 @@ app.use('*', notFoundHandler);
 // Middleware global de tratamento de erros - deve ser o último
 app.use(globalErrorHandler);
 
-module.exports = app;
+export default app;
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, MapPin, List, LogOut, X, ChevronUp } from 'lucide-react';
+import { Home, MapPin, List, LogOut, X, ChevronUp, Users, ArrowLeft } from 'lucide-react';
 import Layout from '../../../components/Layout';
+import GroupQueueComponent from '../../../components/GroupQueueComponent';
 import { api } from '../../../services/api';
 import { AuthContext } from '../../../contexts/authContextImports';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -18,6 +19,7 @@ function MinhasFilas() {
   const [selectedQueue, setSelectedQueue] = useState(null);
   const [queueClients, setQueueClients] = useState([]);
   const [selectedPositions, setSelectedPositions] = useState(1);
+  const [viewingQueue, setViewingQueue] = useState(null);
 
   const sidebarLinks = [
     {
@@ -84,6 +86,14 @@ function MinhasFilas() {
     }
   };
 
+  const handleViewQueue = (fila) => {
+    setViewingQueue(fila);
+  };
+
+  const handleBackToQueues = () => {
+    setViewingQueue(null);
+  };
+
   const handleAdvancePosition = async (queueId, currentPosition) => {
     try {
       const userId = localStorage.getItem('userId_cliente');
@@ -140,7 +150,7 @@ function MinhasFilas() {
     setSelectedPositions(1);
   };
 
-  const handleConfirmAdvance = () => {
+  const handleConfirmAdvance = async () => {
     if (!selectedQueue) return;
 
     const userId = localStorage.getItem('userId_cliente');
@@ -153,19 +163,23 @@ function MinhasFilas() {
 
     closeAdvancePopup();
 
-    navigate('/cliente/pagamento', {
-      state: {
-        queueData: {
-          queueId: selectedQueue.id,
-          queueName: selectedQueue.fila_nome,
-          establishmentName: selectedQueue.estabelecimento_nome,
-          currentPosition: selectedQueue.posicao_atual,
-          advanceValue: parseFloat(selectedQueue.valor_avancos || 5),
-          userId: parseInt(userId),
-          positionsToAdvance: selectedPositions
-        }
+    // Criar preferência de pagamento diretamente
+    try {
+      const response = await api.post('/payments/advance-preference', {
+        queueId: selectedQueue.id,
+        positions: selectedPositions
+      });
+
+      if (response.data.success) {
+        // Redirecionar para o Mercado Pago
+        window.location.href = response.data.data.initPoint;
+      } else {
+        alert('Erro ao criar preferência de pagamento: ' + response.data.message);
       }
-    });
+    } catch (error) {
+      console.error('Erro ao criar preferência de pagamento:', error);
+      alert('Erro ao processar pagamento. Tente novamente.');
+    }
   };
 
   const getMaxAdvance = () => {
@@ -202,7 +216,27 @@ function MinhasFilas() {
       showFooter={false}
     >
       <div className={styles.container}>
-        {loading ? (
+        {viewingQueue ? (
+          <div className={styles.queueView}>
+            <button 
+              className={styles.backButton}
+              onClick={handleBackToQueues}
+            >
+              <ArrowLeft size={16} />
+              Voltar para Minhas Filas
+            </button>
+            
+            <GroupQueueComponent
+              queueId={viewingQueue.id}
+              establishmentId={viewingQueue.estabelecimento_id}
+              onJoinSuccess={() => {
+                fetchUserQueues();
+                setViewingQueue(null);
+              }}
+              onError={(message) => alert(`Erro: ${message}`)}
+            />
+          </div>
+        ) : loading ? (
           <div className={styles.loading}>
             <div className={styles.loadingSpinner}></div>
             Carregando suas filas...
@@ -241,6 +275,10 @@ function MinhasFilas() {
 
                 {/* Botões de Ação */}
                 <div className={styles.actionButtons}>
+                  <button onClick={() => handleViewQueue(fila)} className={styles.viewBtn}>
+                    Ver Fila <Users size={14} />
+                  </button>
+
                   <button onClick={() => handleLeaveQueue(fila.id)} className={styles.sairBtn}>
                     Sair <LogOut size={14} />
                   </button>

@@ -9,9 +9,10 @@
  */
 
 // Garantir que dotenv seja carregado primeiro
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-const mysql = require('mysql2/promise');
+import mysql from 'mysql2/promise';
 
 // Log das configurações do banco
 console.log('🔍 Database Configuration:');
@@ -141,7 +142,7 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-module.exports = {
+export {
   pool,
   testConnection,
   executeQuery,

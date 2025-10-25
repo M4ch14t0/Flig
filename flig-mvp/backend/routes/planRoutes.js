@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const planController = require('../controllers/planController');
-const paymentController = require('../controllers/paymentController');
-const { checkPlanActive, optionalPlanCheck } = require('../middleware/planCheck');
-const { authenticateToken } = require('../middleware/auth');
+import planController from '../controllers/planController.js';
+import paymentController from '../controllers/paymentController.js';
+import { checkPlanActive, optionalPlanCheck } from '../middleware/planCheck.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 // Rotas públicas (não precisam de plano ativo)
 router.get('/plans', planController.getPlans);
@@ -22,7 +22,7 @@ router.post('/subscriptions', planController.createSubscription);
 router.delete('/subscriptions/:subscriptionId', planController.cancelSubscription);
 
 // Rotas de pagamento
-router.post('/payment/preference', paymentController.createPaymentPreference);
-router.get('/payment/status/:paymentId', paymentController.checkPaymentStatus);
+router.post('/payment/preference', paymentController.createAdvancePreference);
+router.get('/payment/status/:paymentId', paymentController.getPaymentStatus);
 
-module.exports = router;
+export default router;

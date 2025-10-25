@@ -227,7 +227,7 @@ function notFoundHandler(req, res, next) {
   next(error);
 }
 
-module.exports = {
+export {
   AppError,
   ERROR_TYPES,
   HTTP_STATUS,

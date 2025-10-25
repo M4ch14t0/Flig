@@ -10,11 +10,11 @@
  * @version 1.0.0
  */
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const userController = require('../controllers/userController');
-const { authenticateToken, requireUserType } = require('../middleware/auth');
-const { sanitizeParams, rateLimit } = require('../middleware/validation');
+import userController from '../controllers/userController.js';
+import { authenticateToken, requireUserType } from '../middleware/auth.js';
+import { sanitizeParams, rateLimit } from '../middleware/validation.js';
 
 /**
  * @route GET /api/users/profile
@@ -211,5 +211,5 @@ router.get('/:id/password',
   userController.getUserPassword
 );
 
-module.exports = router;
+export default router;
 

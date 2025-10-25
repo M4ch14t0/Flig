@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-const redisService = require('./redis');
+import redisService from './redis.js';
 
 /**
  * Adiciona token à blacklist
@@ -102,7 +102,7 @@ async function getBlacklistStats() {
   }
 }
 
-module.exports = {
+export {
   addToBlacklist,
   isTokenBlacklisted,
   removeFromBlacklist,

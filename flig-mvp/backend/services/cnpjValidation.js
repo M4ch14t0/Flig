@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-const axios = require('axios');
+import axios from 'axios';
 
 // Configurações da API CNPJá
 const CNPJA_API_URL = 'https://open.cnpja.com/office';
@@ -188,7 +188,13 @@ async function getCNPJInfo(cnpj) {
   }
 }
 
-module.exports = {
+export {
+  validateCNPJFormat,
+  validateCNPJWithAPI,
+  getCNPJInfo
+};
+
+export default {
   validateCNPJFormat,
   validateCNPJWithAPI,
   getCNPJInfo

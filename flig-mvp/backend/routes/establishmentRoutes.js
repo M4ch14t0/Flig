@@ -11,11 +11,11 @@
  * @version 1.0.0
  */
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const establishmentController = require('../controllers/establishmentController');
-const { authenticateToken, requireUserType } = require('../middleware/auth');
-const { sanitizeParams, rateLimit } = require('../middleware/validation');
+import establishmentController from '../controllers/establishmentController.js';
+import { authenticateToken, requireUserType } from '../middleware/auth.js';
+import { sanitizeParams, rateLimit } from '../middleware/validation.js';
 
 // ========================================
 // ROTAS PÚBLICAS
@@ -261,4 +261,4 @@ router.get('/:id',
   establishmentController.getEstablishmentById
 );
 
-module.exports = router;
+export default router;

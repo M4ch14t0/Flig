@@ -9,7 +9,10 @@
  * @version 1.0.0
  */
 
-const crypto = require('crypto');
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Chave de criptografia - DEVE vir de variável de ambiente em produção
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
@@ -132,7 +135,6 @@ function decryptClientData(encryptedClientData) {
  * @returns {string} - Hash da senha
  */
 function hashPassword(password) {
-  const bcrypt = require('bcryptjs');
   const saltRounds = 12;
   return bcrypt.hashSync(password, saltRounds);
 }
@@ -145,11 +147,10 @@ function hashPassword(password) {
  * @returns {boolean} - True se a senha estiver correta
  */
 function verifyPassword(password, hash) {
-  const bcrypt = require('bcryptjs');
   return bcrypt.compareSync(password, hash);
 }
 
-module.exports = {
+export {
   encrypt,
   decrypt,
   encryptClientData,

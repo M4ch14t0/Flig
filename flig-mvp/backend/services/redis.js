@@ -7,7 +7,7 @@
  * @version 2.0.0
  */
 
-const redis = require('redis');
+import redis from 'redis';
 
 // Configuração do Redis
 console.log('🔍 Redis Environment Variables:');
@@ -456,7 +456,196 @@ async function getNextClient(queueId) {
   }
 }
 
-module.exports = {
+// Obtém clientes agrupados por posição (estrutura bidimensional)
+async function getQueueClientsGrouped(queueId) {
+  try {
+    console.log(`🔍 getQueueClientsGrouped - queueId: ${queueId}`);
+    const clients = await getQueueClients(queueId);
+    console.log(`📋 Clientes obtidos:`, clients.map(c => ({ nome: c.nome, position: c.position, subPosition: c.subPosition, paidAdvance: c.paidAdvance })));
+    
+    const groupedClients = {};
+    
+    // Agrupar clientes por posição principal
+    for (const client of clients) {
+      const position = client.position;
+      if (!groupedClients[position]) {
+        groupedClients[position] = [];
+      }
+      groupedClients[position].push(client);
+    }
+    
+    console.log(`📊 Clientes agrupados:`, Object.keys(groupedClients).map(pos => `${pos}: ${groupedClients[pos].length} clientes`));
+    
+    // Ordenar clientes dentro de cada posição por prioridade de pagamento
+    for (const position in groupedClients) {
+      groupedClients[position].sort((a, b) => {
+        // Clientes que pagaram têm prioridade
+        if (a.paidAdvance && !b.paidAdvance) return -1;
+        if (!a.paidAdvance && b.paidAdvance) return 1;
+        
+        // Se ambos pagaram, quem pagou mais recentemente tem prioridade
+        if (a.paidAdvance && b.paidAdvance) {
+          const aTimestamp = a.paymentTimestamp || 0;
+          const bTimestamp = b.paymentTimestamp || 0;
+          return bTimestamp - aTimestamp; // Mais recente primeiro
+        }
+        
+        // Se nenhum pagou, ordem de chegada
+        return 0;
+      });
+      
+      // Atribuir subposições (a, b, c, etc.)
+      groupedClients[position].forEach((client, index) => {
+        const subPosition = String.fromCharCode(97 + index); // a, b, c, etc.
+        client.subPosition = subPosition;
+      });
+    }
+    
+    console.log(`✅ Estrutura bidimensional criada:`, Object.keys(groupedClients).map(pos => 
+      `${pos}: ${groupedClients[pos].map(c => `${c.nome}(${c.subPosition})`).join(', ')}`
+    ));
+    
+    return groupedClients;
+  } catch (error) {
+    console.error('❌ Erro ao obter clientes agrupados:', error);
+    throw new Error('Falha ao obter clientes agrupados');
+  }
+}
+
+// Adiciona cliente a uma posição específica (cria estrutura bidimensional)
+async function addClientToPosition(queueId, position, clientData) {
+  try {
+    const client = await getRedisClient();
+    if (!client) {
+      console.log('⚠️ Redis não disponível, pulando operação');
+      return false;
+    }
+    
+    const queueKey = getQueueKey(queueId);
+    
+    // Verificar se já há clientes nesta posição
+    const existingClients = await client.zRangeByScore(queueKey, position, position);
+    console.log(`🔍 Clientes existentes na posição ${position}:`, existingClients);
+    
+    if (existingClients.length > 0) {
+      // Há clientes nesta posição, vamos reorganizar
+      console.log(`🔄 Reorganizando posição ${position} para estrutura bidimensional`);
+      
+      // 1. Obter todos os clientes da fila
+      const allClients = await getQueueClients(queueId);
+      console.log(`📋 Todos os clientes antes da reorganização:`, allClients.map(c => ({ nome: c.nome, position: c.position })));
+      
+      // 2. Remover clientes da posição atual
+      const clientsToReorganize = [];
+      for (let i = 0; i < existingClients.length; i++) {
+        let existingClientData;
+        
+        // Lidar com diferentes formatos de resultado do Redis
+        if (typeof existingClients[i] === 'string') {
+          existingClientData = JSON.parse(existingClients[i]);
+        } else if (existingClients[i].value) {
+          existingClientData = JSON.parse(existingClients[i].value);
+        } else {
+          existingClientData = existingClients[i];
+        }
+        
+        if (existingClientData && existingClientData.nome) {
+          clientsToReorganize.push(existingClientData);
+        }
+      }
+      
+      console.log(`🔍 Clientes a serem reorganizados:`, clientsToReorganize.map(c => ({ nome: c.nome, position: c.position })));
+      
+      // 3. Adicionar o novo cliente (que pagou) como prioridade máxima
+      const newClient = {
+        ...clientData,
+        position: position,
+        paidAdvance: true,
+        paymentTimestamp: Date.now()
+      };
+      
+      // 4. Criar lista reorganizada: novo cliente primeiro, depois os existentes
+      const reorganizedClients = [newClient, ...clientsToReorganize];
+      
+      // 5. Atribuir subposições
+      reorganizedClients.forEach((client, index) => {
+        const subPosition = String.fromCharCode(97 + index); // a, b, c, etc.
+        client.subPosition = subPosition;
+      });
+      
+      console.log(`🔄 Clientes reorganizados:`, reorganizedClients.map(c => ({ nome: c.nome, position: c.position, subPosition: c.subPosition })));
+      
+      // 6. Remover clientes da posição atual do Redis
+      for (const existingClient of existingClients) {
+        await client.zRem(queueKey, existingClient);
+      }
+      
+      // 7. Adicionar todos os clientes reorganizados
+      for (const reorganizedClient of reorganizedClients) {
+        const value = JSON.stringify(reorganizedClient);
+        await client.zAdd(queueKey, { score: position, value });
+      }
+      
+      console.log(`✅ Posição ${position} reorganizada com ${reorganizedClients.length} clientes`);
+      return true;
+    } else {
+      // Posição vazia, adicionar normalmente
+      const value = JSON.stringify({ ...clientData, position: position, subPosition: 'a' });
+      const result = await client.zAdd(queueKey, { score: position, value });
+      console.log(`✅ Cliente adicionado na posição ${position} (vazia)`);
+      return result;
+    }
+  } catch (error) {
+    console.error('❌ Erro ao adicionar cliente à posição:', error);
+    throw new Error('Falha ao adicionar cliente à posição');
+  }
+}
+
+// Avança cliente verticalmente (muda posição principal)
+async function advanceClientVertically(queueId, client, positions) {
+  try {
+    console.log(`🔍 Avançando cliente ${client.nome} verticalmente ${positions} posições`);
+    
+    const currentPosition = client.position;
+    const newPosition = Math.max(1, currentPosition - positions);
+    
+    console.log(`📍 Posição atual: ${currentPosition}, Nova posição: ${newPosition}`);
+    
+    // 1. Remover cliente da posição atual
+    const clientToRemove = {
+      email: client.email
+    };
+    await removeClientFromQueue(queueId, clientToRemove);
+    
+    // 2. Atualizar dados do cliente
+    const updatedClient = {
+      ...client,
+      position: newPosition,
+      paidAdvance: true,
+      paymentTimestamp: Date.now()
+    };
+    
+    // 3. Adicionar cliente à nova posição (cria estrutura bidimensional)
+    const success = await addClientToPosition(queueId, newPosition, updatedClient);
+    
+    if (success) {
+      console.log(`✅ Cliente ${client.nome} avançou da posição ${currentPosition} para ${newPosition}`);
+      return {
+        success: true,
+        oldPosition: currentPosition,
+        newPosition: newPosition,
+        positionsAdvanced: currentPosition - newPosition
+      };
+    } else {
+      throw new Error('Falha ao avançar cliente');
+    }
+  } catch (error) {
+    console.error('❌ Erro ao avançar cliente verticalmente:', error);
+    throw new Error('Falha ao avançar cliente verticalmente');
+  }
+}
+
+export {
   connectRedis,
   disconnectRedis,
   getRedisClient,
@@ -474,5 +663,33 @@ module.exports = {
   deleteQueue,
   setQueueMetadata,
   getQueueMetadata,
-  getNextClient
+  getNextClient,
+  getQueueClientsGrouped,
+  addClientToPosition,
+  advanceClientVertically
+};
+
+// Export default para compatibilidade
+export default {
+  connectRedis,
+  disconnectRedis,
+  getRedisClient,
+  isRedisAvailable,
+  getQueueKey,
+  getQueueMetaKey,
+  getQueueStatsKey,
+  addClientToQueue,
+  removeClientFromQueue,
+  getClientPosition,
+  getQueueClients,
+  setQueueClients,
+  getQueueSize,
+  moveClientInQueue,
+  deleteQueue,
+  setQueueMetadata,
+  getQueueMetadata,
+  getNextClient,
+  getQueueClientsGrouped,
+  addClientToPosition,
+  advanceClientVertically
 };

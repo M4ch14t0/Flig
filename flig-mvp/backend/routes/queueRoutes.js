@@ -21,12 +21,13 @@
  * @version 1.0.0
  */
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const queueController = require('../controllers/queueController');
-const { authenticateToken, requireUserType, requireQueueOwnership } = require('../middleware/auth');
-const { checkPlanActive, checkPlanLimits, optionalPlanCheck } = require('../middleware/planCheck');
-const { validateQueueCreation, validateJoinQueue, validatePayment, sanitizeParams } = require('../middleware/validation');
+import queueController from '../controllers/queueController.js';
+import redisService from '../services/redis.js';
+import { authenticateToken, requireUserType, requireQueueOwnership } from '../middleware/auth.js';
+import { checkPlanActive, checkPlanLimits, optionalPlanCheck } from '../middleware/planCheck.js';
+import { validateQueueCreation, validateJoinQueue, validatePayment, sanitizeParams } from '../middleware/validation.js';
 
 /**
  * Middleware de validação básica
@@ -35,7 +36,6 @@ const { validateQueueCreation, validateJoinQueue, validatePayment, sanitizeParam
  */
 const validateRedisConnection = async (req, res, next) => {
   try {
-    const redisService = require('../services/redis');
     const isAvailable = await redisService.isRedisAvailable();
     
     if (!isAvailable) {
@@ -123,7 +123,7 @@ router.post('/:queueId/join',
 
 /**
  * @route POST /api/queues/:queueId/advance
- * @desc Avançar cliente na fila via pagamento
+ * @desc Avançar cliente na fila via pagamento (método legado)
  * @access Cliente
  * @params { queueId } - ID da fila
  * @body { clientId, positions, paymentData }
@@ -135,6 +135,44 @@ router.post('/:queueId/advance',
   validatePayment,
   queueController.advanceInQueue
 );
+
+/**
+ * @route POST /api/queues/:queueId/advance-vertical
+ * @desc Avançar cliente verticalmente (muda posição principal)
+ * @access Cliente
+ * @params { queueId } - ID da fila
+ * @body { clientId, positions, paymentData }
+ */
+router.post('/:queueId/advance-vertical', 
+  authenticateToken,
+  requireUserType('cliente'),
+  sanitizeParams,
+  validatePayment,
+  queueController.advanceVertically
+);
+
+/**
+ * @route POST /api/queues/:queueId/advance-horizontal
+ * @desc Avançar cliente horizontalmente (prioridade local)
+ * @access Cliente
+ * @params { queueId } - ID da fila
+ * @body { clientId, targetPosition, paymentData }
+ */
+router.post('/:queueId/advance-horizontal', 
+  authenticateToken,
+  requireUserType('cliente'),
+  sanitizeParams,
+  validatePayment,
+  queueController.advanceHorizontally
+);
+
+/**
+ * @route GET /api/queues/:queueId/grouped
+ * @desc Obter fila com clientes agrupados (exibição bidimensional)
+ * @access Público
+ * @params { queueId } - ID da fila
+ */
+router.get('/:queueId/grouped', queueController.getQueueGrouped);
 
 /**
  * @route DELETE /api/queues/:queueId/leave
@@ -319,7 +357,10 @@ router.use('*', (req, res) => {
       'GET /api/queues/establishment/:id - Listar filas do estabelecimento',
       'GET /api/queues/:id - Buscar fila',
       'POST /api/queues/:id/join - Entrar na fila',
-      'POST /api/queues/:id/advance - Avançar na fila',
+      'POST /api/queues/:id/advance - Avançar na fila (legado)',
+      'POST /api/queues/:id/advance-vertical - Avançar verticalmente',
+      'POST /api/queues/:id/advance-horizontal - Avançar horizontalmente',
+      'GET /api/queues/:id/grouped - Obter fila agrupada (bidimensional)',
       'GET /api/queues/:id/position/:clientId - Consultar posição',
       'GET /api/queues/:id/clients - Listar clientes',
       'DELETE /api/queues/:id/clients/:clientId - Remover cliente',
@@ -330,5 +371,5 @@ router.use('*', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;
 

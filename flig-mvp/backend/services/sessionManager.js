@@ -8,9 +8,9 @@
  * @version 1.0.0
  */
 
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const connection = require('../config/db');
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import connection from '../config/db.js';
 
 class SessionManager {
   constructor() {
@@ -270,4 +270,4 @@ class SessionManager {
 }
 
 const sessionManager = new SessionManager();
-module.exports = sessionManager;
+export default sessionManager;

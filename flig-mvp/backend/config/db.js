@@ -1,9 +1,10 @@
 // db.js
 // Garantir que dotenv seja carregado primeiro
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Importar configuração do banco de dados
-const { pool, testConnection } = require('./database');
+import { pool, testConnection } from './database.js';
 
 // Manter compatibilidade com código existente
 const connection = {
@@ -42,5 +43,5 @@ const connection = {
 // Testar conexão na inicialização (após carregar dotenv)
 testConnection();
 
-module.exports = connection;
+export default connection;
 

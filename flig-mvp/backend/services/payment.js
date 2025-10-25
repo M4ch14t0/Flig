@@ -12,8 +12,8 @@
  * @version 1.0.0
  */
 
-const crypto = require('crypto');
-const connection = require('../config/db');
+import crypto from 'crypto';
+import connection from '../config/db.js';
 
 /**
  * Simula processamento de pagamento
@@ -373,7 +373,19 @@ function calculateAdvancePrice(positions, basePrice = 2.00) {
   return Math.round(totalPrice * 100) / 100;
 }
 
-module.exports = {
+export {
+  processPayment,
+  validateCardData,
+  validateCardNumber,
+  generateTransactionId,
+  saveTransaction,
+  getClientTransactions,
+  getQueuePaymentStats,
+  confirmPayment,
+  calculateAdvancePrice
+};
+
+export default {
   processPayment,
   validateCardData,
   validateCardNumber,
