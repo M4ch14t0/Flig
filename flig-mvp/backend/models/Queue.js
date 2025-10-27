@@ -155,9 +155,16 @@ class Queue {
     return { success: true, clientId, position, estimatedTime: this.calculateEstimatedTime(position) };
   }
 
-  /** Adiciona grupo à fila */
+  /** Adiciona grupo à fila com validação de capacidade */
   async addGroup(groupData) {
     if (this.status !== 'ativa') throw new Error('Fila não está ativa');
+
+    // Validar se o grupo pode entrar baseado na capacidade máxima
+    const groupSize = groupData.members.length + 1; // +1 para o líder
+    const maxCapacity = this.getMaxTableCapacity();
+    if (groupSize > maxCapacity) {
+      throw new Error(`Grupo muito grande. Máximo permitido: ${maxCapacity} pessoas. Considere fazer uma reserva.`);
+    }
 
     let queueClients = await redisService.getQueueClients(this.id);
     if (!Array.isArray(queueClients)) queueClients = [];
@@ -183,14 +190,15 @@ class Queue {
       groupId: groupId,
       isGroupLeader: true,
       groupMembers: groupData.members,
-      groupSize: groupData.members.length + 1,
+      groupSize: groupSize,
+      tipo: 'grupo',
       timestamp: new Date().toISOString()
     };
 
     // Calcular posição única
     const position = queueClients.length + 1;
 
-    console.log(`🔍 Adicionando grupo ${leaderData.nome} na posição ${position} (${leaderData.groupSize} pessoas)`);
+    console.log(`🔍 Adicionando grupo ${leaderData.nome} na posição ${position} (${groupSize} pessoas)`);
 
     await redisService.addClientToQueue(this.id, position, leaderData);
 
@@ -202,8 +210,27 @@ class Queue {
       groupId: groupId,
       position, 
       estimatedTime: this.calculateEstimatedTime(position),
-      groupSize: leaderData.groupSize
+      groupSize: groupSize
     };
+  }
+
+  /** Obtém a capacidade máxima de mesa disponível */
+  getMaxTableCapacity() {
+    // Por padrão, máximo de 8 pessoas
+    // Isso pode ser configurado por estabelecimento
+    return this.max_table_capacity || 8;
+  }
+
+  /** Define os tipos de mesas disponíveis */
+  setTableTypes(tableTypes) {
+    this.table_types = tableTypes;
+    this.max_table_capacity = Math.max(...Object.keys(tableTypes).map(Number));
+  }
+
+  /** Verifica se um grupo pode entrar na fila */
+  canGroupEnter(groupSize) {
+    const maxCapacity = this.getMaxTableCapacity();
+    return groupSize <= maxCapacity;
   }
 
   /** Lista clientes da fila */
@@ -363,7 +390,7 @@ class Queue {
     };
   }
 
-  /** Avança cliente verticalmente (muda posição principal) */
+  /** Avança cliente verticalmente (sistema de aluguel de posição) */
   async advanceClientVertically(clientId, positions) {
     console.log(`🔍 advanceClientVertically - clientId: ${clientId}, positions: ${positions}`);
     
@@ -389,8 +416,8 @@ class Queue {
 
     console.log(`🔍 Avançando cliente ${client.nome} verticalmente ${positions} posições`);
 
-    // Usar nova função de avanço vertical
-    const result = await redisService.advanceClientVertically(this.id, client, positions);
+    // Nova lógica: inserção horizontal (sistema de aluguel)
+    const result = await redisService.advanceClientWithRental(this.id, client, positions);
     
     return {
       success: true,

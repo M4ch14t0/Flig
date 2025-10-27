@@ -874,8 +874,8 @@ async function chamarProximoCliente(req, res) {
       });
     }
     
-    // Busca o próximo cliente no Redis
-    const proximoCliente = await redisService.getNextClient(queueId);
+    // Usar nova função com movimento automático
+    const proximoCliente = await redisService.callNextClientWithAutoMove(queueId);
     
     if (!proximoCliente) {
       return res.status(404).json({
@@ -903,16 +903,6 @@ async function chamarProximoCliente(req, res) {
       });
     } catch (histErr) {
       console.warn('⚠️ Erro ao atualizar histórico:', histErr);
-    }
-
-    // Remove o cliente da fila (chamado)
-    const removed = await redisService.removeClientFromQueue(queueId, proximoCliente);
-    
-    if (!removed) {
-      return res.status(500).json({
-        success: false,
-        message: 'Erro ao remover cliente da fila'
-      });
     }
 
     // Registrar tempo de atendimento e calcular tempo de espera
@@ -979,6 +969,133 @@ async function chamarProximoCliente(req, res) {
     
   } catch (error) {
     console.error('❌ Erro ao chamar próximo cliente:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+}
+
+/**
+ * Chama próximo grupo adequado para mesa específica
+ * 
+ * POST /api/queues/:queueId/chamar-grupo-mesa
+ * Body: { capacidadeMesa }
+ */
+async function chamarGrupoPorMesa(req, res) {
+  try {
+    const { queueId } = req.params;
+    const { capacidadeMesa } = req.body;
+    
+    if (!capacidadeMesa || capacidadeMesa < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Capacidade da mesa deve ser informada e maior que 0'
+      });
+    }
+    
+    // Validar capacidades suportadas
+    const capacidadesSuportadas = [2, 4, 6, 8];
+    if (!capacidadesSuportadas.includes(capacidadeMesa)) {
+      return res.status(400).json({
+        success: false,
+        message: `Capacidade de mesa não suportada. Use: ${capacidadesSuportadas.join(', ')} lugares`
+      });
+    }
+    
+    // Busca a fila no banco
+    const fila = await Queue.findById(queueId);
+    if (!fila) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fila não encontrada'
+      });
+    }
+    
+    // Verifica se a fila está ativa
+    if (fila.status !== 'ativa') {
+      return res.status(400).json({
+        success: false,
+        message: 'Fila não está ativa'
+      });
+    }
+    
+    // Buscar próximo grupo adequado para a mesa com intervalo exclusivo
+    const proximoGrupo = await redisService.getNextGroupForTable(queueId, capacidadeMesa);
+    
+    if (!proximoGrupo) {
+      // Definir intervalo baseado na capacidade
+      let intervalo;
+      switch (capacidadeMesa) {
+        case 2: intervalo = "1-2 pessoas"; break;
+        case 4: intervalo = "3-4 pessoas"; break;
+        case 6: intervalo = "5-6 pessoas"; break;
+        case 8: intervalo = "7-8 pessoas"; break;
+        default: intervalo = "adequado";
+      }
+      
+      return res.status(404).json({
+        success: false,
+        message: `Não há grupos adequados para mesa de ${capacidadeMesa} lugares (intervalo: ${intervalo})`
+      });
+    }
+    
+    // Chamar o grupo com movimento automático
+    const grupoChamado = await redisService.callNextClientWithAutoMove(queueId);
+    
+    if (!grupoChamado) {
+      return res.status(500).json({
+        success: false,
+        message: 'Erro ao chamar grupo da fila'
+      });
+    }
+    
+    // Marcar grupo como "chamado" no histórico
+    try {
+      await new Promise((resolve, reject) => {
+        connection.query(
+          `UPDATE historico_clientes_filas 
+           SET status = 'chamado', data_saida = NOW() 
+           WHERE queue_id = ? AND email_cliente = ? AND status = 'aguardando'`,
+          [queueId, grupoChamado.email],
+          (err, results) => {
+            if (err) reject(err);
+            else {
+              console.log(`📝 Grupo ${grupoChamado.email} marcado como chamado no histórico`);
+              resolve(results);
+            }
+          }
+        );
+      });
+    } catch (histErr) {
+      console.warn('⚠️ Erro ao atualizar histórico:', histErr);
+    }
+    
+    // Definir intervalo baseado na capacidade
+    let intervalo;
+    switch (capacidadeMesa) {
+      case 2: intervalo = "1-2 pessoas"; break;
+      case 4: intervalo = "3-4 pessoas"; break;
+      case 6: intervalo = "5-6 pessoas"; break;
+      case 8: intervalo = "7-8 pessoas"; break;
+      default: intervalo = "adequado";
+    }
+    
+    console.log(`✅ Grupo ${grupoChamado.nome} (${grupoChamado.groupSize} pessoas) chamado para mesa de ${capacidadeMesa} lugares (intervalo: ${intervalo})`);
+    
+    res.json({
+      success: true,
+      message: 'Grupo chamado com sucesso',
+      data: {
+        ...grupoChamado,
+        mesaCapacidade: capacidadeMesa,
+        intervaloMesa: intervalo,
+        descricao: `Mesa de ${capacidadeMesa} lugares para grupos de ${intervalo}`
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao chamar grupo por mesa:', error);
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor'
@@ -1428,6 +1545,7 @@ export {
   closeQueue,
   getQueueStats,
   chamarProximoCliente,
+  chamarGrupoPorMesa,
   addTestClient,
   getTempoEsperaStats,
   getTempoEstimado,
@@ -1454,6 +1572,7 @@ export default {
   closeQueue,
   getQueueStats,
   chamarProximoCliente,
+  chamarGrupoPorMesa,
   addTestClient,
   getTempoEsperaStats,
   getTempoEstimado,

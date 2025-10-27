@@ -108,15 +108,15 @@ const cnpjLimiter = rateLimit({
 
 /**
  * Rate limiter para pagamentos
- * 3 tentativas por 10 minutos por IP
+ * 100 tentativas por 5 minutos por IP (DESENVOLVIMENTO)
  */
 const paymentLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutos
-  max: 3, // máximo 3 tentativas de pagamento por IP
+  windowMs: 5 * 60 * 1000, // 5 minutos
+  max: 100, // máximo 100 tentativas de pagamento por IP (DESENVOLVIMENTO)
   message: {
     success: false,
-    message: 'Muitas tentativas de pagamento. Tente novamente em 10 minutos.',
-    retryAfter: '10 minutos'
+    message: 'Muitas tentativas de pagamento. Tente novamente em 5 minutos.',
+    retryAfter: '5 minutos'
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -124,8 +124,8 @@ const paymentLimiter = rateLimit({
     console.log(`🚫 Rate limit de pagamento excedido para IP: ${req.ip}`);
     res.status(429).json({
       success: false,
-      message: 'Muitas tentativas de pagamento. Tente novamente em 10 minutos.',
-      retryAfter: '10 minutos'
+      message: 'Muitas tentativas de pagamento. Tente novamente em 5 minutos.',
+      retryAfter: '5 minutos'
     });
   }
 });

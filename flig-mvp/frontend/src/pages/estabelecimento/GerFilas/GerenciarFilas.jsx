@@ -25,6 +25,14 @@ function GerenciarFilas() {
     horario_abertura: '00:00',
     chamada_automatica: false,
     intervalo_chamada: 5, // minutos
+    // Novos campos para intervalos de mesa
+    max_capacidade_mesa: 8, // Capacidade máxima de mesa
+    intervalos_mesa: {
+      mesa_2: { ativo: true, min: 1, max: 2 },
+      mesa_4: { ativo: true, min: 3, max: 4 },
+      mesa_6: { ativo: true, min: 5, max: 6 },
+      mesa_8: { ativo: true, min: 7, max: 8 }
+    }
   });
 
   // ID do estabelecimento (obtido do contexto de autenticação)
@@ -156,6 +164,13 @@ function GerenciarFilas() {
         horario_abertura: '00:00',
         chamada_automatica: false,
         intervalo_chamada: 5,
+        max_capacidade_mesa: 8,
+        intervalos_mesa: {
+          mesa_2: { ativo: true, min: 1, max: 2 },
+          mesa_4: { ativo: true, min: 3, max: 4 },
+          mesa_6: { ativo: true, min: 5, max: 6 },
+          mesa_8: { ativo: true, min: 7, max: 8 }
+        }
       });
     } catch (error) {
       console.error('Erro ao criar/editar fila:', error);
@@ -471,6 +486,83 @@ function GerenciarFilas() {
                     />
                   </div>
                 )}
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Configuração de Intervalos de Mesa:</label>
+                  <div className={styles.mesaConfig}>
+                    <div className={styles.mesaRow}>
+                      <div className={styles.mesaCheckbox}>
+                        <input
+                          type="checkbox"
+                          id="mesa_2"
+                          checked={novaFila.intervalos_mesa.mesa_2.ativo}
+                          onChange={(e) => setNovaFila({
+                            ...novaFila,
+                            intervalos_mesa: {
+                              ...novaFila.intervalos_mesa,
+                              mesa_2: { ...novaFila.intervalos_mesa.mesa_2, ativo: e.target.checked }
+                            }
+                          })}
+                        />
+                        <label htmlFor="mesa_2">Mesa 2 lugares (1-2 pessoas)</label>
+                      </div>
+                    </div>
+                    
+                    <div className={styles.mesaRow}>
+                      <div className={styles.mesaCheckbox}>
+                        <input
+                          type="checkbox"
+                          id="mesa_4"
+                          checked={novaFila.intervalos_mesa.mesa_4.ativo}
+                          onChange={(e) => setNovaFila({
+                            ...novaFila,
+                            intervalos_mesa: {
+                              ...novaFila.intervalos_mesa,
+                              mesa_4: { ...novaFila.intervalos_mesa.mesa_4, ativo: e.target.checked }
+                            }
+                          })}
+                        />
+                        <label htmlFor="mesa_4">Mesa 4 lugares (3-4 pessoas)</label>
+                      </div>
+                    </div>
+                    
+                    <div className={styles.mesaRow}>
+                      <div className={styles.mesaCheckbox}>
+                        <input
+                          type="checkbox"
+                          id="mesa_6"
+                          checked={novaFila.intervalos_mesa.mesa_6.ativo}
+                          onChange={(e) => setNovaFila({
+                            ...novaFila,
+                            intervalos_mesa: {
+                              ...novaFila.intervalos_mesa,
+                              mesa_6: { ...novaFila.intervalos_mesa.mesa_6, ativo: e.target.checked }
+                            }
+                          })}
+                        />
+                        <label htmlFor="mesa_6">Mesa 6 lugares (5-6 pessoas)</label>
+                      </div>
+                    </div>
+                    
+                    <div className={styles.mesaRow}>
+                      <div className={styles.mesaCheckbox}>
+                        <input
+                          type="checkbox"
+                          id="mesa_8"
+                          checked={novaFila.intervalos_mesa.mesa_8.ativo}
+                          onChange={(e) => setNovaFila({
+                            ...novaFila,
+                            intervalos_mesa: {
+                              ...novaFila.intervalos_mesa,
+                              mesa_8: { ...novaFila.intervalos_mesa.mesa_8, ativo: e.target.checked }
+                            }
+                          })}
+                        />
+                        <label htmlFor="mesa_8">Mesa 8 lugares (7-8 pessoas)</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 <div className={styles.popupActions}>
                   <button 

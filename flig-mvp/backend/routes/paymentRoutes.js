@@ -45,6 +45,20 @@ router.post('/webhooks/mercadopago',
 );
 
 /**
+ * @route GET /api/webhooks/mercadopago
+ * @desc Teste do webhook do Mercado Pago
+ * @access Public (sem autenticação - teste)
+ */
+router.get('/webhooks/mercadopago', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Webhook endpoint funcionando! Use POST para webhooks reais.',
+    method: 'GET',
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
  * @route GET /api/payments/return
  * @desc Processar URLs de retorno do Mercado Pago
  * @access Public (sem autenticação - retorno do Mercado Pago)

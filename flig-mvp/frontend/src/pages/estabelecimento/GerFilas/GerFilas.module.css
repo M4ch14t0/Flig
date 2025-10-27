@@ -670,3 +670,53 @@
   background: #357ABD;
   transform: translateY(-1px);
 }
+
+/* Configuração de Intervalos de Mesa */
+.mesaConfig {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 8px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.mesaRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.mesaRow:last-child {
+  margin-bottom: 0;
+}
+
+.mesaCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.mesaCheckbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #4A90E2;
+  cursor: pointer;
+}
+
+.mesaCheckbox label {
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.mesaCheckbox label:hover {
+  color: #4A90E2;
+}

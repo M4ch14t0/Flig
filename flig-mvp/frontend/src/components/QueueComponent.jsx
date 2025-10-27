@@ -19,11 +19,19 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   
   const [queue, setQueue] = useState(null);
   const [clients, setClients] = useState([]);
+  const [groupedClients, setGroupedClients] = useState({});
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [advancing, setAdvancing] = useState(false);
   const [clientPosition, setClientPosition] = useState(null);
   const [showAdvanceForm, setShowAdvanceForm] = useState(false);
+  const [showGroupForm, setShowGroupForm] = useState(false);
+  const [groupForm, setGroupForm] = useState({
+    nome: '',
+    telefone: '',
+    email: '',
+    groupSize: 2
+  });
   const [advanceForm, setAdvanceForm] = useState({
     positions: 1,
     paymentMethod: 'credit_card',
@@ -47,9 +55,10 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
 
   const loadQueueData = async () => {
     try {
-      const [queueResponse, clientsResponse] = await Promise.all([
+      const [queueResponse, clientsResponse, groupedResponse] = await Promise.all([
         api.get(`/api/queues/${queueId}`),
-        api.get(`/api/queues/${queueId}/clients`)
+        api.get(`/api/queues/${queueId}/clients`),
+        api.get(`/api/queues/${queueId}/grouped`)
       ]);
 
       if (queueResponse.data.success) {
@@ -68,6 +77,10 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
             setClientPosition(userInQueue);
           }
         }
+      }
+
+      if (groupedResponse.data.success) {
+        setGroupedClients(groupedResponse.data.data.groupedClients || {});
       }
     } catch (error) {
       console.error('Erro ao carregar dados da fila:', error);
@@ -140,6 +153,41 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
       if (onError) onError(error.response?.data?.message || 'Erro ao avançar na fila');
     } finally {
       setAdvancing(false);
+    }
+  };
+
+  const handleJoinGroup = async (e) => {
+    e.preventDefault();
+    setJoining(true);
+
+    try {
+      const response = await api.post(`/api/queues/${queueId}/join-group`, {
+        ...groupForm,
+        groupLeader: {
+          nome: user.name || user.nome || '',
+          telefone: user.telefone || user.phone || '',
+          email: user.email || user.email_usuario || ''
+        }
+      });
+
+      if (response.data.success) {
+        setShowGroupForm(false);
+        setGroupForm({
+          nome: '',
+          telefone: '',
+          email: '',
+          groupSize: 2
+        });
+        await loadQueueData(); // Recarrega dados
+        if (onJoinSuccess) onJoinSuccess(response.data.data);
+      } else {
+        if (onError) onError(response.data.message);
+      }
+    } catch (error) {
+      console.error('Erro ao entrar como grupo:', error);
+      if (onError) onError(error.response?.data?.message || 'Erro ao entrar como grupo');
+    } finally {
+      setJoining(false);
     }
   };
 
@@ -366,44 +414,160 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
         </div>
       )}
 
-      {/* Botão de Entrada na Fila */}
+      {/* Botões de Entrada na Fila */}
       {!clientPosition && userType === 'cliente' && (
-        <button 
-          className={styles.joinButton}
-          onClick={handleJoinQueue}
-          disabled={joining}
-        >
-          {joining ? 'Entrando...' : 'Entrar na Fila'}
-        </button>
+        <div className={styles.joinOptions}>
+          <button 
+            className={styles.joinButton}
+            onClick={handleJoinQueue}
+            disabled={joining}
+          >
+            {joining ? 'Entrando...' : 'Entrar na Fila'}
+          </button>
+          <button 
+            className={styles.groupButton}
+            onClick={() => setShowGroupForm(true)}
+            disabled={joining}
+          >
+            <Users size={16} />
+            Entrar como Grupo
+          </button>
+        </div>
       )}
       
       
 
-      {/* Formulário de entrada removido - dados obtidos automaticamente do usuário */}
+      {/* Formulário de Entrada como Grupo */}
+      {showGroupForm && (
+        <div className={styles.groupForm}>
+          <h3>Entrar como Grupo</h3>
+          <form onSubmit={handleJoinGroup}>
+            <div className={styles.formGroup}>
+              <label>Nome do Grupo</label>
+              <input 
+                type="text"
+                placeholder="Ex: Família Silva"
+                value={groupForm.nome}
+                onChange={(e) => setGroupForm({ ...groupForm, nome: e.target.value })}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Tamanho do Grupo</label>
+              <select 
+                value={groupForm.groupSize}
+                onChange={(e) => setGroupForm({ ...groupForm, groupSize: parseInt(e.target.value) })}
+              >
+                {[2, 3, 4, 5, 6, 7, 8].map(size => (
+                  <option key={size} value={size}>{size} pessoas</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Telefone de Contato</label>
+              <input 
+                type="tel"
+                placeholder="(11) 99999-9999"
+                value={groupForm.telefone}
+                onChange={(e) => setGroupForm({ ...groupForm, telefone: e.target.value })}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Email de Contato</label>
+              <input 
+                type="email"
+                placeholder="contato@exemplo.com"
+                value={groupForm.email}
+                onChange={(e) => setGroupForm({ ...groupForm, email: e.target.value })}
+                required
+              />
+            </div>
+            <div className={styles.formActions}>
+              <button 
+                type="button"
+                onClick={() => setShowGroupForm(false)}
+                className={styles.cancelButton}
+              >
+                Cancelar
+              </button>
+              <button 
+                type="submit"
+                disabled={joining}
+                className={styles.submitButton}
+              >
+                {joining ? 'Entrando...' : 'Entrar como Grupo'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
-      {/* Lista de Clientes na Fila */}
-      <div className={styles.clientsList}>
-        <h3>Pessoas na Fila</h3>
-        {clients.length === 0 ? (
+      {/* Visualização Bidimensional da Fila */}
+      <div className={styles.bidimensionalQueue}>
+        <h3>Fila Bidimensional</h3>
+        {Object.keys(groupedClients).length === 0 ? (
           <p className={styles.emptyQueue}>Ninguém na fila ainda</p>
         ) : (
-          <div className={styles.clientsGrid}>
-            {clients.map((client, index) => (
-              <div 
-                key={client.id} 
-                className={`${styles.clientCard} ${client.id === clientPosition?.id ? styles.currentClient : ''}`}
-              >
-                <div className={styles.clientPosition}>
-                  <span className={styles.positionNumber}>{client.position}</span>
+          <div className={styles.positionsContainer}>
+            {Object.entries(groupedClients).map(([position, clientsAtPosition]) => (
+              <div key={position} className={styles.positionGroup}>
+                <div className={styles.positionHeader}>
+                  <h4>Posição {position}</h4>
+                  <span className={styles.positionCount}>
+                    {clientsAtPosition.length} cliente{clientsAtPosition.length > 1 ? 's' : ''}
+                  </span>
                 </div>
-                <div className={styles.clientInfo}>
-                  <h4>{client.nome}</h4>
-                  <div className={styles.clientDetails}>
-                    <div className={styles.detailItem}>
-                      <Clock size={12} />
-                      <span>{calculateEstimatedTime(client.position)} min</span>
+                <div className={styles.clientsAtPosition}>
+                  {clientsAtPosition.map((client, index) => (
+                    <div 
+                      key={client.id} 
+                      className={`${styles.clientCard} ${client.paidAdvance ? styles.paidClient : ''} ${client.isGroupLeader ? styles.groupLeader : ''} ${client.id === clientPosition?.id ? styles.currentClient : ''}`}
+                    >
+                      <div className={styles.clientPosition}>
+                        <span className={styles.positionNumber}>
+                          {position}{client.subPosition || 'a'}
+                        </span>
+                        {client.paidAdvance && (
+                          <span className={styles.paidBadge}>PAGOU</span>
+                        )}
+                        {client.isGroupLeader && (
+                          <span className={styles.groupBadge}>GRUPO</span>
+                        )}
+                      </div>
+                      <div className={styles.clientInfo}>
+                        <h4>{client.nome}</h4>
+                        <div className={styles.clientContact}>
+                          <div className={styles.contactItem}>
+                            <span>📧 {client.email}</span>
+                          </div>
+                          <div className={styles.contactItem}>
+                            <span>📱 {client.telefone}</span>
+                          </div>
+                        </div>
+                        
+                        {client.isGroupLeader && (
+                          <div className={styles.groupInfo}>
+                            <Users size={12} />
+                            <span>Líder ({client.groupSize} pessoas)</span>
+                          </div>
+                        )}
+                        
+                        <div className={styles.clientDetails}>
+                          <div className={styles.detailItem}>
+                            <Clock size={12} />
+                            <span>{calculateEstimatedTime(client.position)} min</span>
+                          </div>
+                          {client.isGroupLeader && (
+                            <div className={styles.detailItem}>
+                              <Users size={12} />
+                              <span>{client.groupSize} pessoas</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             ))}
