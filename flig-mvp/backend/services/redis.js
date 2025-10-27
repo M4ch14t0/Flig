@@ -1,10 +1,16 @@
 /**
- * Serviço de Conexão Redis para Sistema de Filas Flig (Atualizado)
+ * Serviço de Conexão Redis para Sistema de Filas Flig (Arquitetura de Duas Filas)
  * 
- * Serializa todos os dados de clientes para JSON ao adicionar
- * e desserializa ao ler, evitando erros de JSON.parse.
+ * Nova arquitetura: Duas filas separadas
+ * - Fila Principal: Gerencia posições principais (1, 2, 3, 4, etc.)
+ * - Fila de Subdivisões: Gerencia subposições (a, b, c, etc.) com IDs condizentes
  * 
- * @version 2.0.0
+ * Vantagens:
+ * - Reorganização automática simples
+ * - Sem necessidade de recalcular scores
+ * - Lógica mais clara e eficiente
+ * 
+ * @version 5.0.0
  */
 
 import redis from 'redis';
@@ -120,8 +126,13 @@ async function isRedisAvailable() {
   }
 }
 
-function getQueueKey(queueId) {
-  return `flig:queue:${queueId}`;
+// NOVA ARQUITETURA: Duas filas separadas
+function getMainQueueKey(queueId) {
+  return `flig:queue:${queueId}:main`;
+}
+
+function getSubdivisionQueueKey(queueId) {
+  return `flig:queue:${queueId}:sub`;
 }
 
 function getQueueMetaKey(queueId) {
@@ -132,8 +143,8 @@ function getQueueStatsKey(queueId) {
   return `flig:queue:stats:${queueId}`;
 }
 
-// Adiciona cliente à fila
-async function addClientToQueue(queueId, position, clientData) {
+// Adiciona cliente à fila principal (nova arquitetura)
+async function addClientToQueue(queueId, position, clientData, subPosition = 'a') {
   try {
     const client = await getRedisClient();
     if (!client) {
@@ -141,17 +152,61 @@ async function addClientToQueue(queueId, position, clientData) {
       return false;
     }
     
-    const queueKey = getQueueKey(queueId);
-    const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
-    const result = await client.zAdd(queueKey, { score: position, value });
-    return result;
+    const mainQueueKey = getMainQueueKey(queueId);
+    const subQueueKey = getSubdivisionQueueKey(queueId);
+    
+    // Verificar se já há clientes nesta posição principal
+    const existingClients = await client.zRangeByScore(mainQueueKey, position, position);
+    console.log(`🔍 Clientes existentes na posição principal ${position}:`, existingClients);
+    
+    if (existingClients.length > 0) {
+      // Há clientes nesta posição, vamos criar subdivisão
+      // Calcular próxima subposição disponível (b, c, d, etc.)
+      const existingSubs = await client.zRangeByScore(subQueueKey, position, position);
+      const nextSubPosition = String.fromCharCode(97 + existingSubs.length + 1); // b, c, d, etc.
+      
+      console.log(`🔄 Criando subdivisão na posição ${position}${nextSubPosition}`);
+      
+      // Criar ID único para a subdivisão
+      const subdivisionId = `${position}-${nextSubPosition}`;
+      
+      // Adicionar à fila de subdivisões
+      await client.zAdd(subQueueKey, {
+        score: position,
+        value: JSON.stringify({
+          ...clientData,
+          position,
+          subPosition: nextSubPosition,
+          subdivisionId,
+          isSubdivision: true
+        })
+      });
+      
+      console.log(`✅ Cliente ${clientData.nome} adicionado na subdivisão ${position}${nextSubPosition}`);
+    } else {
+      // Posição principal vazia, adicionar normalmente
+      await client.zAdd(mainQueueKey, {
+        score: position,
+        value: JSON.stringify({
+          ...clientData,
+          position,
+          subPosition: 'a',
+          subdivisionId: `${position}-a`,
+          isSubdivision: false
+        })
+      });
+      
+      console.log(`✅ Cliente ${clientData.nome} adicionado na posição principal ${position}a`);
+    }
+    
+    return true;
   } catch (error) {
     console.error('Erro ao adicionar cliente à fila:', error);
     return false;
   }
 }
 
-// Remove cliente da fila
+// Remove cliente da fila (nova arquitetura)
 async function removeClientFromQueue(queueId, clientData) {
   try {
     const client = await getRedisClient();
@@ -159,286 +214,142 @@ async function removeClientFromQueue(queueId, clientData) {
       console.log('⚠️ Redis não disponível, pulando operação');
       return false;
     }
-    
-    const queueKey = getQueueKey(queueId);
 
     console.log(`🔍 Tentando remover cliente da fila ${queueId}`);
-    console.log(`🔍 Queue key: ${queueKey}`);
     console.log(`🔍 Cliente data:`, clientData);
     
-    // Verificar se a fila existe
-    const exists = await client.exists(queueKey);
-    console.log(`🔍 Fila existe: ${exists}`);
+    const mainQueueKey = getMainQueueKey(queueId);
+    const subQueueKey = getSubdivisionQueueKey(queueId);
     
-    if (exists) {
-      const allClients = await client.zRange(queueKey, 0, -1);
-      console.log(`📋 Clientes na fila antes da remoção:`, allClients);
-      
-      // Encontrar o cliente específico pelo email
-      let clientToRemove = null;
-      for (const clientStr of allClients) {
-        try {
-          const clientObj = JSON.parse(clientStr);
-          if (clientObj.email === clientData.email) {
-            clientToRemove = clientStr;
-            break;
+    // Buscar cliente na fila principal
+    const mainClients = await client.zRangeWithScores(mainQueueKey, 0, -1);
+    for (const item of mainClients) {
+      try {
+        const clientObj = JSON.parse(item.value);
+          if ((clientData.id && clientObj.id === clientData.id) || 
+              (clientData.email && clientObj.email === clientData.email)) {
+          
+          await client.zRem(mainQueueKey, item.value);
+          console.log(`✅ Cliente ${clientObj.nome} removido da fila principal`);
+          return true;
           }
         } catch (parseError) {
           console.warn('Erro ao fazer parse do cliente:', parseError);
         }
       }
       
-      if (clientToRemove) {
-        console.log(`🔍 Cliente encontrado para remoção: ${clientToRemove}`);
-        const result = await client.zRem(queueKey, clientToRemove);
-        console.log(`✅ Resultado da remoção: ${result}`);
-        return result;
-      } else {
-        console.log(`⚠️ Cliente com email ${clientData.email} não encontrado na fila`);
-        return 0;
+    // Buscar cliente na fila de subdivisões
+    const subClients = await client.zRangeWithScores(subQueueKey, 0, -1);
+    for (const item of subClients) {
+      try {
+        const clientObj = JSON.parse(item.value);
+        if ((clientData.id && clientObj.id === clientData.id) || 
+            (clientData.email && clientObj.email === clientData.email)) {
+          
+          await client.zRem(subQueueKey, item.value);
+          console.log(`✅ Cliente ${clientObj.nome} removido da fila de subdivisões`);
+          return true;
+        }
+      } catch (parseError) {
+        console.warn('Erro ao fazer parse do cliente:', parseError);
       }
     }
     
-    return 0;
+    console.log(`⚠️ Cliente com email ${clientData.email} não encontrado na fila`);
+    return false;
   } catch (error) {
     console.error('Erro ao remover cliente da fila:', error);
     return false;
   }
 }
 
-// Obtém posição do cliente
-async function getClientPosition(queueId, clientData) {
-  try {
-    const client = await getRedisClient();
-    const queueKey = getQueueKey(queueId);
-
-    const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
-
-    const position = await client.zRank(queueKey, value);
-    return position !== null ? position + 1 : null; // 1-based
-  } catch (error) {
-    console.error('Erro ao obter posição do cliente:', error);
-    throw new Error('Falha ao obter posição do cliente');
-  }
-}
-
-// Lista clientes da fila
+// Lista clientes da fila (nova arquitetura)
 async function getQueueClients(queueId, start = 0, stop = -1) {
   try {
     const client = await getRedisClient();
-    const queueKey = getQueueKey(queueId);
-
-    // Usar zRangeWithScores para obter todos os clientes com scores
-    const rawClients = await client.zRangeWithScores(queueKey, start, stop);
-
-    const clients = [];
-
-    if (Array.isArray(rawClients)) {
-      // zRangeWithScores retorna objetos com { value, score }
-      for (const item of rawClients) {
-        try {
-          const value = item.value || item;
-          const score = item.score || (rawClients.indexOf(item) + 1);
-          
-          const clientObj = JSON.parse(value);
-          clients.push({ 
-            ...clientObj, 
-            position: Number(score) || 1 
-          });
-        } catch (err) {
-          console.warn('Cliente inválido ignorado:', item);
+    if (!client) return [];
+    
+    const mainQueueKey = getMainQueueKey(queueId);
+    const subQueueKey = getSubdivisionQueueKey(queueId);
+    
+    // Obter clientes da fila principal
+    const mainClients = await client.zRangeWithScores(mainQueueKey, start, stop);
+    const subClients = await client.zRangeWithScores(subQueueKey, start, stop);
+    
+    const allClients = [];
+    
+    // Processar clientes da fila principal
+    for (const item of mainClients) {
+      try {
+        const clientObj = JSON.parse(item.value);
+        allClients.push(clientObj);
+      } catch (parseError) {
+        console.warn('Cliente inválido ignorado:', item.value);
           continue;
-        }
       }
     }
-
-    return clients;
+    
+    // Processar clientes da fila de subdivisões
+    for (const item of subClients) {
+      try {
+        const clientObj = JSON.parse(item.value);
+        allClients.push(clientObj);
+      } catch (parseError) {
+        console.warn('Cliente inválido ignorado:', item.value);
+        continue;
+      }
+    }
+    
+    // Ordenar por posição e subposição
+    allClients.sort((a, b) => {
+      if (a.position !== b.position) {
+        return a.position - b.position;
+      }
+      return (a.subPosition || 'a').localeCompare(b.subPosition || 'a');
+    });
+    
+    return allClients;
   } catch (error) {
     console.error('Erro ao obter clientes da fila:', error);
     throw new Error('Falha ao obter clientes da fila');
   }
 }
 
-// Define clientes da fila (substitui todos os clientes)
-async function setQueueClients(queueId, clients) {
-  try {
-    const client = await getRedisClient();
-    const queueKey = getQueueKey(queueId);
-
-    // Remove todos os clientes existentes
-    await client.del(queueKey);
-
-    // Adiciona os novos clientes
-    for (let i = 0; i < clients.length; i++) {
-      const clientData = clients[i];
-      const position = i + 1;
-      const value = typeof clientData === 'string' ? clientData : JSON.stringify(clientData);
-      
-      await client.zAdd(queueKey, { score: position, value });
-    }
-
-    console.log(`✅ ${clients.length} clientes definidos para a fila ${queueId}`);
-    return true;
-  } catch (error) {
-    console.error('Erro ao definir clientes da fila:', error);
-    throw new Error('Falha ao definir clientes da fila');
-  }
-}
-
-// Obtém tamanho da fila
-async function getQueueSize(queueId) {
-  try {
-    const client = await getRedisClient();
-    const queueKey = getQueueKey(queueId);
-    const size = await client.zCard(queueKey);
-    return size;
-  } catch (error) {
-    console.error('Erro ao obter tamanho da fila:', error);
-    throw new Error('Falha ao obter tamanho da fila');
-  }
-}
-
-// Move cliente na fila (com renumeração completa)
-async function moveClientInQueue(queueId, clientData, newPosition) {
-  try {
-    const client = await getRedisClient();
-    const queueKey = getQueueKey(queueId);
-
-    console.log(`🔍 Movendo cliente ${clientData.nome} para posição ${newPosition} na fila ${queueId}`);
-
-    // 1️⃣ Obter todos os clientes atuais
-    const clients = await getQueueClients(queueId);
-    if (!Array.isArray(clients) || clients.length === 0) {
-      console.log('⚠️ Fila vazia ou inválida');
-      return false;
-    }
-
-    console.log(`📋 Clientes antes da movimentação:`, clients.map(c => ({ nome: c.nome, position: c.position })));
-
-    // 2️⃣ Remover cliente da lista
-    const filtered = clients.filter(c => c.id !== clientData.id);
-    console.log(`🔍 Clientes após remoção:`, filtered.map(c => ({ nome: c.nome, position: c.position })));
-
-    // 3️⃣ Calcular nova posição dentro dos limites
-    const insertIndex = Math.max(0, Math.min(newPosition - 1, filtered.length));
-    console.log(`🔍 Índice de inserção: ${insertIndex}`);
-
-    // 4️⃣ Inserir o cliente na nova posição
-    filtered.splice(insertIndex, 0, { ...clientData, position: newPosition });
-    console.log(`🔍 Clientes após inserção:`, filtered.map(c => ({ nome: c.nome, position: c.position })));
-
-    // 5️⃣ Renumerar TODAS as posições (garante unicidade)
-    const renumbered = filtered.map((c, index) => ({
-      ...c,
-      position: index + 1
-    }));
-
-    console.log(`🔍 Clientes após renumeração:`, renumbered.map(c => ({ nome: c.nome, position: c.position })));
-
-    // 6️⃣ Atualizar Redis ZSET completamente
-    // (limpa a fila e regrava com scores únicos)
-    await client.del(queueKey);
-
-    for (const c of renumbered) {
-      await client.zAdd(queueKey, { score: c.position, value: JSON.stringify(c) });
-    }
-
-    console.log(`✅ Fila ${queueId} renumerada com ${renumbered.length} clientes.`);
-    console.table(renumbered.map(c => ({ nome: c.nome, position: c.position })));
-
-    return true;
-  } catch (error) {
-    console.error('Erro ao mover cliente na fila:', error);
-    throw new Error('Falha ao mover cliente na fila');
-  }
-}
-
-// Deleta toda a fila
-async function deleteQueue(queueId) {
-  try {
-    const client = await getRedisClient();
-    const queueKey = getQueueKey(queueId);
-    const metaKey = getQueueMetaKey(queueId);
-    const statsKey = getQueueStatsKey(queueId);
-
-    await client.del([queueKey, metaKey, statsKey]);
-    return true;
-  } catch (error) {
-    console.error('Erro ao deletar fila:', error);
-    throw new Error('Falha ao deletar fila');
-  }
-}
-
-// Define metadados da fila
-async function setQueueMetadata(queueId, metadata) {
-  try {
-    const client = await getRedisClient();
-    const metaKey = getQueueMetaKey(queueId);
-
-    const fields = [];
-    for (const [key, value] of Object.entries(metadata)) {
-      fields.push(key, String(value));
-    }
-
-    await client.hSet(metaKey, fields);
-    return true;
-  } catch (error) {
-    console.error('Erro ao definir metadados da fila:', error);
-    throw new Error('Falha ao definir metadados da fila');
-  }
-}
-
-// Obtém metadados da fila
-async function getQueueMetadata(queueId) {
-  try {
-    const client = await getRedisClient();
-    const metaKey = getQueueMetaKey(queueId);
-    const metadata = await client.hGetAll(metaKey);
-    return metadata;
-  } catch (error) {
-    console.error('Erro ao obter metadados da fila:', error);
-    throw new Error('Falha ao obter metadados da fila');
-  }
-}
-
-// Obtém o próximo cliente da fila (o primeiro da fila)
+// Obtém o próximo cliente da fila (nova arquitetura)
 async function getNextClient(queueId) {
   try {
     const client = await getRedisClient();
-    const queueKey = getQueueKey(queueId);
-
-    console.log('🔍 Buscando próximo cliente na fila:', queueKey);
-
-    // Busca o primeiro cliente (menor score = posição 1)
-    const result = await client.zRange(queueKey, 0, 0, { withScores: true });
+    if (!client) return null;
+    
+    console.log('🔍 Buscando próximo cliente na fila:', queueId);
+    
+    const mainQueueKey = getMainQueueKey(queueId);
+    
+    // Buscar o primeiro cliente da fila principal
+    const result = await client.zRange(mainQueueKey, 0, 0, { withScores: true });
     
     console.log('📊 Resultado da busca:', result);
     
     if (result.length === 0) {
       console.log('❌ Fila vazia');
-      return null; // Fila vazia
+      return null;
     }
 
-    // O resultado pode vir em formatos diferentes dependendo da versão do Redis
     let clientData, score;
     
     if (Array.isArray(result[0])) {
-      // Formato antigo: [value, score]
       [clientData, score] = result[0];
     } else if (result[0].value !== undefined) {
-      // Formato novo: {value, score}
       clientData = result[0].value;
       score = result[0].score;
     } else {
-      // Formato direto: string
       clientData = result[0];
-      score = 1; // Score padrão
+      score = 1;
     }
     
     console.log('📝 Dados do cliente:', clientData);
     console.log('🎯 Score:', score);
     
-    // Verificar se clientData é válido
     if (!clientData || typeof clientData !== 'string') {
       console.error('❌ Dados do cliente inválidos:', clientData);
       throw new Error('Dados do cliente inválidos');
@@ -448,7 +359,8 @@ async function getNextClient(queueId) {
     
     return {
       ...clientInfo,
-      position: score
+      position: clientInfo.position,
+      subPosition: clientInfo.subPosition
     };
   } catch (error) {
     console.error('❌ Erro ao obter próximo cliente:', error);
@@ -456,17 +368,427 @@ async function getNextClient(queueId) {
   }
 }
 
-// Obtém clientes agrupados por posição (estrutura bidimensional)
+// Nova função: Chama próximo cliente com movimento automático (NOVA ARQUITETURA)
+async function callNextClientWithAutoMove(queueId) {
+  try {
+    console.log(`🔍 Chamando próximo cliente da fila ${queueId} com movimento automático (nova arquitetura)`);
+    
+    // 1. Obter próximo cliente
+    const nextClient = await getNextClient(queueId);
+    if (!nextClient) {
+      console.log('❌ Não há clientes na fila');
+      return null;
+    }
+    
+    console.log(`📞 Chamando cliente: ${nextClient.nome} (posição ${nextClient.position}${nextClient.subPosition})`);
+    
+    // 2. Remover cliente da fila
+    await removeClientFromQueue(queueId, nextClient);
+    
+    // 3. Aplicar movimento automático a todos os clientes restantes
+    await applyAutoMove(queueId);
+    
+    console.log(`✅ Cliente ${nextClient.nome} chamado e movimento automático aplicado`);
+    return nextClient;
+    
+  } catch (error) {
+    console.error('❌ Erro ao chamar próximo cliente:', error);
+    throw new Error('Falha ao chamar próximo cliente');
+  }
+}
+
+// Aplica movimento automático após chamada (LÓGICA CORRETA DE SUBDIVISÕES)
+async function applyAutoMove(queueId) {
+  try {
+    console.log(`🔄 Aplicando movimento automático na fila ${queueId} (lógica correta de subdivisões)`);
+    
+    const client = await getRedisClient();
+    if (!client) return;
+    
+    const mainQueueKey = getMainQueueKey(queueId);
+    const subQueueKey = getSubdivisionQueueKey(queueId);
+    
+    // 1. Obter todos os clientes da fila principal e subdivisões
+    const mainClients = await client.zRangeWithScores(mainQueueKey, 0, -1);
+    const subClients = await client.zRangeWithScores(subQueueKey, 0, -1);
+    
+    if (mainClients.length === 0 && subClients.length === 0) {
+      console.log('📋 Fila vazia, nada para mover');
+      return;
+    }
+    
+    console.log(`📋 Movendo ${mainClients.length} clientes principais e ${subClients.length} subdivisões`);
+    
+    // 2. Limpar ambas as filas
+    await client.del(mainQueueKey);
+    await client.del(subQueueKey);
+    
+    // 3. LÓGICA CORRETA: Agrupar clientes por posição original
+    const positionMap = new Map();
+    
+    // Processar clientes principais
+    for (const item of mainClients) {
+      try {
+        const clientObj = JSON.parse(item.value);
+        const position = clientObj.position;
+        
+        if (!positionMap.has(position)) {
+          positionMap.set(position, { main: null, subs: [] });
+        }
+        positionMap.get(position).main = clientObj;
+      } catch (parseError) {
+        console.warn('Erro ao processar cliente principal:', parseError);
+      }
+    }
+    
+    // Processar subdivisões
+    for (const item of subClients) {
+      try {
+        const clientObj = JSON.parse(item.value);
+        const position = clientObj.position;
+        
+        if (!positionMap.has(position)) {
+          positionMap.set(position, { main: null, subs: [] });
+        }
+        positionMap.get(position).subs.push(clientObj);
+      } catch (parseError) {
+        console.warn('Erro ao processar subdivisão:', parseError);
+      }
+    }
+    
+    // 4. LÓGICA CORRETA: Reorganizar tratando subdivisões individualmente
+    const sortedPositions = Array.from(positionMap.keys()).sort((a, b) => a - b);
+    let newPosition = 1;
+    
+    for (const oldPosition of sortedPositions) {
+      const positionData = positionMap.get(oldPosition);
+      const { main, subs } = positionData;
+      
+      // Ordenar subdivisões por subposição (a, b, c, etc.)
+      subs.sort((a, b) => {
+        const subA = a.subPosition || 'a';
+        const subB = b.subPosition || 'a';
+        return subA.localeCompare(subB);
+      });
+      
+      if (main) {
+        // Há cliente principal - ele vira posição principal da nova posição
+        const updatedMain = {
+          ...main,
+          position: newPosition,
+          subPosition: 'a',
+          subdivisionId: `${newPosition}-a`,
+          isSubdivision: false
+        };
+        
+        await client.zAdd(mainQueueKey, {
+          score: newPosition,
+          value: JSON.stringify(updatedMain)
+        });
+        
+        console.log(`📍 ${main.nome}: ${oldPosition}${main.subPosition || ''} → ${newPosition}a (principal)`);
+        
+        newPosition++;
+        
+        // Subdivisões vão para a MESMA posição principal com subposições diferentes
+        if (subs.length > 0) {
+          // Primeira subdivisão vira posição principal da NOVA posição
+          const firstSub = subs[0];
+          const updatedMain = {
+            ...firstSub,
+            position: newPosition,
+            subPosition: 'a',
+            subdivisionId: `${newPosition}-a`,
+            isSubdivision: false
+          };
+          
+          await client.zAdd(mainQueueKey, {
+            score: newPosition,
+            value: JSON.stringify(updatedMain)
+          });
+          
+          console.log(`📍 ${firstSub.nome}: ${oldPosition}${firstSub.subPosition || ''} → ${newPosition}a (PROMOVIDO a principal)`);
+          
+          // Demais subdivisões vão como subdivisões da MESMA posição
+          for (let i = 1; i < subs.length; i++) {
+            const subClient = subs[i];
+            const updatedSub = {
+              ...subClient,
+              position: newPosition,
+              subPosition: String.fromCharCode(97 + i), // b, c, d, etc.
+              subdivisionId: `${newPosition}-${String.fromCharCode(97 + i)}`,
+              isSubdivision: true
+            };
+            
+            await client.zAdd(subQueueKey, {
+              score: newPosition,
+              value: JSON.stringify(updatedSub)
+            });
+            
+            console.log(`📍 ${subClient.nome}: ${oldPosition}${subClient.subPosition || ''} → ${newPosition}${String.fromCharCode(97 + i)} (subdivisão)`);
+          }
+          
+          newPosition++;
+        }
+      } else {
+        // NÃO há cliente principal - primeira subdivisão vira principal
+        if (subs.length > 0) {
+          const firstSub = subs[0];
+          const updatedMain = {
+            ...firstSub,
+            position: newPosition,
+            subPosition: 'a',
+            subdivisionId: `${newPosition}-a`,
+            isSubdivision: false
+          };
+          
+          await client.zAdd(mainQueueKey, {
+            score: newPosition,
+            value: JSON.stringify(updatedMain)
+          });
+          
+          console.log(`📍 ${firstSub.nome}: ${oldPosition}${firstSub.subPosition || ''} → ${newPosition}a (PROMOVIDO de órfão)`);
+          
+          newPosition++;
+          
+          // Demais subdivisões vão para a MESMA posição principal com subposições diferentes
+          if (subs.length > 1) {
+            // Segunda subdivisão vira posição principal
+            const secondSub = subs[1];
+            const updatedMain = {
+              ...secondSub,
+              position: newPosition,
+              subPosition: 'a',
+              subdivisionId: `${newPosition}-a`,
+              isSubdivision: false
+            };
+            
+            await client.zAdd(mainQueueKey, {
+              score: newPosition,
+              value: JSON.stringify(updatedMain)
+            });
+            
+            console.log(`📍 ${secondSub.nome}: ${oldPosition}${secondSub.subPosition || ''} → ${newPosition}a (PROMOVIDO a principal)`);
+            
+            // Demais subdivisões vão como subdivisões da MESMA posição
+            for (let i = 2; i < subs.length; i++) {
+              const subClient = subs[i];
+              const updatedSub = {
+                ...subClient,
+                position: newPosition,
+                subPosition: String.fromCharCode(97 + i - 1), // b, c, d, etc.
+                subdivisionId: `${newPosition}-${String.fromCharCode(97 + i - 1)}`,
+                isSubdivision: true
+              };
+              
+              await client.zAdd(subQueueKey, {
+                score: newPosition,
+                value: JSON.stringify(updatedSub)
+              });
+              
+              console.log(`📍 ${subClient.nome}: ${oldPosition}${subClient.subPosition || ''} → ${newPosition}${String.fromCharCode(97 + i - 1)} (subdivisão)`);
+            }
+            
+            newPosition++;
+          }
+        }
+      }
+    }
+    
+    console.log(`✅ Movimento automático concluído - lógica correta de subdivisões`);
+    
+  } catch (error) {
+    console.error('❌ Erro ao aplicar movimento automático:', error);
+    throw new Error('Falha ao aplicar movimento automático');
+  }
+}
+
+// Preenche lacuna deixada após avanço (NOVA ARQUITETURA)
+async function fillGapAfterAdvance(queueId, gapPosition) {
+  try {
+    console.log(`🔍 Preenchendo lacuna na posição ${gapPosition}`);
+    
+    const client = await getRedisClient();
+    if (!client) return;
+    
+    const mainQueueKey = getMainQueueKey(queueId);
+    const subQueueKey = getSubdivisionQueueKey(queueId);
+    
+    // Obter todos os clientes da fila
+    const mainClients = await client.zRangeWithScores(mainQueueKey, 0, -1);
+    const subClients = await client.zRangeWithScores(subQueueKey, 0, -1);
+    
+    // Encontrar clientes que estão abaixo da lacuna (posição > gapPosition)
+    const clientsToMove = [];
+    
+    // Processar clientes principais
+    for (const item of mainClients) {
+      try {
+        const clientObj = JSON.parse(item.value);
+        if (clientObj.position > gapPosition) {
+          clientsToMove.push({
+            ...clientObj,
+            isSubdivision: false,
+            score: item.score
+          });
+        }
+      } catch (parseError) {
+        console.warn('Erro ao processar cliente principal:', parseError);
+      }
+    }
+    
+    // Processar subdivisões
+    for (const item of subClients) {
+      try {
+        const clientObj = JSON.parse(item.value);
+        if (clientObj.position > gapPosition) {
+          clientsToMove.push({
+            ...clientObj,
+            isSubdivision: true,
+            score: item.score
+          });
+        }
+      } catch (parseError) {
+        console.warn('Erro ao processar subdivisão:', parseError);
+      }
+    }
+    
+    if (clientsToMove.length === 0) {
+      console.log('📋 Nenhum cliente para mover');
+      return;
+    }
+    
+    // Ordenar clientes por posição atual
+    clientsToMove.sort((a, b) => a.position - b.position);
+    
+    console.log(`📋 Movendo ${clientsToMove.length} clientes para preencher lacuna`);
+    
+    // Mover cada cliente uma posição para cima
+    for (const clientToMove of clientsToMove) {
+      const newPosition = clientToMove.position - 1;
+      
+      if (clientToMove.isSubdivision) {
+        // Remover da fila de subdivisões
+        await client.zRem(subQueueKey, JSON.stringify(clientToMove));
+        
+        // Adicionar na nova posição
+        const updatedClient = {
+          ...clientToMove,
+          position: newPosition,
+          subdivisionId: `${newPosition}-${clientToMove.subPosition}`
+        };
+        
+        await client.zAdd(subQueueKey, {
+          score: newPosition,
+          value: JSON.stringify(updatedClient)
+        });
+        
+        console.log(`📍 ${clientToMove.nome}: ${clientToMove.position}${clientToMove.subPosition} → ${newPosition}${clientToMove.subPosition} (subdivisão)`);
+      } else {
+        // Remover da fila principal
+        await client.zRem(mainQueueKey, JSON.stringify(clientToMove));
+        
+        // Adicionar na nova posição
+        const updatedClient = {
+          ...clientToMove,
+          position: newPosition,
+          subdivisionId: `${newPosition}-a`
+        };
+        
+        await client.zAdd(mainQueueKey, {
+          score: newPosition,
+          value: JSON.stringify(updatedClient)
+        });
+        
+        console.log(`📍 ${clientToMove.nome}: ${clientToMove.position}a → ${newPosition}a (principal)`);
+      }
+    }
+    
+    console.log(`✅ Lacuna na posição ${gapPosition} preenchida`);
+    
+  } catch (error) {
+    console.error('❌ Erro ao preencher lacuna:', error);
+    throw new Error('Falha ao preencher lacuna');
+  }
+}
+
+// Avança cliente com sistema de aluguel de posição (NOVA ARQUITETURA)
+async function advanceClientWithRental(queueId, client, positions) {
+  try {
+    console.log(`🔍 Avançando cliente ${client.nome} com sistema de aluguel - ${positions} posições (nova arquitetura)`);
+    
+    const currentPosition = client.position;
+    
+    // REGRAS DE AVANÇO:
+    // 1. Top 3 posições são BLOQUEADAS (1, 2, 3)
+    // 2. Posição mínima possível = 4 (primeira não bloqueada)
+    // 3. Só pode avançar para CIMA (nunca para baixo)
+    
+    if (currentPosition <= 3) {
+      throw new Error('❌ Posições 1, 2 e 3 são bloqueadas - não é possível avançar');
+    }
+    
+    // Calcular posição desejada
+    const desiredPosition = Math.max(4, currentPosition - positions);
+    
+    // Verificar se realmente avançou
+    if (desiredPosition >= currentPosition) {
+      throw new Error('❌ Não é possível avançar - posição mínima é 4');
+    }
+    
+    const newPosition = desiredPosition;
+    
+    console.log(`📍 Posição atual: ${currentPosition}, Posição desejada: ${desiredPosition}, Nova posição: ${newPosition}`);
+    
+    // 1. Remover cliente da fila
+    await removeClientFromQueue(queueId, client);
+    
+    // 2. Atualizar dados do cliente com informações de pagamento
+    const updatedClient = {
+      ...client,
+      position: newPosition,
+      paidAdvance: true,
+      paymentTimestamp: Date.now(),
+      rentalPosition: true
+    };
+    
+    // 3. Adicionar cliente à nova posição (cria estrutura bidimensional)
+    const success = await addClientToQueue(queueId, newPosition, updatedClient);
+    
+    if (success) {
+      // 4. Preencher lacuna deixada na posição original
+      console.log(`🔄 Preenchendo lacuna na posição ${currentPosition}`);
+      await fillGapAfterAdvance(queueId, currentPosition);
+      
+      console.log(`✅ Cliente ${client.nome} avançou da posição ${currentPosition} para ${newPosition}`);
+      return {
+        success: true,
+        oldPosition: currentPosition,
+        newPosition: newPosition,
+        positionsAdvanced: currentPosition - newPosition,
+        rentalPosition: true
+      };
+    } else {
+      throw new Error('Falha ao avançar cliente');
+    }
+  } catch (error) {
+    console.error('❌ Erro ao alugar posição:', error);
+    throw new Error('Falha ao alugar posição');
+  }
+}
+
+// Obtém clientes agrupados por posição (NOVA ARQUITETURA)
 async function getQueueClientsGrouped(queueId) {
   try {
-    console.log(`🔍 getQueueClientsGrouped - queueId: ${queueId}`);
-    const clients = await getQueueClients(queueId);
-    console.log(`📋 Clientes obtidos:`, clients.map(c => ({ nome: c.nome, position: c.position, subPosition: c.subPosition, paidAdvance: c.paidAdvance })));
+    console.log(`🔍 getQueueClientsGrouped - queueId: ${queueId} (nova arquitetura)`);
+    
+    const allClients = await getQueueClients(queueId);
+    console.log(`📋 Clientes obtidos:`, allClients.map(c => ({ nome: c.nome, position: c.position, subPosition: c.subPosition })));
     
     const groupedClients = {};
     
     // Agrupar clientes por posição principal
-    for (const client of clients) {
+    for (const client of allClients) {
       const position = client.position;
       if (!groupedClients[position]) {
         groupedClients[position] = [];
@@ -479,18 +801,25 @@ async function getQueueClientsGrouped(queueId) {
     // Ordenar clientes dentro de cada posição por prioridade de pagamento
     for (const position in groupedClients) {
       groupedClients[position].sort((a, b) => {
-        // Clientes que pagaram têm prioridade
-        if (a.paidAdvance && !b.paidAdvance) return -1;
-        if (!a.paidAdvance && b.paidAdvance) return 1;
+        // LÓGICA CORRETA: Clientes que NÃO pagaram têm prioridade (entraram primeiro)
+        // Clientes que pagaram para avançar ficam por último na subposição
+        if (!a.paidAdvance && b.paidAdvance) return -1; // a não pagou, b pagou -> a primeiro
+        if (a.paidAdvance && !b.paidAdvance) return 1;  // a pagou, b não pagou -> b primeiro
         
-        // Se ambos pagaram, quem pagou mais recentemente tem prioridade
+        // Se ambos não pagaram, ordem de chegada (timestamp)
+        if (!a.paidAdvance && !b.paidAdvance) {
+          const aTimestamp = a.timestamp || 0;
+          const bTimestamp = b.timestamp || 0;
+          return aTimestamp - bTimestamp; // Mais antigo primeiro
+        }
+        
+        // Se ambos pagaram, quem pagou mais cedo tem prioridade
         if (a.paidAdvance && b.paidAdvance) {
           const aTimestamp = a.paymentTimestamp || 0;
           const bTimestamp = b.paymentTimestamp || 0;
-          return bTimestamp - aTimestamp; // Mais recente primeiro
+          return aTimestamp - bTimestamp; // Mais antigo primeiro
         }
         
-        // Se nenhum pagou, ordem de chegada
         return 0;
       });
       
@@ -512,136 +841,147 @@ async function getQueueClientsGrouped(queueId) {
   }
 }
 
-// Adiciona cliente a uma posição específica (cria estrutura bidimensional)
-async function addClientToPosition(queueId, position, clientData) {
+// Obtém tamanho da fila
+async function getQueueSize(queueId) {
   try {
-    const client = await getRedisClient();
-    if (!client) {
-      console.log('⚠️ Redis não disponível, pulando operação');
-      return false;
-    }
-    
-    const queueKey = getQueueKey(queueId);
-    
-    // Verificar se já há clientes nesta posição
-    const existingClients = await client.zRangeByScore(queueKey, position, position);
-    console.log(`🔍 Clientes existentes na posição ${position}:`, existingClients);
-    
-    if (existingClients.length > 0) {
-      // Há clientes nesta posição, vamos reorganizar
-      console.log(`🔄 Reorganizando posição ${position} para estrutura bidimensional`);
-      
-      // 1. Obter todos os clientes da fila
-      const allClients = await getQueueClients(queueId);
-      console.log(`📋 Todos os clientes antes da reorganização:`, allClients.map(c => ({ nome: c.nome, position: c.position })));
-      
-      // 2. Remover clientes da posição atual
-      const clientsToReorganize = [];
-      for (let i = 0; i < existingClients.length; i++) {
-        let existingClientData;
-        
-        // Lidar com diferentes formatos de resultado do Redis
-        if (typeof existingClients[i] === 'string') {
-          existingClientData = JSON.parse(existingClients[i]);
-        } else if (existingClients[i].value) {
-          existingClientData = JSON.parse(existingClients[i].value);
-        } else {
-          existingClientData = existingClients[i];
-        }
-        
-        if (existingClientData && existingClientData.nome) {
-          clientsToReorganize.push(existingClientData);
-        }
-      }
-      
-      console.log(`🔍 Clientes a serem reorganizados:`, clientsToReorganize.map(c => ({ nome: c.nome, position: c.position })));
-      
-      // 3. Adicionar o novo cliente (que pagou) como prioridade máxima
-      const newClient = {
-        ...clientData,
-        position: position,
-        paidAdvance: true,
-        paymentTimestamp: Date.now()
-      };
-      
-      // 4. Criar lista reorganizada: novo cliente primeiro, depois os existentes
-      const reorganizedClients = [newClient, ...clientsToReorganize];
-      
-      // 5. Atribuir subposições
-      reorganizedClients.forEach((client, index) => {
-        const subPosition = String.fromCharCode(97 + index); // a, b, c, etc.
-        client.subPosition = subPosition;
-      });
-      
-      console.log(`🔄 Clientes reorganizados:`, reorganizedClients.map(c => ({ nome: c.nome, position: c.position, subPosition: c.subPosition })));
-      
-      // 6. Remover clientes da posição atual do Redis
-      for (const existingClient of existingClients) {
-        await client.zRem(queueKey, existingClient);
-      }
-      
-      // 7. Adicionar todos os clientes reorganizados
-      for (const reorganizedClient of reorganizedClients) {
-        const value = JSON.stringify(reorganizedClient);
-        await client.zAdd(queueKey, { score: position, value });
-      }
-      
-      console.log(`✅ Posição ${position} reorganizada com ${reorganizedClients.length} clientes`);
-      return true;
-    } else {
-      // Posição vazia, adicionar normalmente
-      const value = JSON.stringify({ ...clientData, position: position, subPosition: 'a' });
-      const result = await client.zAdd(queueKey, { score: position, value });
-      console.log(`✅ Cliente adicionado na posição ${position} (vazia)`);
-      return result;
-    }
+    const clients = await getQueueClients(queueId);
+    return clients.length;
   } catch (error) {
-    console.error('❌ Erro ao adicionar cliente à posição:', error);
-    throw new Error('Falha ao adicionar cliente à posição');
+    console.error('Erro ao obter tamanho da fila:', error);
+    throw new Error('Falha ao obter tamanho da fila');
   }
 }
 
-// Avança cliente verticalmente (muda posição principal)
-async function advanceClientVertically(queueId, client, positions) {
+// Deleta toda a fila
+async function deleteQueue(queueId) {
   try {
-    console.log(`🔍 Avançando cliente ${client.nome} verticalmente ${positions} posições`);
+    const client = await getRedisClient();
+    if (!client) return true;
     
-    const currentPosition = client.position;
-    const newPosition = Math.max(1, currentPosition - positions);
+    const mainQueueKey = getMainQueueKey(queueId);
+    const subQueueKey = getSubdivisionQueueKey(queueId);
+    const metaKey = getQueueMetaKey(queueId);
+    const statsKey = getQueueStatsKey(queueId);
     
-    console.log(`📍 Posição atual: ${currentPosition}, Nova posição: ${newPosition}`);
+    await client.del([mainQueueKey, subQueueKey, metaKey, statsKey]);
     
-    // 1. Remover cliente da posição atual
-    const clientToRemove = {
-      email: client.email
-    };
-    await removeClientFromQueue(queueId, clientToRemove);
-    
-    // 2. Atualizar dados do cliente
-    const updatedClient = {
-      ...client,
-      position: newPosition,
-      paidAdvance: true,
-      paymentTimestamp: Date.now()
-    };
-    
-    // 3. Adicionar cliente à nova posição (cria estrutura bidimensional)
-    const success = await addClientToPosition(queueId, newPosition, updatedClient);
-    
-    if (success) {
-      console.log(`✅ Cliente ${client.nome} avançou da posição ${currentPosition} para ${newPosition}`);
-      return {
-        success: true,
-        oldPosition: currentPosition,
-        newPosition: newPosition,
-        positionsAdvanced: currentPosition - newPosition
-      };
-    } else {
-      throw new Error('Falha ao avançar cliente');
-    }
+    return true;
   } catch (error) {
-    console.error('❌ Erro ao avançar cliente verticalmente:', error);
-    throw new Error('Falha ao avançar cliente verticalmente');
+    console.error('Erro ao deletar fila:', error);
+    throw new Error('Falha ao deletar fila');
+  }
+}
+
+// Define metadados da fila
+async function setQueueMetadata(queueId, metadata) {
+  try {
+    const client = await getRedisClient();
+    if (!client) return true;
+    
+    const metaKey = getQueueMetaKey(queueId);
+    
+    const fields = [];
+    for (const [key, value] of Object.entries(metadata)) {
+      fields.push(key, String(value));
+    }
+    
+    await client.hSet(metaKey, fields);
+      return true;
+  } catch (error) {
+    console.error('Erro ao definir metadados da fila:', error);
+    throw new Error('Falha ao definir metadados da fila');
+  }
+}
+
+// Obtém metadados da fila
+async function getQueueMetadata(queueId) {
+  try {
+    const client = await getRedisClient();
+    if (!client) return {};
+    
+    const metaKey = getQueueMetaKey(queueId);
+    const metadata = await client.hGetAll(metaKey);
+    return metadata;
+  } catch (error) {
+    console.error('Erro ao obter metadados da fila:', error);
+    throw new Error('Falha ao obter metadados da fila');
+  }
+}
+
+// Busca próximo grupo adequado para mesa específica
+async function getNextGroupForTable(queueId, tableCapacity) {
+  try {
+    console.log(`🔍 Buscando grupo adequado para mesa de ${tableCapacity} lugares na fila ${queueId}`);
+    
+    const allClients = await getQueueClients(queueId);
+    if (!allClients || allClients.length === 0) {
+      console.log('📋 Fila vazia');
+      return null;
+    }
+    
+    // Definir intervalos exclusivos por capacidade de mesa
+    let minCapacity, maxCapacity;
+    switch (tableCapacity) {
+      case 2:
+        minCapacity = 1;
+        maxCapacity = 2;
+        break;
+      case 4:
+        minCapacity = 3;
+        maxCapacity = 4;
+        break;
+      case 6:
+        minCapacity = 5;
+        maxCapacity = 6;
+        break;
+      case 8:
+        minCapacity = 7;
+        maxCapacity = 8;
+        break;
+      default:
+        minCapacity = 1;
+        maxCapacity = tableCapacity;
+    }
+    
+    console.log(`📊 Intervalo da mesa ${tableCapacity}: ${minCapacity}-${maxCapacity} pessoas`);
+    
+    // Buscar grupos que cabem no intervalo exclusivo da mesa
+    const suitableGroups = allClients.filter(client => {
+      // Verificar se é um grupo
+      if (client.tipo !== 'grupo' && !client.isGroupLeader) {
+        return false;
+      }
+      
+      // Verificar se o tamanho do grupo cabe no intervalo exclusivo da mesa
+      const groupSize = client.groupSize || 1;
+      const fitsInInterval = groupSize >= minCapacity && groupSize <= maxCapacity;
+      
+      console.log(`🔍 Grupo ${client.nome}: ${groupSize} pessoas - ${fitsInInterval ? '✅' : '❌'} (intervalo: ${minCapacity}-${maxCapacity})`);
+      
+      return fitsInInterval;
+    });
+    
+    if (suitableGroups.length === 0) {
+      console.log(`❌ Nenhum grupo adequado para mesa de ${tableCapacity} lugares (intervalo exclusivo: ${minCapacity}-${maxCapacity})`);
+      return null;
+    }
+    
+    // Ordenar por posição (primeiro da fila)
+    suitableGroups.sort((a, b) => {
+      if (a.position !== b.position) {
+        return a.position - b.position;
+      }
+      return (a.subPosition || 'a').localeCompare(b.subPosition || 'a');
+    });
+    
+    const selectedGroup = suitableGroups[0];
+    console.log(`✅ Grupo selecionado: ${selectedGroup.nome} (${selectedGroup.groupSize} pessoas) na posição ${selectedGroup.position}${selectedGroup.subPosition}`);
+    
+    return selectedGroup;
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar grupo para mesa:', error);
+    throw new Error('Falha ao buscar grupo para mesa');
   }
 }
 
@@ -650,23 +990,24 @@ export {
   disconnectRedis,
   getRedisClient,
   isRedisAvailable,
-  getQueueKey,
+  getMainQueueKey,
+  getSubdivisionQueueKey,
   getQueueMetaKey,
   getQueueStatsKey,
   addClientToQueue,
   removeClientFromQueue,
-  getClientPosition,
   getQueueClients,
-  setQueueClients,
   getQueueSize,
-  moveClientInQueue,
   deleteQueue,
   setQueueMetadata,
   getQueueMetadata,
   getNextClient,
   getQueueClientsGrouped,
-  addClientToPosition,
-  advanceClientVertically
+  advanceClientWithRental,
+  callNextClientWithAutoMove,
+  applyAutoMove,
+  fillGapAfterAdvance,
+  getNextGroupForTable
 };
 
 // Export default para compatibilidade
@@ -675,21 +1016,22 @@ export default {
   disconnectRedis,
   getRedisClient,
   isRedisAvailable,
-  getQueueKey,
+  getMainQueueKey,
+  getSubdivisionQueueKey,
   getQueueMetaKey,
   getQueueStatsKey,
   addClientToQueue,
   removeClientFromQueue,
-  getClientPosition,
   getQueueClients,
-  setQueueClients,
   getQueueSize,
-  moveClientInQueue,
   deleteQueue,
   setQueueMetadata,
   getQueueMetadata,
   getNextClient,
   getQueueClientsGrouped,
-  addClientToPosition,
-  advanceClientVertically
+  advanceClientWithRental,
+  callNextClientWithAutoMove,
+  applyAutoMove,
+  fillGapAfterAdvance,
+  getNextGroupForTable
 };

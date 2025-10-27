@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Home, MapPin, List, LogOut, X, ChevronUp, Users, ArrowLeft } from 'lucide-react';
 import Layout from '../../../components/Layout';
 import GroupQueueComponent from '../../../components/GroupQueueComponent';
+import MercadoPagoButton from '../../../components/MercadoPagoButton';
 import { api } from '../../../services/api';
 import { AuthContext } from '../../../contexts/authContextImports';
 import { useTheme } from '../../../contexts/ThemeContext';
@@ -20,6 +21,7 @@ function MinhasFilas() {
   const [queueClients, setQueueClients] = useState([]);
   const [selectedPositions, setSelectedPositions] = useState(1);
   const [viewingQueue, setViewingQueue] = useState(null);
+  const [showPaymentButton, setShowPaymentButton] = useState(false);
 
   const sidebarLinks = [
     {
@@ -148,6 +150,7 @@ function MinhasFilas() {
     setSelectedQueue(null);
     setQueueClients([]);
     setSelectedPositions(1);
+    setShowPaymentButton(false);
   };
 
   const handleConfirmAdvance = async () => {
@@ -161,25 +164,20 @@ function MinhasFilas() {
       return;
     }
 
-    closeAdvancePopup();
+    // Mostrar botão de pagamento em vez de redirecionar
+    setShowPaymentButton(true);
+  };
 
-    // Criar preferência de pagamento diretamente
-    try {
-      const response = await api.post('/payments/advance-preference', {
-        queueId: selectedQueue.id,
-        positions: selectedPositions
-      });
+  const handlePaymentSuccess = (result) => {
+    console.log('✅ Pagamento processado:', result);
+    // Não fechar o popup aqui, deixar o MercadoPagoButton fazer o redirecionamento
+    // O popup será fechado quando o usuário voltar para a página
+    fetchUserQueues(); // Recarrega as filas para mostrar nova posição
+  };
 
-      if (response.data.success) {
-        // Redirecionar para o Mercado Pago
-        window.location.href = response.data.data.initPoint;
-      } else {
-        alert('Erro ao criar preferência de pagamento: ' + response.data.message);
-      }
-    } catch (error) {
-      console.error('Erro ao criar preferência de pagamento:', error);
-      alert('Erro ao processar pagamento. Tente novamente.');
-    }
+  const handlePaymentError = (error) => {
+    console.error('Erro no pagamento:', error);
+    alert('Erro no pagamento. Tente novamente.');
   };
 
   const getMaxAdvance = () => {
@@ -384,13 +382,39 @@ function MinhasFilas() {
             </div>
 
             <div className={styles.popupFooter}>
-              <button onClick={closeAdvancePopup} className={styles.cancelBtn}>
-                Cancelar
-              </button>
-              <button onClick={handleConfirmAdvance} className={styles.confirmBtn}>
-                <ChevronUp size={16} />
-                Avançar {selectedPositions} {selectedPositions === 1 ? 'posição' : 'posições'}
-              </button>
+              {!showPaymentButton ? (
+                <>
+                  <button onClick={closeAdvancePopup} className={styles.cancelBtn}>
+                    Cancelar
+                  </button>
+                  <button onClick={handleConfirmAdvance} className={styles.confirmBtn}>
+                    <ChevronUp size={16} />
+                    Avançar {selectedPositions} {selectedPositions === 1 ? 'posição' : 'posições'}
+                  </button>
+                </>
+              ) : (
+                <div className={styles.paymentSection}>
+                  <div className={styles.paymentHeader}>
+                    <h4>Finalizar Pagamento</h4>
+                    <p>Complete o pagamento para avançar na fila</p>
+                  </div>
+                  
+                  <MercadoPagoButton
+                    queueId={selectedQueue?.id}
+                    positions={selectedPositions}
+                    onSuccess={handlePaymentSuccess}
+                    onError={handlePaymentError}
+                  />
+                  
+                  <button 
+                    onClick={() => setShowPaymentButton(false)} 
+                    className={styles.backBtn}
+                    style={{ marginTop: '10px' }}
+                  >
+                    Voltar
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

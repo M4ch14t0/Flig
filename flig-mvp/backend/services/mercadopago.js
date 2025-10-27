@@ -1,5 +1,6 @@
 // SDK do Mercado Pago
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import redisService from './redis.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -40,11 +41,13 @@ class MercadoPagoService {
     try {
       const { clientId, queueId, positions, amount, clientInfo } = advanceData;
       
-      // Configurar preferência seguindo a documentação oficial
+      // Configurar preferência seguindo a implementação do seu amigo
       const preference = {
         items: [
           {
+            id: `advance-${clientId}`,
             title: `Avançar ${positions} posição(ões) na fila`,
+            description: `Avançar ${positions} posição(ões) na fila`,
             quantity: 1,
             unit_price: amount
           }
@@ -56,13 +59,23 @@ class MercadoPagoService {
             number: clientInfo.telefone
           }
         },
-        back_urls: {
-          success: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/cliente/minhas-filas`,
-          failure: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/cliente/minhas-filas`,
-          pending: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/cliente/minhas-filas`
+        payment_methods: {
+          excluded_payment_methods: [],
+          excluded_payment_types: [],
+          installments: 1
         },
-        external_reference: `advance-${clientId}-${queueId}-${Date.now()}`,
-        notification_url: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/webhooks/mercadopago`
+        back_urls: {
+          success: `${process.env.FRONTEND_URL || 'http://localhost:3002'}/cliente/minhas-filas`,
+          failure: `${process.env.FRONTEND_URL || 'http://localhost:3002'}/cliente/minhas-filas`,
+          pending: `${process.env.FRONTEND_URL || 'http://localhost:3002'}/cliente/minhas-filas`
+        },
+        external_reference: `advance-${clientId}-${queueId}-${positions}-${Date.now()}`,
+        notification_url: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/payments/webhooks/mercadopago`,
+        expires: true,
+        expiration_date_from: new Date().toISOString(),
+        expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // expira em 24h
+        // Forçar modo sandbox para testes
+        sandbox_mode: true
       };
 
       // Criar preferência usando o método da documentação
@@ -119,14 +132,18 @@ class MercadoPagoService {
    */
   async processWebhook(webhookData, headers, queryParams) {
     try {
-      // Validar assinatura do webhook
-      const isValidSignature = this.validateWebhookSignature(headers, queryParams);
-      if (!isValidSignature) {
-        console.error('❌ Assinatura do webhook inválida');
-        return {
-          success: false,
-          error: 'Assinatura inválida'
-        };
+      // Validar assinatura do webhook (desabilitado em ambiente de teste)
+      if (process.env.NODE_ENV === 'production') {
+        const isValidSignature = await this.validateWebhookSignature(headers, queryParams);
+        if (!isValidSignature) {
+          console.error('❌ Assinatura do webhook inválida');
+          return {
+            success: false,
+            error: 'Assinatura inválida'
+          };
+        }
+      } else {
+        console.log('⚠️ Validação de assinatura desabilitada em ambiente de teste');
       }
 
       const { type, data, action } = webhookData;
@@ -139,6 +156,17 @@ class MercadoPagoService {
         
         if (paymentStatus.success) {
           console.log('💰 Pagamento processado:', paymentStatus);
+          
+          // Processar avanço na fila se o pagamento foi aprovado
+          if (paymentStatus.status === 'approved' && paymentStatus.externalReference) {
+            try {
+              await this.processQueueAdvance(paymentStatus.externalReference);
+              console.log('✅ Usuário avançado na fila automaticamente');
+            } catch (error) {
+              console.error('❌ Erro ao processar avanço na fila:', error);
+            }
+          }
+          
           return {
             success: true,
             paymentId,
@@ -166,7 +194,7 @@ class MercadoPagoService {
    * Validar assinatura do webhook do Mercado Pago
    * Seguindo a documentação oficial para validação de segurança
    */
-  validateWebhookSignature(headers, queryParams) {
+  async validateWebhookSignature(headers, queryParams) {
     try {
       const xSignature = headers['x-signature'];
       const xRequestId = headers['x-request-id'];
@@ -202,7 +230,7 @@ class MercadoPagoService {
       const signatureTemplate = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
       
       // Gerar HMAC SHA256
-      const crypto = require('crypto');
+      const crypto = await import('crypto');
       const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
       
       if (!secret) {
@@ -210,7 +238,7 @@ class MercadoPagoService {
         return false;
       }
 
-      const generatedHash = crypto
+      const generatedHash = crypto.default
         .createHmac('sha256', secret)
         .update(signatureTemplate)
         .digest('hex');
@@ -261,7 +289,7 @@ class MercadoPagoService {
           pending: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/cliente/minhas-filas`
         },
         external_reference: `subscription-${planId}-${Date.now()}`,
-        notification_url: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/webhooks/mercadopago`
+        notification_url: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/payments/webhooks/mercadopago`
       };
 
       // Criar preferência usando o método da documentação
@@ -285,6 +313,84 @@ class MercadoPagoService {
         success: false,
         error: error.message
       };
+    }
+  }
+
+  /**
+   * Processar avanço na fila após pagamento aprovado
+   */
+  async processQueueAdvance(externalReference) {
+    try {
+      console.log(`🔍 Processando externalReference: ${externalReference}`);
+
+      // Regex flexível para qualquer tipo de ID (UUID, string, número)
+      const match = externalReference.match(/^advance-(.+?)-(.+?)-(\d+)-(\d+)$/);
+      
+      console.log(`🔍 Match result:`, match);
+      
+      if (!match) {
+        throw new Error('External reference inválido');
+      }
+      
+      const userId = match[1];
+      const queueId = match[2];
+      const positions = Number(match[3]);
+      const timestamp = match[4];
+      
+      console.log(`🔄 Processando avanço: Fila ${queueId}, Usuário ${userId}, ${positions} posições, timestamp ${timestamp}`);
+
+      // Importar o modelo Queue
+      const Queue = (await import('../models/Queue.js')).default;
+      
+      // Buscar a fila
+      const queue = await Queue.findById(queueId);
+      if (!queue) {
+        throw new Error('Fila não encontrada');
+      }
+
+      // Buscar o usuário no banco de dados para obter o email
+      const connection = (await import('../config/db.js')).default;
+      const userResult = await new Promise((resolve, reject) =>
+        connection.query('SELECT email_usuario FROM usuarios WHERE id = ?', [userId], (err, results) => 
+          err ? reject(err) : resolve(results)
+        )
+      );
+      
+      if (!userResult.length) {
+        throw new Error('Usuário não encontrado');
+      }
+      
+      const userEmail = userResult[0].email_usuario;
+      console.log(`🔍 Email do usuário: ${userEmail}`);
+      
+      // Buscar o cliente na fila pelo email
+      const clients = await redisService.getQueueClients(queueId);
+      const clientInQueue = clients.find(client => {
+        return client.email && client.email === userEmail;
+      });
+      
+      if (!clientInQueue) {
+        throw new Error('Cliente não encontrado na fila');
+      }
+      
+      console.log(`🔍 Cliente encontrado na fila: ID ${clientInQueue.id}, Nome: ${clientInQueue.nome}`);
+      
+      // Avançar o usuário na fila usando a nova lógica de subdivisões
+      const advanceResult = await queue.advanceClientVertically(clientInQueue.id, positions);
+      
+      console.log(`✅ Usuário ${userId} avançou ${positions} posições na fila ${queueId}`);
+      console.log(`📍 Nova posição: ${advanceResult.newPosition}`);
+      
+      return {
+        success: true,
+        newPosition: advanceResult.newPosition,
+        queueId,
+        userId,
+        positions
+      };
+    } catch (error) {
+      console.error('❌ Erro ao processar avanço na fila:', error);
+      throw error;
     }
   }
 }

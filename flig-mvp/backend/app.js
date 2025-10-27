@@ -14,6 +14,23 @@ const PORT = process.env.PORT || 5000;
 // Configurar trust proxy para Railway (mais específico)
 app.set('trust proxy', 1);
 
+// Configurar CSP para Mercado Pago
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', 
+    "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com https://http2.mlstatic.com https://www.mercadopago.com.br https://sandbox.mercadopago.com.br https://js-agent.newrelic.com https://*.newrelic.com; " +
+    "style-src 'self' 'unsafe-inline' https://http2.mlstatic.com https://www.mercadopago.com.br https://sandbox.mercadopago.com.br; " +
+    "img-src 'self' data: blob: https: http:; " +
+    "font-src 'self' data: https:; " +
+    "connect-src 'self' https://api.mercadopago.com https://api.mercadolibre.com https://http2.mlstatic.com https://www.mercadopago.com.br https://sandbox.mercadopago.com.br https://*.newrelic.com; " +
+    "frame-src 'self' https://www.mercadopago.com.br https://sandbox.mercadopago.com.br; " +
+    "object-src 'none'; " +
+    "base-uri 'self'; " +
+    "form-action 'self' https://www.mercadopago.com.br https://sandbox.mercadopago.com.br;"
+  );
+  next();
+});
+
 const TOKEN = process.env.CNPJA_TOKEN;
 
 if (!TOKEN) {
@@ -61,6 +78,19 @@ app.use(cors({
       return callback(null, true);
     }
     
+    // Permitir domínios do Mercado Pago
+    const mercadoPagoDomains = [
+      'https://www.mercadopago.com.br',
+      'https://sandbox.mercadopago.com.br',
+      'https://http2.mlstatic.com',
+      'https://sdk.mercadopago.com'
+    ];
+    
+    if (mercadoPagoDomains.some(domain => origin.startsWith(domain))) {
+      console.log('✅ CORS: Mercado Pago domain allowed:', origin);
+      return callback(null, true);
+    }
+    
     // Permitir qualquer domínio do Vercel
     if (origin.includes('.vercel.app')) {
       console.log('✅ CORS: Vercel domain allowed:', origin);
@@ -71,8 +101,9 @@ app.use(cors({
     return callback(new Error(`Not allowed by CORS: ${origin}`));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Access-Control-Request-Method', 'Access-Control-Request-Headers', 'X-Signature', 'X-Request-ID', 'X-Forwarded-For', 'X-Forwarded-Host', 'X-Forwarded-Proto'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
 app.use(express.json());
 

@@ -249,40 +249,73 @@ async function processWebhook(req, res) {
  */
 async function processApprovedPayment(paymentResult) {
   try {
-    const { externalReference, status } = paymentResult;
+    const { externalReference, status, positions } = paymentResult;
     
     if (status === 'approved' && externalReference) {
-      // Extrair informações do external_reference
-      const [type, clientId, queueId] = externalReference.split('-');
+      // O externalReference contém: advance-${clientId}-${queueId}-${positions}-${timestamp}
+      // Regex flexível para qualquer tipo de ID (UUID, string, número)
+      const match = externalReference.match(/^advance-(.+?)-(.+?)-(\d+)-(\d+)$/);
       
-      if (type === 'advance' && clientId && queueId) {
-        console.log(`🚀 Processando avanço automático para cliente ${clientId} na fila ${queueId}`);
-        
-        // Buscar fila
-        const queue = await Queue.findById(queueId);
-        if (!queue) {
-          console.error('❌ Fila não encontrada:', queueId);
-          return;
-        }
+      console.log(`🔍 External reference: ${externalReference}`);
+      console.log(`🔍 Match result:`, match);
+      
+      if (!match) {
+        console.error('❌ External reference inválido:', externalReference);
+        return;
+      }
+      
+      const clientId = match[1];
+      const queueId = match[2];
+      const positionsToAdvance = Number(match[3]);
+      const timestamp = match[4];
+      
+      console.log(`🚀 Processando avanço automático para cliente ${clientId} na fila ${queueId}, ${positionsToAdvance} posições`);
+      
+      // Importar o modelo Queue
+      const Queue = (await import('../models/Queue.js')).default;
+      
+      // Buscar a fila
+      const queue = await Queue.findById(queueId);
+      if (!queue) {
+        console.error('❌ Fila não encontrada:', queueId);
+        return;
+      }
 
-        // Buscar cliente na fila
-        const redisService = await import('../services/redis.js');
-        const clients = await redisService.default.getQueueClients(queueId);
-        const clientInQueue = clients.find(client => client.id === clientId);
-        
-        if (!clientInQueue) {
-          console.error('❌ Cliente não encontrado na fila:', clientId);
-          return;
-        }
+      // Buscar o usuário no banco de dados para obter o email
+      const connection = (await import('../config/db.js')).default;
+      const userResult = await new Promise((resolve, reject) =>
+        connection.query('SELECT email_usuario FROM usuarios WHERE id = ?', [clientId], (err, results) => 
+          err ? reject(err) : resolve(results)
+        )
+      );
+      
+      if (!userResult.length) {
+        console.error('❌ Usuário não encontrado:', clientId);
+        return;
+      }
+      
+      const userEmail = userResult[0].email_usuario;
+      console.log(`🔍 Email do usuário: ${userEmail}`);
+      
+      // Buscar o cliente na fila pelo email
+      const redisService = (await import('../services/redis.js')).default;
+      const clients = await redisService.getQueueClients(queueId);
+      const clientInQueue = clients.find(client => {
+        return client.email && client.email === userEmail;
+      });
+      
+      if (!clientInQueue) {
+        console.error('❌ Cliente não encontrado na fila');
+        return;
+      }
+      
+      console.log(`🔍 Cliente encontrado na fila: ID ${clientInQueue.id}, Nome: ${clientInQueue.nome}`);
 
-        // Avançar cliente automaticamente
-        const advanceResult = await queue.advanceClientVertically(clientId, 1); // Avançar 1 posição
-        
-        if (advanceResult.success) {
-          console.log(`✅ Cliente ${clientId} avançado automaticamente para posição ${advanceResult.newPosition}`);
-        } else {
-          console.error('❌ Erro ao avançar cliente:', advanceResult.message);
-        }
+      try {
+        const advanceResult = await queue.advanceClient(clientInQueue.id, positionsToAdvance);
+        console.log(`✅ Cliente ${clientInQueue.nome} avançado automaticamente ${positionsToAdvance} posições para posição ${advanceResult.newPosition}`);
+      } catch (error) {
+        console.error('❌ Erro ao avançar cliente:', error.message);
       }
     }
   } catch (error) {

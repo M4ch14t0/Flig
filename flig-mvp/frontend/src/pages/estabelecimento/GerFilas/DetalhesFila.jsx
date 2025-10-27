@@ -21,6 +21,9 @@ export default function DetalhesFila() {
     intervalo: 5
   });
   const [autoCallStatus, setAutoCallStatus] = useState(null);
+  const [showGroupCallModal, setShowGroupCallModal] = useState(false);
+  const [selectedTableCapacity, setSelectedTableCapacity] = useState(2);
+  const [groupCallResult, setGroupCallResult] = useState(null);
 
   const sidebarLinks = [
     { to: '/estabelecimento/home', label: 'Home', icon: <Home size={16} /> },
@@ -169,6 +172,65 @@ export default function DetalhesFila() {
     }
   };
 
+  // Funções para chamada de grupos por mesa
+  const handleOpenGroupCallModal = () => {
+    setShowGroupCallModal(true);
+    setGroupCallResult(null);
+  };
+
+  const handleCloseGroupCallModal = () => {
+    setShowGroupCallModal(false);
+    setGroupCallResult(null);
+  };
+
+  const handleCallGroupByTable = async () => {
+    try {
+      const response = await api.post(`/api/queues/${id}/chamar-grupo-mesa`, {
+        capacidadeMesa: selectedTableCapacity
+      });
+      
+      if (response.data.success) {
+        setGroupCallResult(response.data.data);
+        await fetchFilaDetails(); // Atualizar a fila após chamada
+      } else {
+        setGroupCallResult({
+          success: false,
+          message: response.data.message || 'Nenhum grupo encontrado'
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao chamar grupo:', error);
+      setGroupCallResult({
+        success: false,
+        message: 'Erro ao chamar grupo. Tente novamente.'
+      });
+    }
+  };
+
+  const handleCallNextClient = async () => {
+    try {
+      const response = await api.post(`/api/queues/${id}/chamar-proximo`);
+      
+      if (response.data.success) {
+        await fetchFilaDetails(); // Atualizar a fila após chamada
+        console.log('✅ Próximo cliente chamado com sucesso');
+      } else {
+        console.error('Erro ao chamar próximo cliente:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Erro ao chamar próximo cliente:', error);
+    }
+  };
+
+  const getTableCapacityOptions = () => {
+    return [
+      { value: 2, label: 'Mesa 2 lugares (1-2 pessoas)' },
+      { value: 4, label: 'Mesa 4 lugares (3-4 pessoas)' },
+      { value: 6, label: 'Mesa 6 lugares (5-6 pessoas)' },
+      { value: 8, label: 'Mesa 8 lugares (7-8 pessoas)' }
+    ];
+  };
+
 
   if (loading) {
     return (
@@ -201,13 +263,31 @@ export default function DetalhesFila() {
           <h1 className={styles.title}>
             <FiUsers /> {fila?.nome || 'Detalhes da Fila'}
           </h1>
-          <button 
-            onClick={handleOpenEditPopup}
-            className={styles.editButton}
-            title="Configurar chamadas automáticas"
-          >
-            <Settings size={16} />
-          </button>
+          <div className={styles.headerActions}>
+            <button 
+              onClick={handleCallNextClient}
+              className={styles.callNextButton}
+              title="Chamar próximo cliente da fila"
+            >
+              <Users size={16} />
+              Chamar Próximo
+            </button>
+            <button 
+              onClick={handleOpenGroupCallModal}
+              className={styles.groupCallButton}
+              title="Chamar grupo por capacidade de mesa"
+            >
+              <Users size={16} />
+              Chamar Grupo
+            </button>
+            <button 
+              onClick={handleOpenEditPopup}
+              className={styles.editButton}
+              title="Configurar chamadas automáticas"
+            >
+              <Settings size={16} />
+            </button>
+          </div>
         </div>
 
         {fila && (
@@ -441,6 +521,69 @@ export default function DetalhesFila() {
                   >
                     Executar Chamada Agora
                   </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Chamada de Grupo */}
+      {showGroupCallModal && (
+        <div className={styles.popupOverlay} onClick={handleCloseGroupCallModal}>
+          <div className={styles.popup} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.popupHeader}>
+              <h3>Chamar Grupo por Capacidade de Mesa</h3>
+              <button onClick={handleCloseGroupCallModal} className={styles.closeButton}>
+                ×
+              </button>
+            </div>
+
+            <div className={styles.popupContent}>
+              <div className={styles.groupCallSection}>
+                <label className={styles.label}>
+                  Selecione a capacidade da mesa:
+                </label>
+                <select
+                  value={selectedTableCapacity}
+                  onChange={(e) => setSelectedTableCapacity(parseInt(e.target.value))}
+                  className={styles.select}
+                >
+                  {getTableCapacityOptions().map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={handleCallGroupByTable}
+                  className={styles.callGroupButton}
+                >
+                  Chamar Próximo Grupo
+                </button>
+              </div>
+
+              {groupCallResult && (
+                <div className={styles.groupCallResult}>
+                  {groupCallResult.success ? (
+                    <div className={styles.successResult}>
+                      <h4>✅ Grupo Chamado com Sucesso!</h4>
+                      <div className={styles.groupInfo}>
+                        <p><strong>Grupo:</strong> {groupCallResult.grupo.nome}</p>
+                        <p><strong>Líder:</strong> {groupCallResult.grupo.lider}</p>
+                        <p><strong>Tamanho:</strong> {groupCallResult.grupo.tamanho} pessoas</p>
+                        <p><strong>Posição:</strong> {groupCallResult.grupo.posicao}</p>
+                        <p><strong>Intervalo:</strong> {groupCallResult.intervaloMesa}</p>
+                        <p><strong>Descrição:</strong> {groupCallResult.descricao}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.errorResult}>
+                      <h4>❌ Nenhum Grupo Encontrado</h4>
+                      <p>{groupCallResult.message}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

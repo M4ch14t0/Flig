@@ -252,6 +252,21 @@ router.post('/:queueId/chamar-proximo',
 );
 
 /**
+ * @route POST /api/queues/:queueId/chamar-grupo-mesa
+ * @desc Chamar próximo grupo adequado para mesa específica
+ * @access Estabelecimento
+ * @params { queueId } - ID da fila
+ * @body { capacidadeMesa }
+ */
+router.post('/:queueId/chamar-grupo-mesa', 
+  authenticateToken,
+  requireUserType('estabelecimento'),
+  checkPlanActive,
+  requireQueueOwnership,
+  queueController.chamarGrupoPorMesa
+);
+
+/**
  * @route POST /api/queues/:queueId/add-test-client
  * @desc Adicionar cliente de teste à fila
  * @access Estabelecimento
