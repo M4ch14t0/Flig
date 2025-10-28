@@ -195,7 +195,15 @@ function MinhasFilas() {
         console.log('   - userEmail:', userEmail);
         console.log('   - userName:', userName);
         console.log('   - Clientes na fila:', clients.map(c => ({ nome: c.nome, email: c.email })));
-        console.log('   - localStorage completo:', Object.keys(localStorage).map(key => ({ key, value: localStorage.getItem(key) })));
+        console.log('   - localStorage completo:');
+        Object.keys(localStorage).forEach(key => {
+          console.log(`     ${key}:`, localStorage.getItem(key));
+        });
+        console.log('   - Tentando buscar por diferentes chaves:');
+        console.log('     - name:', localStorage.getItem('name'));
+        console.log('     - userName:', localStorage.getItem('userName'));
+        console.log('     - user_name:', localStorage.getItem('user_name'));
+        console.log('     - nome:', localStorage.getItem('nome'));
         throw new Error('Cliente não encontrado na fila');
       }
       
