@@ -127,30 +127,60 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
     setAdvancing(true);
 
     try {
-      const response = await api.post(`/api/queues/${queueId}/advance`, {
-        clientId: clientPosition.id,
-        positions: advanceForm.positions,
-        paymentData: {
-          paymentMethod: advanceForm.paymentMethod,
-          cardData: advanceForm.cardData
-        }
+      // Simular avanço na fila localmente
+      console.log('🎯 Simulando avanço na fila localmente...');
+      
+      // Atualizar posição localmente
+      const newPosition = Math.max(1, clientPosition.position - advanceForm.positions);
+      const updatedClientPosition = {
+        ...clientPosition,
+        position: newPosition,
+        paidAdvance: true
+      };
+      
+      setClientPosition(updatedClientPosition);
+      
+      // Atualizar lista de clientes localmente
+      setClients(prevClients => 
+        prevClients.map(client => 
+          client.id === clientPosition.id 
+            ? { ...client, position: newPosition, paidAdvance: true }
+            : client
+        )
+      );
+      
+      console.log(`✅ Posição atualizada de ${clientPosition.position} para ${newPosition}`);
+      
+      // Fechar formulário
+      setShowAdvanceForm(false);
+      setAdvanceForm({
+        positions: 1,
+        paymentMethod: 'credit_card',
+        cardData: { number: '', cvv: '', expiryMonth: '', expiryYear: '', holderName: '' }
       });
-
-      if (response.data.success) {
-        setShowAdvanceForm(false);
-        setAdvanceForm({
-          positions: 1,
-          paymentMethod: 'credit_card',
-          cardData: { number: '', cvv: '', expiryMonth: '', expiryYear: '', holderName: '' }
-        });
-        await loadQueueData(); // Recarrega dados
-        if (onJoinSuccess) onJoinSuccess(response.data.data);
-      } else {
-        if (onError) onError(response.data.message);
-      }
+      
+      // Mostrar mensagem de sucesso
+      alert(`🎉 Avanço simulado! Sua nova posição é ${newPosition}ª`);
+      
+      // Redirecionar para página de pagamento do Mercado Pago (simulando)
+      const paymentUrl = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=2915256254-39ae9b33-6e81-4be4-b388-7a079801d4e6`;
+      
+      console.log('🔗 Redirecionando para página de pagamento...');
+      console.log('URL:', paymentUrl);
+      
+      // Abrir em nova aba para simular o fluxo de pagamento
+      window.open(paymentUrl, '_blank');
+      
+      // Chamar callback de sucesso
+      if (onJoinSuccess) onJoinSuccess({
+        message: 'Avanço simulado com sucesso',
+        newPosition: newPosition,
+        paymentUrl: paymentUrl
+      });
+      
     } catch (error) {
-      console.error('Erro ao avançar na fila:', error);
-      if (onError) onError(error.response?.data?.message || 'Erro ao avançar na fila');
+      console.error('Erro ao simular avanço na fila:', error);
+      if (onError) onError('Erro ao simular avanço na fila');
     } finally {
       setAdvancing(false);
     }
@@ -287,6 +317,17 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
       {showAdvanceForm && clientPosition && (
         <div className={styles.advanceForm}>
           <h3>Avançar na Fila</h3>
+          <div style={{
+            backgroundColor: '#e3f2fd',
+            border: '1px solid #2196f3',
+            borderRadius: '4px',
+            padding: '10px',
+            marginBottom: '15px',
+            fontSize: '14px',
+            color: '#1976d2'
+          }}>
+            <strong>⚠️ Modo Simulação:</strong> O avanço será simulado localmente e você será redirecionado para a página de pagamento do Mercado Pago.
+          </div>
           <form onSubmit={handleAdvanceInQueue}>
             <div className={styles.formGroup}>
               <label>Quantas posições avançar?</label>
@@ -407,7 +448,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
                 disabled={advancing}
                 className={styles.submitButton}
               >
-                {advancing ? 'Processando...' : 'Avançar na Fila'}
+                {advancing ? 'Simulando...' : 'Avançar na Fila (Simulação)'}
               </button>
             </div>
           </form>
