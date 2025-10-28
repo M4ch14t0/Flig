@@ -25,6 +25,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   const [advancing, setAdvancing] = useState(false);
   const [clientPosition, setClientPosition] = useState(null);
   const [showAdvanceForm, setShowAdvanceForm] = useState(false);
+  const [localAdvanceMode, setLocalAdvanceMode] = useState(false);
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [groupForm, setGroupForm] = useState({
     nome: '',
@@ -49,9 +50,14 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   // Carrega dados da fila
   useEffect(() => {
     loadQueueData();
-    const interval = setInterval(loadQueueData, 5000); // Atualiza a cada 5 segundos
+    const interval = setInterval(() => {
+      // Só atualiza do servidor se não estivermos em modo de avanço local
+      if (!localAdvanceMode) {
+        loadQueueData();
+      }
+    }, 5000); // Atualiza a cada 5 segundos
     return () => clearInterval(interval);
-  }, [queueId]);
+  }, [queueId, localAdvanceMode]);
 
   const loadQueueData = async () => {
     try {
@@ -125,6 +131,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   const handleAdvanceInQueue = async (e) => {
     e.preventDefault();
     setAdvancing(true);
+    setLocalAdvanceMode(true); // Ativar modo de avanço local
 
     try {
       console.log('🎯 Executando avanço real na fila localmente...');
@@ -185,6 +192,10 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
       }));
       
       // 5. Atualizar estados
+      console.log('🔄 Atualizando estados...');
+      console.log('Nova posição do cliente:', updatedClientPosition.position);
+      console.log('Clientes finais:', finalClients.map(c => `${c.nome} - Posição ${c.position}`));
+      
       setClientPosition(updatedClientPosition);
       setClients(finalClients);
       
@@ -198,6 +209,8 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
         newGroupedClients[pos].push(client);
       });
       setGroupedClients(newGroupedClients);
+      
+      console.log('✅ Estados atualizados com sucesso!');
       
       console.log('✅ Fila reorganizada com sucesso!');
       console.log('Nova posição do cliente:', newPosition);
@@ -223,6 +236,12 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
       
       // Abrir em nova aba
       window.open(paymentUrl, '_blank');
+      
+      // 10. Desativar modo local após 10 segundos (para permitir sincronização)
+      setTimeout(() => {
+        setLocalAdvanceMode(false);
+        console.log('🔄 Modo local desativado - sincronizando com servidor');
+      }, 10000);
       
       // 10. Chamar callback de sucesso
       if (onJoinSuccess) onJoinSuccess({
@@ -338,6 +357,16 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
       {/* Status da Fila */}
       <div className={`${styles.queueStatus} ${styles[queue.status]}`}>
         <span>Status: {queue.status}</span>
+        {localAdvanceMode && (
+          <span style={{ 
+            marginLeft: '10px', 
+            color: '#28a745', 
+            fontWeight: 'bold',
+            fontSize: '12px'
+          }}>
+            🔄 Modo Local Ativo
+          </span>
+        )}
       </div>
 
       {/* Posição do Cliente */}
