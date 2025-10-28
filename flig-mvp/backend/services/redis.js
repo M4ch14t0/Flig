@@ -729,7 +729,12 @@ async function advanceClientWithRental(queueId, client, positions) {
     }
     
     // Calcular posição desejada
-    const desiredPosition = Math.max(4, currentPosition - positions);
+    const desiredPosition = currentPosition - positions;
+    
+    // Verificar se a posição desejada não está nas posições bloqueadas
+    if (desiredPosition <= 3) {
+      throw new Error('❌ Posições 1, 2 e 3 são bloqueadas - não é possível avançar');
+    }
     
     // Verificar se realmente avançou
     if (desiredPosition >= currentPosition) {

@@ -170,9 +170,30 @@ function MinhasFilas() {
       console.log('Posições a avançar:', selectedPositions);
       console.log('userId:', userId);
 
+      // Buscar o cliente correto na fila
+      const userEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
+      console.log('🔍 Procurando cliente por email:', userEmail);
+      
+      // Buscar clientes da fila para encontrar o cliente correto
+      const clientsResponse = await api.get(`/api/queues/${selectedQueue.id}/clients`);
+      const clients = clientsResponse.data.data.clients;
+      
+      // Encontrar o cliente atual pelo email
+      const currentClient = clients.find(client => 
+        client.email === userEmail || client.nome === localStorage.getItem('userName')
+      );
+      
+      if (!currentClient) {
+        throw new Error('Cliente não encontrado na fila');
+      }
+      
+      console.log('✅ Cliente encontrado:', currentClient);
+      console.log('   ID na fila:', currentClient.id);
+      console.log('   Posição atual:', currentClient.position);
+
       // FLUXO ORIGINAL: Chamar API do backend
       const response = await api.post(`/api/queues/${selectedQueue.id}/advance`, {
-        clientId: userId,
+        clientId: currentClient.id, // Usar o ID correto do cliente na fila
         positions: selectedPositions
         // paymentData removido - backend vai pular validação de pagamento
       });
