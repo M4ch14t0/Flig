@@ -172,18 +172,30 @@ function MinhasFilas() {
 
       // Buscar o cliente correto na fila
       const userEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
+      const userName = localStorage.getItem('userName') || localStorage.getItem('name');
       console.log('🔍 Procurando cliente por email:', userEmail);
+      console.log('🔍 Procurando cliente por nome:', userName);
       
       // Buscar clientes da fila para encontrar o cliente correto
       const clientsResponse = await api.get(`/api/queues/${selectedQueue.id}/clients`);
-      const clients = clientsResponse.data.data.clients;
+      console.log('🔍 Resposta da API de clientes:', clientsResponse.data);
       
-      // Encontrar o cliente atual pelo email
-      const currentClient = clients.find(client => 
-        client.email === userEmail || client.nome === localStorage.getItem('userName')
-      );
+      const clients = clientsResponse.data.data.clients;
+      console.log('🔍 Clientes na fila:', clients);
+      
+      // Encontrar o cliente atual pelo email ou nome
+      const currentClient = clients.find(client => {
+        const matchEmail = client.email === userEmail;
+        const matchName = client.nome === userName;
+        console.log(`🔍 Cliente ${client.nome}: email=${client.email} (${matchEmail}), nome=${client.nome} (${matchName})`);
+        return matchEmail || matchName;
+      });
       
       if (!currentClient) {
+        console.log('❌ Cliente não encontrado. Dados disponíveis:');
+        console.log('   - userEmail:', userEmail);
+        console.log('   - userName:', userName);
+        console.log('   - Clientes na fila:', clients.map(c => ({ nome: c.nome, email: c.email })));
         throw new Error('Cliente não encontrado na fila');
       }
       
