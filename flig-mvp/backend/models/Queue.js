@@ -282,7 +282,7 @@ class Queue {
     // Buscar média real do banco de dados
     let averageWaitTime = 0;
     try {
-      const { pool } = require('../config/database');
+      const { pool } = await import('../config/database.js');
       const [rows] = await pool.execute(
         `SELECT tempo_medio_espera, total_atendidos_tempo 
          FROM filas 

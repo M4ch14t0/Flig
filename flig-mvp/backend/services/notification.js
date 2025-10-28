@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-const connection = require('../config/db');
+import connection from '../config/db.js';
 
 /**
  * Tipos de notificação disponíveis

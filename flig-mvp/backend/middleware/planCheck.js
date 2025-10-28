@@ -108,7 +108,7 @@ const checkPlanLimits = async (req, res, next) => {
 
     // Verificar limite de filas
     if (req.route.path.includes('/queues') && req.method === 'POST') {
-      const { pool } = require('../config/database');
+      const { pool } = await import('../config/database.js');
       const [rows] = await pool.execute(
         'SELECT COUNT(*) as total FROM filas WHERE estabelecimento_id = ?',
         [estabelecimentoId]
@@ -126,7 +126,7 @@ const checkPlanLimits = async (req, res, next) => {
     // Verificar limite de clientes por fila
     if (req.route.path.includes('/join-queue')) {
       const { queueId } = req.params;
-      const { pool } = require('../config/database');
+      const { pool } = await import('../config/database.js');
       const [rows] = await pool.execute(
         'SELECT COUNT(*) as total FROM historico_clientes_filas WHERE queue_id = ? AND status = "aguardando"',
         [queueId]

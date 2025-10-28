@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 class PasswordResetToken {
   constructor(data = {}) {
