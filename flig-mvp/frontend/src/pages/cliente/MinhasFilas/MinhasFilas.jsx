@@ -171,8 +171,8 @@ function MinhasFilas() {
       console.log('userId:', userId);
 
       // Buscar o cliente correto na fila
-      const userEmail = localStorage.getItem('email');
-      const userName = localStorage.getItem('name');
+      const userEmail = localStorage.getItem('userEmail_cliente');
+      const userName = localStorage.getItem('userName_cliente');
       console.log('🔍 Procurando cliente por email:', userEmail);
       console.log('🔍 Procurando cliente por nome:', userName);
       
@@ -183,7 +183,7 @@ function MinhasFilas() {
       const clients = clientsResponse.data.data.clients;
       console.log('🔍 Clientes na fila:', clients);
       
-      // Encontrar o cliente atual pelo nome (já que os clientes na fila não têm email)
+      // Encontrar o cliente atual pelo nome
       const currentClient = clients.find(client => {
         const matchName = client.nome === userName;
         console.log(`🔍 Cliente ${client.nome}: nome=${client.nome} (${matchName})`);
