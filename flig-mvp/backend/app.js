@@ -202,7 +202,7 @@ app.post('/api/auth/forgot-password-fixed', async (req, res) => {
     }
 
     // Decodificar token para obter dados do usuário
-    const jwt = require('jsonwebtoken');
+    const jwt = await import('jsonwebtoken');
     const JWT_SECRET = process.env.JWT_SECRET || 'seu_jwt_secret_super_seguro_aqui_123456789';
     const decoded = jwt.verify(token, JWT_SECRET);
     const { userId, userType, email } = decoded;
@@ -210,12 +210,12 @@ app.post('/api/auth/forgot-password-fixed', async (req, res) => {
     console.log('🔍 [FIXED] Usuário autenticado:', { userId, userType, email });
 
     // Gerar token de recuperação
-    const crypto = require('crypto');
+    const crypto = await import('crypto');
     const resetToken = crypto.randomBytes(32).toString('hex');
     const expireTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
 
     // Salvar token no banco de dados
-    const connection = require('./config/db');
+    const connection = await import('./config/db.js');
     
     if (userType === 'cliente') {
       await new Promise((resolve, reject) => {
@@ -249,7 +249,7 @@ app.post('/api/auth/forgot-password-fixed', async (req, res) => {
         console.log('📧 [FIXED] Enviando email em background...');
         
         // Tentar enviar email
-        const emailService = require('./services/emailService');
+        const emailService = await import('./services/emailService.js');
         const userName = userType === 'cliente' ? 'Cliente' : 'Estabelecimento';
         
         const emailSent = await emailService.sendPasswordResetEmail(email, resetToken, userName);
@@ -324,7 +324,7 @@ app.get("/api/estabelecimentos/:id/filas", async (req, res) => {
     });
 
     // Para cada fila, buscar o número de clientes no Redis
-    const redisService = require('./services/redis');
+    const redisService = await import('./services/redis.js');
     const filasComStats = await Promise.all(
       filas.map(async (fila) => {
         try {
@@ -542,7 +542,7 @@ app.get("/api/estabelecimentos/:id/estatisticas", queueLimiter, async (req, res)
     });
 
     // Buscar clientes atuais nas filas ativas do Redis
-    const redisService = require('./services/redis');
+    const redisService = await import('./services/redis.js');
     let clientesAtuais = 0;
     
     try {

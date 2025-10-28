@@ -34,7 +34,7 @@ class TempoEsperaService {
       const tempoEntradaMySQLFormat = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
       
       // Buscar dados do cliente no Redis para obter posição real
-      const redisService = require('./redis');
+      const redisService = await import('./redis.js');
       const clients = await redisService.getQueueClients(queueId);
       const clientPosition = clients.find(c => c.email === email)?.position || 1;
       

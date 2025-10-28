@@ -235,7 +235,7 @@ class AutoCallService {
       
       // Registrar tempo de atendimento
       try {
-        const TempoEsperaService = require('./tempoEsperaService');
+        const TempoEsperaService = await import('./tempoEsperaService.js');
         await TempoEsperaService.registrarAtendimento(
           proximoCliente.id || `client-${Date.now()}`,
           queueId,

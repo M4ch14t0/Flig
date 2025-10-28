@@ -80,7 +80,7 @@ class SessionManager {
   async validateSession(token) {
     try {
       // Verificar se token está na blacklist
-      const tokenBlacklist = require('./tokenBlacklist');
+      const tokenBlacklist = await import('./tokenBlacklist.js');
       if (await tokenBlacklist.isBlacklisted(token)) {
         throw new Error('Token inválido');
       }
@@ -167,7 +167,7 @@ class SessionManager {
       });
 
       // Adicionar token à blacklist
-      const tokenBlacklist = require('./tokenBlacklist');
+      const tokenBlacklist = await import('./tokenBlacklist.js');
       await tokenBlacklist.addToBlacklist(token);
 
       console.log('🔄 Sessão invalidada');
