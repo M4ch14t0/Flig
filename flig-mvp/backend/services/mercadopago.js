@@ -284,9 +284,9 @@ class MercadoPagoService {
           }
         },
         back_urls: {
-          success: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/cliente/minhas-filas`,
-          failure: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/cliente/minhas-filas`,
-          pending: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/cliente/minhas-filas`
+          success: `${process.env.FRONTEND_URL }/cliente/minhas-filas`,
+          failure: `${process.env.FRONTEND_URL }/cliente/minhas-filas`,
+          pending: `${process.env.FRONTEND_URL }/cliente/minhas-filas`
         },
         external_reference: `subscription-${planId}-${Date.now()}`,
         notification_url: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/payments/webhooks/mercadopago`
