@@ -12,6 +12,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/authContextImports.js';
 import { api } from '../services/api';
 import { Users, Clock, MapPin, Phone, Mail, CreditCard, ArrowUp } from 'lucide-react';
+import MercadoPagoButton from './MercadoPagoButton';
 import styles from './QueueComponent.module.css';
 
 export default function QueueComponent({ queueId, establishmentId, onJoinSuccess, onError }) {
@@ -26,6 +27,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   const [clientPosition, setClientPosition] = useState(null);
   const [showAdvanceForm, setShowAdvanceForm] = useState(false);
   const [showGroupForm, setShowGroupForm] = useState(false);
+  const [showPaymentButton, setShowPaymentButton] = useState(false);
   const [groupForm, setGroupForm] = useState({
     nome: '',
     telefone: '',
@@ -169,6 +171,9 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
 
         // Mostrar mensagem de sucesso
         alert(`🎉 Avanço realizado! Sua nova posição é ${newPosition}ª`);
+
+        // Mostrar botão do Mercado Pago
+        setShowPaymentButton(true);
 
         // Recarregar dados da fila para sincronizar
         loadQueueData();
@@ -621,6 +626,35 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
           </div>
         )}
       </div>
+
+      {/* Botão do Mercado Pago */}
+      {showPaymentButton && (
+        <div style={{
+          marginTop: '20px',
+          padding: '20px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '8px',
+          border: '1px solid #e9ecef'
+        }}>
+          <h3 style={{ marginBottom: '15px', color: '#333' }}>💳 Finalizar Pagamento</h3>
+          <p style={{ marginBottom: '15px', color: '#666' }}>
+            Seu avanço foi processado! Agora você pode finalizar o pagamento.
+          </p>
+          <MercadoPagoButton
+            queueId={queueId}
+            clientId={clientPosition?.id}
+            positions={1}
+            amount={queue?.valor_avancos || 10}
+            onSuccess={() => {
+              setShowPaymentButton(false);
+              loadQueueData();
+            }}
+            onError={(error) => {
+              console.error('Erro no pagamento:', error);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

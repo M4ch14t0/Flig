@@ -246,9 +246,11 @@ function MinhasFilas() {
         // Mostrar mensagem de sucesso
         alert(`🎉 Avanço realizado! Sua nova posição é ${newPosition}ª`);
 
-        // Fechar popup e recarregar dados
+        // Mostrar botão do Mercado Pago
+        setShowPaymentButton(true);
+
+        // Fechar popup de avanço
         closeAdvancePopup();
-        fetchUserQueues(); // Recarrega as filas para sincronizar
 
       } else {
         throw new Error(response.data.message || 'Erro ao avançar na fila');
