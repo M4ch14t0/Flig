@@ -171,8 +171,8 @@ function MinhasFilas() {
       console.log('userId:', userId);
 
       // Buscar o cliente correto na fila
-      const userEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
-      const userName = localStorage.getItem('userName') || localStorage.getItem('name');
+      const userEmail = localStorage.getItem('email');
+      const userName = localStorage.getItem('name');
       console.log('🔍 Procurando cliente por email:', userEmail);
       console.log('🔍 Procurando cliente por nome:', userName);
       
@@ -183,12 +183,11 @@ function MinhasFilas() {
       const clients = clientsResponse.data.data.clients;
       console.log('🔍 Clientes na fila:', clients);
       
-      // Encontrar o cliente atual pelo email ou nome
+      // Encontrar o cliente atual pelo nome (já que os clientes na fila não têm email)
       const currentClient = clients.find(client => {
-        const matchEmail = client.email === userEmail;
         const matchName = client.nome === userName;
-        console.log(`🔍 Cliente ${client.nome}: email=${client.email} (${matchEmail}), nome=${client.nome} (${matchName})`);
-        return matchEmail || matchName;
+        console.log(`🔍 Cliente ${client.nome}: nome=${client.nome} (${matchName})`);
+        return matchName;
       });
       
       if (!currentClient) {
@@ -196,6 +195,7 @@ function MinhasFilas() {
         console.log('   - userEmail:', userEmail);
         console.log('   - userName:', userName);
         console.log('   - Clientes na fila:', clients.map(c => ({ nome: c.nome, email: c.email })));
+        console.log('   - localStorage completo:', Object.keys(localStorage).map(key => ({ key, value: localStorage.getItem(key) })));
         throw new Error('Cliente não encontrado na fila');
       }
       
