@@ -79,31 +79,7 @@ export default function Layout({
         <header className={styles.header}>
           {/* Logo clicável que leva para página inicial */}
           <div className={styles.logo} onClick={handleHomeClick}>
-            <img src="/assets/logos/flig-logo.svg" alt="Flig" className={styles.logoImg} />
-          </div>
-
-          {/* Área direita do header com ícones e menu */}
-          <div className={styles.headerRight}>
-            {/* Link para FAQ */}
-            <Link to="/faq" className={styles.helpIcon} aria-label="FAQ">
-              <HelpCircle size={20} />
-            </Link>
-
-
-            {/* Menu do usuário com dropdown */}
-            <div className={styles.userIconWrapper}>
-              {/* Botão do usuário que abre dropdown */}
-              <button className={styles.userIcon} onClick={handleProfileClick}>
-                <User size={20} />
-              </button>
-
-              {/* Dropdown com opções do usuário */}
-              <div className={styles.userPopup}>
-                <p onClick={handleProfileClick}><User size={16} /> <u>Perfil</u></p> {/* Acessar perfil */}
-                <p onClick={handleSettingsClick}><Settings size={16} /> <u>Configurações</u></p> {/* Acessar configurações */}
-                <p onClick={handleLogout}><LogOut size={16} /> <u>Sair</u></p> {/* Fazer logout */}
-              </div>
-            </div>
+            <img src="/assets/logos/flig-logo.png" alt="Flig" className={styles.logoImg} />
           </div>
         </header>
       )}
@@ -133,6 +109,32 @@ export default function Layout({
                 </Link>
               ))}
             </nav>
+
+            {/* Botões da sidebar (embaixo dos links) */}
+            <div className={styles.sidebarButtons}>
+              {/* Botões em linha: FAQ e Menu do usuário */}
+              <div className={styles.sidebarButtonRow}>
+                {/* Link para FAQ */}
+                <Link to="/faq" className={styles.sidebarButton} aria-label="FAQ">
+                  <HelpCircle size={18} />
+                </Link>
+
+                {/* Menu do usuário com dropdown */}
+                <div className={styles.sidebarUserWrapper}>
+                  {/* Botão do usuário que abre dropdown */}
+                  <button className={styles.sidebarButton} aria-label="Menu do usuário">
+                    <User size={18} />
+                  </button>
+
+                  {/* Dropdown com opções do usuário */}
+                  <div className={styles.sidebarUserPopup}>
+                    <p onClick={handleProfileClick}><User size={16} /> <u>Perfil</u></p> {/* Acessar perfil */}
+                    <p onClick={handleSettingsClick}><Settings size={16} /> <u>Configurações</u></p> {/* Acessar configurações */}
+                    <p onClick={handleLogout}><LogOut size={16} /> <u>Sair</u></p> {/* Fazer logout */}
+                  </div>
+                </div>
+              </div>
+            </div>
           </aside>
         )}
 
@@ -152,7 +154,7 @@ export default function Layout({
           <div className={styles.footerContainer}>
             {/* Coluna 1: Logo e informações de contato */}
             <div className={styles.footerColumn}>
-              <img src="/assets/logos/flig-logo.svg" alt="Logo Flig" style={{ width: '95px' }} />
+              <img src="/assets/logos/flig-logo.png" alt="Logo Flig" style={{ width: '95px' }} />
               <p><strong>FligPTI@gmail.com</strong></p>
               <div>
                 {/* Redes sociais */}

@@ -253,7 +253,7 @@ function MinhasFilas() {
               <div key={fila.id} className={styles.filaCard}>
                 {/* Área da Imagem */}
                 <div className={styles.filaImageArea}>
-                  Imagem da Fila
+                  <img src={fila.imagem_estabelecimento} alt={fila.estabelecimento_nome} />
                 </div>
 
                 {/* Informações da Fila */}
@@ -273,9 +273,7 @@ function MinhasFilas() {
 
                 {/* Botões de Ação */}
                 <div className={styles.actionButtons}>
-                  <button onClick={() => handleViewQueue(fila)} className={styles.viewBtn}>
-                    Ver Fila <Users size={14} />
-                  </button>
+                  
 
                   <button onClick={() => handleLeaveQueue(fila.id)} className={styles.sairBtn}>
                     Sair <LogOut size={14} />

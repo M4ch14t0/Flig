@@ -1,32 +1,47 @@
+/* ===== Import Poppins ===== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ===== Reset / fonte global para este módulo ===== */
+:global(*) {
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+
+/* ===== Container principal ===== */
 .empresa-cadastro-container {
   display: flex;
   height: 100vh;
-  font-family: sans-serif;
+  color: #fff;
 }
 
-/* Lado esquerdo */
+/* ===== LADO ESQUERDO (logo / ajuda) ===== */
 .empresa-cadastro-left {
   width: 50%;
   background-color: #0A2A5D;
-  color: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   position: relative;
+  padding: 2rem;
 }
 
 .empresa-cadastro-logo {
   text-align: center;
+  margin-bottom: 0.5rem;
 }
 
 .empresa-cadastro-logo-img {
-  width: 160px;
-  margin-bottom: 0.5rem;
+  width: 180px;
+  height: auto;
+  display: block;
+  margin: 0 auto 0.6rem;
 }
 
 .empresa-cadastro-slogan {
   font-size: 0.9rem;
+  margin-top: 0.2rem;
+  color: #fff;
 }
 
 .empresa-cadastro-help {
@@ -34,137 +49,232 @@
   bottom: 2rem;
   left: 2rem;
   font-size: 0.9rem;
-  line-height: 1.5;
+  line-height: 1.6;
+}
+
+.empresa-cadastro-help p {
+  margin: 0.2rem 0;
 }
 
 .empresa-cadastro-help a {
-  color: white;
+  color: #fff;
   text-decoration: none;
 }
 
-/* Lado direito */
+.empresa-cadastro-help a:hover {
+  text-decoration: underline;
+}
+
+/* ===== LADO DIREITO (form) ===== */
 .empresa-cadastro-right {
   width: 50%;
   background-color: #000;
-  color: white;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2rem;
+  padding: 2rem 3rem;
+  box-sizing: border-box;
 }
 
+/* botão voltar no topo direito */
 .empresa-cadastro-back-button {
-  align-self: flex-end;
   background: none;
   border: none;
-  color: white;
-  font-size: 1rem;
+  color: #fff;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
+  align-self: flex-end;
+  margin-bottom: 0.5rem;
+  padding: 0;
+}
+.empresa-cadastro-back-button:hover {
+  color: #ebda6b;
 }
 
-/* Formulário */
+/* ===== FORMULÁRIO ===== */
 .empresa-cadastro-form {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  margin-top: 1rem;
+  width: 100%;
+  gap: 0.8rem;
+  margin-top: 0.6rem;
 }
 
+/* título */
 .empresa-cadastro-form h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 0 0.4rem 0;
+  color: #fff;
 }
 
+/* erro geral */
+.empresa-cadastro-error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+  text-align: center;
+  width: 100%;
+  max-width: 520px;
+}
+
+/* inputs padrão */
 .empresa-cadastro-input {
   width: 100%;
-  max-width: 450px;
-  padding: 0.6rem;
-  font-size: 1rem;
-  border-radius: 4px;
+  max-width: 520px;
+  padding: 0.75rem 0.85rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
   border: none;
-  box-sizing: border-box;
-  height: 40px;
+  background-color: #fff;
+  color: #000;
+  outline: none;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.06) inset;
 }
 
-/* Linhas com dois campos */
+/* placeholder escuro para contraste */
+.empresa-cadastro-input::placeholder {
+  color: #666;
+}
+
+/* quando houver erro específico (usa .erro do JSX) */
+.erro {
+  color: #ff6b6b;
+  font-size: 0.82rem;
+  margin-top: 0.35rem;
+  align-self: flex-start;
+  max-width: 520px;
+}
+
+/* ===== LINHAS COM DOIS CAMPOS ===== */
 .empresa-cadastro-row {
   display: flex;
-  gap: 1rem;
+  gap: 0.8rem;
   width: 100%;
-  max-width: 450px;
+  max-width: 520px;
 }
 
-/* Inputs de linha dupla */
+/* inputs da linha — manter consistência visual com .empresa-cadastro-input */
 .input-numero,
 .input-bairro,
 .input-cidade,
 .input-uf {
-  padding: 0.6rem;
-  font-size: 1rem;
-  border-radius: 4px;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
   border: none;
-  box-sizing: border-box;
+  background-color: #fff;
+  color: #000;
+  outline: none;
   height: 40px;
+  box-sizing: border-box;
 }
 
-/* Flex ratio para inputs de linha */
-.input-numero {
-  flex: 1;
-  min-width: 80px;
-}
-
-.input-bairro {
-  flex: 2;
-}
-
-.input-cidade {
-  flex: 2;
-}
-
+/* proporções */
+.input-numero { flex: 1; min-width: 80px; }
+.input-bairro { flex: 2; }
+.input-cidade { flex: 2; }
 .input-uf {
   flex: 1;
-  min-width: 80px;
-}
-
-/* Mensagem de erro */
-.empresa-cadastro-error {
-  color: #ff6b6b;
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
+  min-width: 60px;
+  text-transform: uppercase;
   text-align: center;
 }
 
+/* ===== LINK DE LOGIN ===== */
 .empresa-cadastro-login {
   font-size: 0.9rem;
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
+  width: 100%;
+  max-width: 520px;
+  text-align: left;
 }
 
 .empresa-cadastro-login a {
-  color: white;
+  color: #ebda6b;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.empresa-cadastro-login a:hover {
   text-decoration: underline;
 }
 
+/* ===== BOTÃO PRINCIPAL ===== */
 .empresa-cadastro-button {
-  margin-top: 1rem;
-  padding: 0.6rem 2rem;
-  background: transparent;
-  color: white;
-  border: 1px solid white;
-  border-radius: 20px;
+  margin-top: 0.6rem;
+  padding: 0.8rem 2.4rem;
+  background-color: #ebda6b;
+  color: #000;
+  border: none;
+  border-radius: 28px;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.3s;
+  transition: background 0.18s ease, transform 0.06s ease;
+  align-self: center;
 }
 
-.empresa-cadastro-button:hover {
-  background-color: white;
-  color: black;
-}
+.empresa-cadastro-button:hover { background-color: #b9ac57; }
+.empresa-cadastro-button:active { transform: translateY(1px); }
+.empresa-cadastro-button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* Rodapé */
+/* ===== RODAPÉ ===== */
 .empresa-cadastro-footer {
   font-size: 0.75rem;
   text-align: center;
-  border-top: 1px solid #444;
+  border-top: 1px solid #333;
   padding-top: 1rem;
+  color: #aaa;
+  width: 100%;
+}
+
+/* ===== FOCO e ACESSIBILIDADE ===== */
+.empresa-cadastro-input:focus,
+.input-numero:focus,
+.input-bairro:focus,
+.input-cidade:focus,
+.input-uf:focus {
+  box-shadow: 0 0 0 4px rgba(217,255,63,0.08);
+  outline: none;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 900px) {
+  .empresa-cadastro-container {
+    flex-direction: column;
+    height: auto;
+  }
+  .empresa-cadastro-left,
+  .empresa-cadastro-right {
+    width: 100%;
+    padding: 1.25rem;
+  }
+  .empresa-cadastro-left {
+    order: 1;
+    min-height: 220px;
+    justify-content: center;
+  }
+  .empresa-cadastro-right { order: 2; }
+  .empresa-cadastro-form,
+  .empresa-cadastro-input,
+  .empresa-cadastro-row,
+  .input-numero,
+  .input-bairro,
+  .input-cidade,
+  .input-uf {
+    max-width: 100%;
+    width: 100%;
+  }
+  .empresa-cadastro-help {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    margin-top: 1rem;
+  }
 }

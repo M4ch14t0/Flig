@@ -448,11 +448,12 @@ export default function ContaE() {
             </button>
             <p>Se você não deseja mais utilizar a Flig, pode solicitar a exclusão permanente de sua conta.</p>
           </div>
-          <div className={`${styles['contaE-card']} ${styles['contaE-terms']}`}>
+          <div className={`${styles['contaE-terms']}`}>
             <h3>Termos de serviço</h3>
             <p>Ao utilizar a Flig, você concorda com nossos Termos de Serviço. Recomendamos a leitura para entender melhor suas responsabilidades e direitos ao usar a plataforma.</p>
           </div>
         </div>
+        
         </main>
       </div>
     </Layout>

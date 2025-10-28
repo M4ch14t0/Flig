@@ -39,7 +39,7 @@ export default function EstHome() {
           Bem-vindo a 
         </h1>
         <img 
-          src="/assets/logos/logo2-flig.png" 
+          src="/assets/logos/flig-logo.png" 
           alt="Flig" 
           className={styles.logo}
           onError={(e) => {

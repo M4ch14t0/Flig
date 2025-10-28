@@ -82,6 +82,9 @@
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
+.contaE-form-box h2{
+  color: #ebda6b;
+}
 .contaE-back {
   background: none;
   color: white;
@@ -253,6 +256,7 @@
   margin-top: 0.5rem;
 }
 
+
 @media (max-width: 768px) {
   .contaE-layout {
     flex-direction: column;
@@ -293,6 +297,7 @@
   }
 }
 
+
 /* Cartões */
 .contaE-card {
   background-color: var(--form-bg) !important;
@@ -310,7 +315,7 @@
 .contaE-card h3 {
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
-  color: var(--text-primary) !important;
+  color: #ebda6b;
   transition: color 0.3s ease;
 }
 
@@ -614,4 +619,34 @@
 
 .contaE-container textarea::placeholder {
   color: var(--text-secondary);
+}
+
+/* Estilo para o card de termos de serviço */
+.contaE-terms {
+  background-color: var(--form-bg) !important;
+  padding: 1.5rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--form-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  grid-column: 1 / -1; /* Ocupa todas as colunas do grid */
+}
+
+.contaE-terms h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary) !important;
+  transition: color 0.3s ease;
+}
+
+.contaE-terms p {
+  font-size: 0.85rem;
+  color: var(--text-secondary) !important;
+  line-height: 1.4;
+  transition: color 0.3s ease;
 }

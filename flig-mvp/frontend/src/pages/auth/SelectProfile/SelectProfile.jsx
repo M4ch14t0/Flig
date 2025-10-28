@@ -39,7 +39,7 @@ export default function SelectProfile() {
 
       <div className="select-right">
         <div className="select-logo">
-          <img src="/assets/logos/flig-logo.svg" alt="Flig logo" className="select-logo-img" />
+          <img src="/assets/logos/flig-logo.png" alt="Flig logo" className="select-logo-img" />
           <p className="select-slogan">Soluções de Agilidade</p>
         </div>
 

@@ -97,8 +97,8 @@
   font-size: 1rem;
   cursor: pointer;
   font-weight: 600;
-  background: var(--btn-bg, linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%));
-  color: var(--text-primary, white);
+  background: #ebda6b;
+  color: #000000;
   transition: all 0.3s ease;
   width: 100%;
   backdrop-filter: blur(10px);

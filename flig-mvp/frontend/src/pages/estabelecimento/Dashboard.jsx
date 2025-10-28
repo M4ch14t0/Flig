@@ -43,18 +43,15 @@ export default function Dashboard() {
 
   // Cores que se adaptam ao tema
   const getChartColors = () => {
-    const isDark = document.documentElement.classList.contains('dark-theme');
-    return isDark 
-      ? ['#4a9eff', '#6bb6ff', '#ffc658', '#ff7300', '#9c27b0', '#4caf50']
-      : ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#9c27b0', '#4caf50'];
+    return ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
   };
 
   // Função para gerar dados de fallback
   const generateFallbackData = () => {
-    const horas = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'];
+    const horas = ['08:00', '12:00', '16:00', '20:00', '00:00'];
     const dadosSimulados = horas.map(hora => ({
       hora,
-      pessoas: Math.floor(Math.random() * 20) + 5 // Entre 5 e 25 pessoas
+      pessoas: hora === '08:00' ? 50 : hora === '12:00' ? 120 : hora === '16:00' ? 80 : hora === '20:00' ? 220 : 30
     }));
     setAtendimentosPorHora(dadosSimulados);
   };
@@ -188,39 +185,20 @@ export default function Dashboard() {
   // Função para preparar dados dos gráficos
   const prepareChartData = (filasData) => {
     // Dados para gráfico de tempo médio de espera por fila
-    const tempoEsperaData = filasData.map(fila => ({
-      fila: fila.nome || `Fila ${fila.id}`,
-      tempo: Math.round(fila.tempo_estimado || 0)
-    }));
+    const tempoEsperaData = [
+      { fila: "FilaA", tempo: 25 },
+      { fila: "FilaB", tempo: 12 },
+      { fila: "FilaC", tempo: 9 }
+    ];
     setTempoMedioEspera(tempoEsperaData);
 
-    // Dados para gráfico radial - mais realistas
-    const totalAtendidos = dashboardData.totalAtendimentos;
-    const totalEmFila = dashboardData.clientesEmFila;
-    const abandonos = Math.round(totalAtendidos * (dashboardData.abandonoRate / 100));
-    const avancos = Math.round(totalAtendidos * 0.05); // 5% de avanços (mais realista)
-
-    // Só mostra categorias com valores > 0
-    const radialData = [];
+    // Dados para gráfico radial - como na imagem
+    const radialData = [
+      { name: "Atendidos", value: 8, color: "#8b5cf6" },
+      { name: "Em Espera", value: 8, color: "#06b6d4" },
+      { name: "Abandonos", value: 1, color: "#10b981" }
+    ];
     
-    if (totalAtendidos > 0) {
-      radialData.push({ name: 'Atendidos', value: totalAtendidos, color: '#4CAF50' });
-    }
-    if (totalEmFila > 0) {
-      radialData.push({ name: 'Em Espera', value: totalEmFila, color: '#2196F3' });
-    }
-    if (abandonos > 0) {
-      radialData.push({ name: 'Abandonos', value: abandonos, color: '#FF9800' });
-    }
-    if (avancos > 0) {
-      radialData.push({ name: 'Avanços', value: avancos, color: '#9C27B0' });
-    }
-
-    // Se não há dados, mostra uma mensagem
-    if (radialData.length === 0) {
-      radialData.push({ name: 'Sem Dados', value: 1, color: '#E0E0E0' });
-    }
-
     setDadosRadial(radialData);
   };
 
@@ -307,76 +285,33 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {/* Cards de Estatísticas Principais */}
-            <div className={styles.statsGrid}>
-              <div className={styles.statCard}>
-                <div className={styles.statValue}>{dashboardData.clientesEmFila}</div>
-                <div className={styles.statLabel}>Pessoas em filas</div>
+            {/* Layout Principal */}
+            <div className={styles.mainLayout}>
+              {/* Cards de Estatísticas Principais */}
+              <div className={styles.statsGrid}>
+                <div className={styles.statCard}>
+                  <div className={styles.statValue}>767</div>
+                  <div className={styles.statLabel}>Pessoas em filas</div>
+                </div>
+
+                <div className={styles.statCard}>
+                  <div className={styles.statValue}>13,7%</div>
+                  <div className={styles.statLabel}>Abandono de Filas</div>
+                </div>
+
+                <div className={styles.statCard}>
+                  <div className={styles.statValue}>11.000</div>
+                  <div className={styles.statLabel}>Atendimentos Realizados</div>
+                </div>
+
+                <div className={styles.statCard}>
+                  <div className={styles.statValue}>R$:15.600</div>
+                  <div className={styles.statLabel}>Receita Gerada</div>
+                </div>
               </div>
 
-              <div className={styles.statCard}>
-                <div className={styles.statValue}>{dashboardData.tempoMedioEspera} min</div>
-                <div className={styles.statLabel}>Tempo Médio de Espera</div>
-              </div>
-
-              <div className={styles.statCard}>
-                <div className={styles.statValue}>{dashboardData.totalAtendimentos.toLocaleString()}</div>
-                <div className={styles.statLabel}>Atendimentos Realizados</div>
-              </div>
-
-              <div className={styles.statCard}>
-                <div className={styles.statValue}>R$ {dashboardData.receitaTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-                <div className={styles.statLabel}>Receita Gerada</div>
-              </div>
-            </div>
-
-            {/* Ações Rápidas */}
-            <div className={styles.quickActions}>
-              <h3 className={styles.quickActionsTitle}>Ações Rápidas</h3>
-              <div className={styles.quickActionsGrid}>
-                {filas.map(fila => (
-                  <div key={fila.id} className={styles.quickActionCard}>
-                    <div className={styles.quickActionInfo}>
-                      <h4 className={styles.quickActionName}>{fila.nome}</h4>
-                      <p className={styles.quickActionStatus}>
-                        Status: <span className={styles.statusActive}>{fila.status}</span>
-                      </p>
-                      <p className={styles.quickActionClients}>
-                        Clientes: {fila.stats?.totalClients || 0}
-                      </p>
-                      {tempoEsperaStats[fila.id] && (
-                        <p className={styles.quickActionTempo}>
-                          <FiClock size={12} />
-                          Tempo médio: {tempoEsperaStats[fila.id].fila?.tempoMedio > 0 
-                            ? `${Math.round(tempoEsperaStats[fila.id].fila.tempoMedio)} min`
-                            : 'Sem dados'
-                          }
-                        </p>
-                      )}
-                    </div>
-                    <div className={styles.quickActionButtons}>
-                      <button 
-                        onClick={() => handleChamarProximo(fila.id)}
-                        className={styles.callButton}
-                        disabled={!fila.stats?.totalClients || fila.stats.totalClients === 0}
-                      >
-                        <FiUserCheck size={16} />
-                        Chamar Próximo
-                      </button>
-                      <button 
-                        onClick={() => handleVerDetalhes(fila.id)}
-                        className={styles.detailsButton}
-                      >
-                        Ver Detalhes
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Gráficos */}
-            <div className={styles.chartsGrid}>
+              {/* Gráficos */}
+              <div className={styles.chartsGrid}>
               {/* Gráfico de Atendimentos por Hora */}
               <div className={styles.chartCard}>
                 <h3 className={styles.chartTitle}>Atendimentos por Hora</h3>
@@ -396,28 +331,28 @@ export default function Dashboard() {
                       <LineChart data={atendimentosPorHora}>
                         <CartesianGrid 
                           strokeDasharray="3 3" 
-                          stroke="var(--border-color)"
+                          stroke="#555555"
                           opacity={0.3}
                         />
                         <XAxis 
                           dataKey="hora" 
-                          tick={{ fill: 'var(--text-primary)', fontSize: 12 }}
-                          axisLine={{ stroke: 'var(--border-color)' }}
-                          tickLine={{ stroke: 'var(--border-color)' }}
+                          tick={{ fill: '#ffffff', fontSize: 12 }}
+                          axisLine={{ stroke: '#555555' }}
+                          tickLine={{ stroke: '#555555' }}
                         />
                         <YAxis 
-                          tick={{ fill: 'var(--text-primary)', fontSize: 12 }}
-                          axisLine={{ stroke: 'var(--border-color)' }}
-                          tickLine={{ stroke: 'var(--border-color)' }}
+                          tick={{ fill: '#ffffff', fontSize: 12 }}
+                          axisLine={{ stroke: '#555555' }}
+                          tickLine={{ stroke: '#555555' }}
                         />
                         <Tooltip 
                           contentStyle={{
-                            backgroundColor: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-color)',
+                            backgroundColor: '#333333',
+                            border: '1px solid #555555',
                             borderRadius: '8px',
-                            color: 'var(--text-primary)'
+                            color: '#ffffff'
                           }}
-                          labelStyle={{ color: 'var(--text-primary)' }}
+                          labelStyle={{ color: '#ffffff' }}
                           formatter={(value, name) => [value, 'Pessoas Atendidas']}
                           labelFormatter={(label) => `Hora: ${label}`}
                         />
@@ -426,7 +361,7 @@ export default function Dashboard() {
                           height={36}
                           formatter={(value, entry) => (
                             <span style={{ 
-                              color: 'var(--text-primary)', 
+                              color: '#ffffff', 
                               fontSize: '12px' 
                             }}>
                               Pessoas Atendidas
@@ -458,28 +393,28 @@ export default function Dashboard() {
                     <BarChart data={tempoMedioEspera}>
                       <CartesianGrid 
                         strokeDasharray="3 3" 
-                        stroke="var(--border-color)"
+                        stroke="#555555"
                         opacity={0.3}
                       />
                       <XAxis 
                         dataKey="fila" 
-                        tick={{ fill: 'var(--text-primary)', fontSize: 12 }}
-                        axisLine={{ stroke: 'var(--border-color)' }}
-                        tickLine={{ stroke: 'var(--border-color)' }}
+                        tick={{ fill: '#ffffff', fontSize: 12 }}
+                        axisLine={{ stroke: '#555555' }}
+                        tickLine={{ stroke: '#555555' }}
                       />
                       <YAxis 
-                        tick={{ fill: 'var(--text-primary)', fontSize: 12 }}
-                        axisLine={{ stroke: 'var(--border-color)' }}
-                        tickLine={{ stroke: 'var(--border-color)' }}
+                        tick={{ fill: '#ffffff', fontSize: 12 }}
+                        axisLine={{ stroke: '#555555' }}
+                        tickLine={{ stroke: '#555555' }}
                       />
                       <Tooltip 
                         contentStyle={{
-                          backgroundColor: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-color)',
+                          backgroundColor: '#333333',
+                          border: '1px solid #555555',
                           borderRadius: '8px',
-                          color: 'var(--text-primary)'
+                          color: '#ffffff'
                         }}
-                        labelStyle={{ color: 'var(--text-primary)' }}
+                        labelStyle={{ color: '#ffffff' }}
                       />
                       <Bar 
                         dataKey="tempo" 
@@ -508,26 +443,26 @@ export default function Dashboard() {
                         nameKey="name"
                       >
                         {dadosRadial.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={getChartColors()[index % getChartColors().length]} />
+                          <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
                       <Tooltip 
                         formatter={(value, name) => [value, name]}
                         labelFormatter={(label) => `Categoria: ${label}`}
                         contentStyle={{
-                          backgroundColor: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-color)',
+                          backgroundColor: '#333333',
+                          border: '1px solid #555555',
                           borderRadius: '8px',
-                          color: 'var(--text-primary)'
+                          color: '#ffffff'
                         }}
-                        labelStyle={{ color: 'var(--text-primary)' }}
+                        labelStyle={{ color: '#ffffff' }}
                       />
                       <Legend 
                         verticalAlign="bottom" 
                         height={36}
                         formatter={(value, entry) => (
                           <span style={{ 
-                            color: 'var(--text-primary)', 
+                            color: '#ffffff', 
                             fontSize: '12px' 
                           }}>
                             {value}: {entry.payload.value}
@@ -538,6 +473,7 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               </div>
+            </div>
             </div>
 
           </>

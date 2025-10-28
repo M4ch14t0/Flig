@@ -1,4 +1,87 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
 /* Container principal */
+.empresa-login-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Lado esquerdo */
+.empresa-login-left {
+  width: 50%;
+  background-color: #000;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2rem;
+  position: relative;
+}
+
+.empresa-login-back-button {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.empresa-login-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.empresa-login-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.empresa-login-label {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  text-align: left;
+  width: 100%;
+  max-width: 300px;
+}
+
+.empresa-login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Campos */
+.empresa-login-input {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: none;
+  margin-bottom: 0.6rem;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #000;
+}
+
+.empresa-login-input::placeholder {
+  color: #7a7a7a;
+}/* Container principal */
 .empresa-login-container {
   display: flex;
   height: 100vh;
@@ -168,7 +251,7 @@
 /* Lado direito */
 .empresa-login-right {
   width: 50%;
-  background-color: #0A2A5D;
+  background-color: #152e60;
   color: white;
   display: flex;
   flex-direction: column;
@@ -188,4 +271,95 @@
 
 .empresa-login-slogan {
   font-size: 0.9rem;
+}
+
+
+/* Links */
+.empresa-login-link {
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+.empresa-login-link a {
+  color: #ebda6b; /* amarelo-esverdeado igual ao botão */
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.empresa-login-link a:hover {
+  text-decoration: underline;
+}
+
+/* Botão */
+.empresa-login-button {
+  margin-top: 1rem;
+  padding: 0.6rem 2rem;
+  background-color: #ebda6b;
+  color: #000;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.empresa-login-button:hover:not(:disabled) {
+  background-color: #b9ac57;
+}
+
+.empresa-login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Rodapé */
+.empresa-login-footer {
+  font-size: 0.7rem;
+  text-align: center;
+  border-top: 1px solid #444;
+  padding-top: 1rem;
+}
+
+/* Lado direito */
+.empresa-login-right {
+  width: 50%;
+  background-color: #152e60; /* azul escuro */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.empresa-login-logo-img {
+  width: 200px;
+  margin-bottom: 0.5rem;
+}
+
+.empresa-login-slogan {
+  font-size: 0.9rem;
+}
+
+.empresa-login-help {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.empresa-login-help a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.empresa-login-faq,
+.empresa-login-suporte,
+.empresa-login-contato {
+  display: block;
+  padding: 3px 0;
+  font-weight: 600;
 }

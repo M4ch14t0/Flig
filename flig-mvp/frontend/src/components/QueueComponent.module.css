@@ -5,22 +5,23 @@
   margin: 0 auto;
   padding: 20px;
   background: #fff;
+  border: 1px solid #ddd;
   border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .queueHeader {
   text-align: center;
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  color: #000;
 }
 
 .queueName {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 16px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
 }
 
 .queueInfo {
@@ -71,97 +72,41 @@
 }
 
 .clientPosition {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 24px;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.clientPosition h3 {
-  margin: 0 0 16px 0;
-  font-size: 1.2rem;
-}
-
-.positionInfo {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 32px;
+  background: #fff;
+  color: #333;
+  padding: 20px;
+  border: 1px solid #ddd;
   margin-bottom: 20px;
-}
-
-.positionNumber {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.positionNumber .number {
-  font-size: 3rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.positionNumber .label {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.estimatedTime {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.1rem;
+  text-align: center;
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
-.advanceButton {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 auto;
-}
-
-.advanceButton:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
-}
 
 .joinButton {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #007bff;
   color: white;
   border: none;
-  padding: 16px 32px;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s ease;
   display: block;
-  margin: 0 auto 24px auto;
+  margin: 0 auto 20px auto;
 }
 
 .joinButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(102, 126, 234, 0.4);
+  background: #0056b3;
 }
 
 .joinForm,
 .advanceForm {
-  background: #f8f9fa;
-  padding: 24px;
-  border-radius: 12px;
-  margin-bottom: 24px;
+  background: #f9f9f9;
+  padding: 20px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
 }
 
 .joinForm h3,
@@ -185,17 +130,17 @@
 .formGroup input,
 .formGroup select {
   width: 100%;
-  padding: 12px;
-  border: 2px solid #e1e8ed;
-  border-radius: 8px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.2s ease;
 }
 
 .formGroup input:focus,
 .formGroup select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #007bff;
 }
 
 .formRow {
@@ -250,19 +195,18 @@
 }
 
 .submitButton {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #007bff;
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s ease;
 }
 
 .submitButton:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+  background: #0056b3;
 }
 
 .submitButton:disabled {
@@ -297,27 +241,23 @@
 
 .clientCard {
   background: white;
-  border: 2px solid #e1e8ed;
-  border-radius: 8px;
-  padding: 16px;
-  transition: all 0.3s ease;
+  border: 1px solid #ddd;
+  padding: 12px;
   position: relative;
 }
 
 .clientCard:hover {
-  border-color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
 }
 
 .clientCard.currentClient {
-  border-color: #667eea;
-  background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+  border-color: #007bff;
+  background: #f0f8ff;
 }
 
 .clientCard.groupLeader {
-  border-left: 4px solid #28a745;
-  background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+  border-left: 3px solid #28a745;
+  background: #f8fff8;
 }
 
 .clientCard.groupLeader::before {
@@ -327,16 +267,16 @@
   right: 8px;
   background: #28a745;
   color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .clientCard.paidClient {
   border-color: #28a745;
-  background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
-  border-left: 4px solid #28a745;
+  background: #f8fff8;
+  border-left: 3px solid #28a745;
 }
 
 .clientCard.paidClient::after {
@@ -346,30 +286,26 @@
   right: 8px;
   background: #28a745;
   color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
-.clientPosition {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-}
 
 .positionNumber {
-  background: #667eea;
-  color: white;
-  width: 32px;
-  height: 32px;
+  color: #000;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
+  margin: 10px auto 0 auto;
+  background: #f0f0f0;
+  border: 2px solid #ddd;
 }
 
 .clientInfo h4 {
@@ -1133,31 +1069,29 @@
 
 /* Novos estilos para grupos e botões */
 .groupButton {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  background: #28a745;
   color: white;
   border: none;
-  padding: 16px 32px;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s ease;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .groupButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(40, 167, 69, 0.4);
+  background: #218838;
 }
 
 .groupForm {
-  background: #f8f9fa;
-  padding: 24px;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  border: 2px solid #e1e8ed;
+  background: #f9f9f9;
+  padding: 20px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
 }
 
 .groupForm h3 {
