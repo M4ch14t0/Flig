@@ -9,7 +9,7 @@ function Webpage() {
       {/* NAVBAR */}
       <nav className={styles.navbar}>
         <div className={styles.logo} onClick={() => navigate('/')} style={{cursor: 'pointer'}}>
-          <img src="/assets/logos/flig-logo.svg" alt="Flig" className={styles.logoImg} />
+          <img src="/assets/logos/flig-logo.png" alt="Flig" className={styles.logoImg} />
         </div>
 
         <div className={styles.navdivision}>
@@ -25,9 +25,6 @@ function Webpage() {
             </li>
             <li>
               <a href="#plano">Planos</a>
-            </li>
-            <li>
-              <a href="#baixarapp">Baixe o App</a>
             </li>
           </ul>
 
@@ -58,10 +55,6 @@ function Webpage() {
           </p>
           <div className={styles.headerButtons}>
             <button className={styles.readmore}>Leia Mais</button>
-            <Link to="/escolha-login" className={styles.loginOutline}>
-              Login
-              
-            </Link>
           </div>
         </div>
 

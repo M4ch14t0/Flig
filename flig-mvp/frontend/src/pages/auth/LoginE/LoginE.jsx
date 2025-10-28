@@ -109,7 +109,7 @@ export default function LoginE() {
       {/* Lado direito */}
       <div className="empresa-login-right">
         <div className="empresa-login-logo">
-          <img src="/assets/logos/flig-logo.svg" alt="Logo FLIG" className="empresa-login-logo-img" />
+          <img src="/assets/logos/flig-logo.png" alt="Logo FLIG" className="empresa-login-logo-img" />
           <p className="empresa-login-slogan">Soluções de Agilidade</p>
         </div>
 

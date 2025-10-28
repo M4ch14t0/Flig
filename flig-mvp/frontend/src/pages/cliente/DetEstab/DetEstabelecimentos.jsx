@@ -160,7 +160,9 @@ function DetEstabelecimentos() {
           </button>
 
           <div className={styles.estabCard}>
-            <div className={styles.imageBox}></div>
+            <div className={styles.imageBox}>
+              <img src={establishment.imagem_empresa} alt={establishment.nome_empresa} />
+            </div>
 
             <div className={styles.infoBox}>
               <h2>{establishment.nome_empresa}</h2>

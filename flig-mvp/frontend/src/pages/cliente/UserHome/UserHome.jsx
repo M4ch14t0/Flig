@@ -33,7 +33,7 @@ export default function UserHome() {
         <h1 className={styles.welcomeTitle}>
           Bem-vindo a 
         </h1>
-        <img src="/assets/logos/logo2-flig.png" alt="Flig" className={styles.logo} />
+        <img src="/assets/logos/flig-logo.png" alt="Flig" className={styles.logo} />
       </div>
     </Layout>
   );

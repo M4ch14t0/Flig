@@ -10,6 +10,7 @@ body, html {
   width: 100%;
   overflow-x: hidden;
   scroll-behavior: smooth;
+  background-color: #000000;
 }
 
 body::-webkit-scrollbar {
@@ -35,7 +36,7 @@ body::-webkit-scrollbar {
 }
 
 .logoImg {
-  height: 200px;
+  height: 180px;
   width: auto;
   max-width: 100%;
   margin-top: 20px;
@@ -83,10 +84,10 @@ body::-webkit-scrollbar {
 }
 
 .navLinks li a {
-  color: #ffffff;
+  background-color: #ebda6b;
+  color: #000000;
   text-decoration: none;
   font-weight: 600;
-  border: 1.5px solid #ffffff;
   padding: 10px 16px;
   border-radius: 20px;
   font-size: 14px;
@@ -116,7 +117,8 @@ body::-webkit-scrollbar {
 
 .loginLink,
 .contactbutton {
-  border: 1.5px solid #ffffff;
+  background-color: #ebda6b;
+  color: #000000;
   padding: 10px 16px;
   border-radius: 20px;
   text-decoration: none;
@@ -125,7 +127,6 @@ body::-webkit-scrollbar {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: white;
   transition: all 0.3s ease;
   white-space: nowrap;
 }
@@ -179,9 +180,8 @@ body::-webkit-scrollbar {
 
 .readmore,
 .loginOutline {
-  background-color: transparent;
-  border: 2px solid white;
-  color: white;
+  background-color: #ebda6b;
+  color: #000000;
   font-weight: bold;
   border-radius: 24px;
   padding: 12px 24px;
@@ -214,12 +214,14 @@ body::-webkit-scrollbar {
   object-fit: contain;
 }
 
+
+
 /* -------- SECTION GERAL -------- */
 .section {
   width: 100%;
   padding: 80px 5%;
   text-align: center;
-  background-color: #1F1F1F;
+  background-color: #000000;
   color: white;
 }
 
@@ -235,6 +237,8 @@ body::-webkit-scrollbar {
   margin: 0 auto;
   max-width: 100%;
 }
+
+
 
 /* -------- SOBRE / EQUIPE -------- */
 .equipe {
@@ -290,7 +294,7 @@ body::-webkit-scrollbar {
 
 /* -------- O QUE OFERECE -------- */
 #oferece {
-  background-color: #1F1F1F;
+  background-color: #000000;
 }
 
 .features {
@@ -304,6 +308,8 @@ body::-webkit-scrollbar {
 }
 
 .feature {
+  background-color: #272626;
+  border-radius: 20px;
   text-align: center;
   padding: 20px;
 }

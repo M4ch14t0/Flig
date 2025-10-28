@@ -165,7 +165,7 @@ export default function CadastroE() {
       {/* Lado esquerdo */}
       <div className={styles['empresa-cadastro-left']}>
         <div className={styles['empresa-cadastro-logo']}>
-          <img src="/assets/logos/flig-logo.svg" alt="Logo FLIG" className={styles['empresa-cadastro-logo-img']} />
+          <img src="/assets/logos/flig-logo.png" alt="Logo FLIG" className={styles['empresa-cadastro-logo-img']} />
           <p className={styles['empresa-cadastro-slogan']}>Soluções de Agilidade</p>
         </div>
         <div className={styles['empresa-cadastro-help']}>

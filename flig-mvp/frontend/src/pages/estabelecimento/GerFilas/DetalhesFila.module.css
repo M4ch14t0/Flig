@@ -546,7 +546,7 @@
 
 .clientCard.paidClient {
   border-color: var(--success);
-  background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+  background: var(--bg-secondary);
   border-left: 4px solid var(--success);
 }
 
