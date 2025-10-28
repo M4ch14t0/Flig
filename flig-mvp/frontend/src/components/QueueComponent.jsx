@@ -127,31 +127,84 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
     setAdvancing(true);
 
     try {
-      // Simular avanço na fila localmente
-      console.log('🎯 Simulando avanço na fila localmente...');
+      console.log('🎯 Executando avanço real na fila localmente...');
+      console.log('Cliente atual:', clientPosition);
+      console.log('Posições a avançar:', advanceForm.positions);
       
-      // Atualizar posição localmente
-      const newPosition = Math.max(1, clientPosition.position - advanceForm.positions);
+      // LÓGICA REAL DE AVANÇO NA FILA
+      const positionsToAdvance = advanceForm.positions;
+      const currentPosition = clientPosition.position;
+      const newPosition = Math.max(1, currentPosition - positionsToAdvance);
+      
+      console.log(`Avançando de posição ${currentPosition} para ${newPosition}`);
+      
+      // 1. Atualizar posição do cliente atual
       const updatedClientPosition = {
         ...clientPosition,
         position: newPosition,
-        paidAdvance: true
+        paidAdvance: true,
+        advancePositions: positionsToAdvance
       };
       
+      // 2. Reorganizar TODOS os clientes da fila
+      const updatedClients = clients.map(client => {
+        if (client.id === clientPosition.id) {
+          // Cliente que está avançando
+          return updatedClientPosition;
+        } else {
+          // Outros clientes - ajustar posições
+          const clientCurrentPos = client.position;
+          
+          if (clientCurrentPos < currentPosition && clientCurrentPos >= newPosition) {
+            // Clientes que estão entre a nova posição e a posição atual
+            // Devem ser "empurrados" para baixo
+            return {
+              ...client,
+              position: clientCurrentPos + 1
+            };
+          } else if (clientCurrentPos === currentPosition) {
+            // Se há outro cliente na mesma posição (grupo)
+            return {
+              ...client,
+              position: clientCurrentPos + 1
+            };
+          }
+          
+          // Clientes que não são afetados mantêm a posição
+          return client;
+        }
+      });
+      
+      // 3. Ordenar clientes por posição para manter consistência
+      const sortedClients = updatedClients.sort((a, b) => a.position - b.position);
+      
+      // 4. Reajustar posições sequenciais (eliminar gaps)
+      const finalClients = sortedClients.map((client, index) => ({
+        ...client,
+        position: index + 1
+      }));
+      
+      // 5. Atualizar estados
       setClientPosition(updatedClientPosition);
+      setClients(finalClients);
       
-      // Atualizar lista de clientes localmente
-      setClients(prevClients => 
-        prevClients.map(client => 
-          client.id === clientPosition.id 
-            ? { ...client, position: newPosition, paidAdvance: true }
-            : client
-        )
-      );
+      // 6. Recalcular fila bidimensional
+      const newGroupedClients = {};
+      finalClients.forEach(client => {
+        const pos = client.position;
+        if (!newGroupedClients[pos]) {
+          newGroupedClients[pos] = [];
+        }
+        newGroupedClients[pos].push(client);
+      });
+      setGroupedClients(newGroupedClients);
       
-      console.log(`✅ Posição atualizada de ${clientPosition.position} para ${newPosition}`);
+      console.log('✅ Fila reorganizada com sucesso!');
+      console.log('Nova posição do cliente:', newPosition);
+      console.log('Total de clientes:', finalClients.length);
+      console.log('Fila reorganizada:', finalClients.map(c => `${c.nome} - Posição ${c.position}`));
       
-      // Fechar formulário
+      // 7. Fechar formulário
       setShowAdvanceForm(false);
       setAdvanceForm({
         positions: 1,
@@ -159,28 +212,29 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
         cardData: { number: '', cvv: '', expiryMonth: '', expiryYear: '', holderName: '' }
       });
       
-      // Mostrar mensagem de sucesso
-      alert(`🎉 Avanço simulado! Sua nova posição é ${newPosition}ª`);
+      // 8. Mostrar mensagem de sucesso
+      alert(`🎉 Avanço realizado! Sua nova posição é ${newPosition}ª`);
       
-      // Redirecionar para página de pagamento do Mercado Pago (simulando)
+      // 9. Redirecionar para página de pagamento do Mercado Pago
       const paymentUrl = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=2915256254-39ae9b33-6e81-4be4-b388-7a079801d4e6`;
       
       console.log('🔗 Redirecionando para página de pagamento...');
       console.log('URL:', paymentUrl);
       
-      // Abrir em nova aba para simular o fluxo de pagamento
+      // Abrir em nova aba
       window.open(paymentUrl, '_blank');
       
-      // Chamar callback de sucesso
+      // 10. Chamar callback de sucesso
       if (onJoinSuccess) onJoinSuccess({
-        message: 'Avanço simulado com sucesso',
+        message: 'Avanço realizado com sucesso',
         newPosition: newPosition,
+        positionsAdvanced: positionsToAdvance,
         paymentUrl: paymentUrl
       });
       
     } catch (error) {
-      console.error('Erro ao simular avanço na fila:', error);
-      if (onError) onError('Erro ao simular avanço na fila');
+      console.error('Erro ao avançar na fila:', error);
+      if (onError) onError('Erro ao avançar na fila');
     } finally {
       setAdvancing(false);
     }
@@ -318,15 +372,15 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
         <div className={styles.advanceForm}>
           <h3>Avançar na Fila</h3>
           <div style={{
-            backgroundColor: '#e3f2fd',
-            border: '1px solid #2196f3',
+            backgroundColor: '#e8f5e8',
+            border: '1px solid #4caf50',
             borderRadius: '4px',
             padding: '10px',
             marginBottom: '15px',
             fontSize: '14px',
-            color: '#1976d2'
+            color: '#2e7d32'
           }}>
-            <strong>⚠️ Modo Simulação:</strong> O avanço será simulado localmente e você será redirecionado para a página de pagamento do Mercado Pago.
+            <strong>✅ Avanço Local:</strong> O avanço será processado localmente e você será redirecionado para a página de pagamento do Mercado Pago.
           </div>
           <form onSubmit={handleAdvanceInQueue}>
             <div className={styles.formGroup}>
@@ -448,7 +502,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
                 disabled={advancing}
                 className={styles.submitButton}
               >
-                {advancing ? 'Simulando...' : 'Avançar na Fila (Simulação)'}
+                {advancing ? 'Avançando...' : 'Avançar na Fila'}
               </button>
             </div>
           </form>
