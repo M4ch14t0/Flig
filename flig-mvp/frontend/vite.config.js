@@ -7,6 +7,12 @@ export default defineConfig({
     port: 3000,
     open: true,
     historyApiFallback: true,
+    cors: {
+      origin: true,
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    },
   },
   build: {
     outDir: 'dist',
@@ -18,13 +24,25 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
           icons: ['lucide-react'],
+          mercadopago: ['@mercadopago/sdk-react'],
         },
       },
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'axios'],
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom', 
+      'lucide-react', 
+      'axios',
+      '@mercadopago/sdk-react'
+    ],
   },
   base: '/',
   publicDir: 'public',
+  define: {
+    // Permitir eval para scripts do Mercado Pago
+    global: 'globalThis',
+  },
 });

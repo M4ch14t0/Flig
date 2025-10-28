@@ -18,11 +18,18 @@ const MercadoPagoButton = ({ queueId, positions, onSuccess, onError }) => {
   useEffect(() => {
     // Inicializar Mercado Pago apenas uma vez globalmente
     if (!mercadoPagoInitialized) {
-      initMercadoPago(publicKey, { 
-        locale: 'pt-BR',
-        advancedFraudPrevention: false
-      });
-      mercadoPagoInitialized = true;
+      try {
+        console.log('🚀 Inicializando Mercado Pago SDK...');
+        initMercadoPago(publicKey, { 
+          locale: 'pt-BR',
+          advancedFraudPrevention: false
+        });
+        mercadoPagoInitialized = true;
+        console.log('✅ Mercado Pago SDK inicializado com sucesso');
+      } catch (error) {
+        console.error('❌ Erro ao inicializar Mercado Pago SDK:', error);
+        setError('Erro ao carregar sistema de pagamento');
+      }
     }
     
     createPreference();
@@ -35,19 +42,30 @@ const MercadoPagoButton = ({ queueId, positions, onSuccess, onError }) => {
     setError(null);
 
     try {
+      console.log('🔄 Criando preferência de pagamento...', { queueId, positions });
       const response = await api.post('/api/payments/advance-preference', {
         queueId,
         positions
       });
 
+      console.log('📋 Resposta da API:', response.data);
+
       if (response.data.success) {
         setPreferenceId(response.data.data.preferenceId);
         console.log('✅ Preferência criada com sucesso:', response.data.data.preferenceId);
+        console.log('🔗 URL de pagamento:', response.data.data.initPoint);
       } else {
+        console.error('❌ Erro na resposta da API:', response.data);
         setError(response.data.message || 'Erro ao criar preferência de pagamento');
       }
     } catch (error) {
-      console.error('Erro ao criar preferência:', error);
+      console.error('❌ Erro ao criar preferência:', error);
+      console.error('Detalhes do erro:', {
+        message: error.message,
+        code: error.code,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       
       // Retry automático para erros de rede
       if (retryCount < 3 && (error.code === 'ERR_NETWORK' || error.response?.status >= 500)) {
@@ -56,7 +74,10 @@ const MercadoPagoButton = ({ queueId, positions, onSuccess, onError }) => {
         return;
       }
       
-      setError('Erro ao processar pagamento. Tente novamente.');
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          'Erro ao processar pagamento. Tente novamente.';
+      setError(errorMessage);
       if (onError) onError(error);
     } finally {
       setLoading(false);
@@ -152,14 +173,36 @@ const MercadoPagoButton = ({ queueId, positions, onSuccess, onError }) => {
         />
       </div>
       
-      <p style={{ 
-        fontSize: '12px', 
-        color: '#666', 
-        textAlign: 'center',
-        margin: '5px 0 0 0'
+      {/* Fallback caso o Wallet não carregue */}
+      <div style={{ 
+        marginTop: '10px',
+        textAlign: 'center'
       }}>
-        Pague com segurança
-      </p>
+        <p style={{ 
+          fontSize: '12px', 
+          color: '#666', 
+          margin: '5px 0'
+        }}>
+          Pague com segurança
+        </p>
+        <a 
+          href={`https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${preferenceId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            padding: '8px 16px',
+            backgroundColor: '#009ee3',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: '4px',
+            fontSize: '14px',
+            marginTop: '10px'
+          }}
+        >
+          Abrir em nova aba
+        </a>
+      </div>
     </div>
   );
 };
