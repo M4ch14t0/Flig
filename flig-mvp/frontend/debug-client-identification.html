@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Identificação do Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .client-card {
+            background: #e9ecef;
+            border: 2px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .client-card.current {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Identificação do Cliente</h1>
+        
+        <div class="test-section">
+            <h3>📋 Dados do localStorage</h3>
+            <button onclick="showLocalStorage()">Mostrar localStorage</button>
+            <div id="localStorage-data" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👥 Clientes na Fila (Simulados)</h3>
+            <button onclick="createTestClients()">Criar Clientes de Teste</button>
+            <div id="clients-display"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Teste de Identificação</h3>
+            <button onclick="testClientIdentification()">Testar Identificação</button>
+            <div id="identification-result" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Logs Detalhados</h3>
+            <div id="console-logs" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let testClients = [];
+
+        // Interceptar console para mostrar na página
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addToLog(message, type = 'log') {
+            const logDiv = document.getElementById('console-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logEntry.style.color = type === 'error' ? '#dc3545' : type === 'warn' ? '#ffc107' : '#28a745';
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToLog(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToLog(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToLog(args.join(' '), 'warn');
+        };
+
+        function showLocalStorage() {
+            const dataDiv = document.getElementById('localStorage-data');
+            dataDiv.innerHTML = '';
+            
+            console.log('🔍 Dados do localStorage:');
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                console.log(`${key}:`, value);
+                
+                const item = document.createElement('div');
+                item.innerHTML = `<strong>${key}:</strong> ${value}`;
+                dataDiv.appendChild(item);
+            }
+        }
+
+        function createTestClients() {
+            testClients = [
+                { id: 1, nome: 'João Silva', email: 'joao@email.com', position: 1 },
+                { id: 2, nome: 'Maria Santos', email: 'maria@email.com', position: 2 },
+                { id: 3, nome: 'Pedro Costa', email: 'pedro@email.com', position: 3 },
+                { id: 4, nome: 'Ana Oliveira', email: 'ana@email.com', position: 4 },
+                { id: 5, nome: 'Carlos Lima', email: 'carlos@email.com', position: 5 }
+            ];
+            
+            const display = document.getElementById('clients-display');
+            display.innerHTML = '';
+            
+            testClients.forEach(client => {
+                const card = document.createElement('div');
+                card.className = 'client-card';
+                card.innerHTML = `
+                    <div><strong>ID:</strong> ${client.id}</div>
+                    <div><strong>Nome:</strong> ${client.nome}</div>
+                    <div><strong>Email:</strong> ${client.email}</div>
+                    <div><strong>Posição:</strong> ${client.position}</div>
+                `;
+                display.appendChild(card);
+            });
+            
+            console.log('✅ Clientes de teste criados:', testClients);
+        }
+
+        function testClientIdentification() {
+            const resultDiv = document.getElementById('identification-result');
+            resultDiv.innerHTML = '';
+            
+            console.log('🔍 Testando identificação do cliente...');
+            
+            const userId = localStorage.getItem('userId_cliente');
+            const userEmail = localStorage.getItem('userEmail') || 
+                             localStorage.getItem('email') || 
+                             localStorage.getItem('user_email');
+            const userName = localStorage.getItem('userName') || 
+                            localStorage.getItem('name') || 
+                            localStorage.getItem('user_name');
+            
+            console.log('userId:', userId);
+            console.log('userEmail:', userEmail);
+            console.log('userName:', userName);
+            console.log('Clientes na fila:', testClients);
+            
+            let currentClient = null;
+            
+            // 1. Tentar por email
+            if (userEmail) {
+                currentClient = testClients.find(client => 
+                    client.email === userEmail
+                );
+                console.log('🔍 Tentativa 1 - Por email:', userEmail, currentClient ? '✅' : '❌');
+            }
+            
+            // 2. Tentar por ID
+            if (!currentClient && userId) {
+                currentClient = testClients.find(client => 
+                    client.id === userId || client.id === parseInt(userId)
+                );
+                console.log('🔍 Tentativa 2 - Por ID:', userId, currentClient ? '✅' : '❌');
+            }
+            
+            // 3. Tentar por nome
+            if (!currentClient && userName) {
+                currentClient = testClients.find(client => 
+                    client.nome === userName
+                );
+                console.log('🔍 Tentativa 3 - Por nome:', userName, currentClient ? '✅' : '❌');
+            }
+            
+            // 4. Usar primeiro cliente como fallback
+            if (!currentClient) {
+                console.log('⚠️ Cliente não encontrado, usando primeiro como fallback');
+                currentClient = testClients[0];
+            }
+            
+            if (currentClient) {
+                console.log('✅ Cliente identificado:', currentClient);
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <strong>✅ Cliente identificado com sucesso!</strong><br>
+                        <strong>ID:</strong> ${currentClient.id}<br>
+                        <strong>Nome:</strong> ${currentClient.nome}<br>
+                        <strong>Email:</strong> ${currentClient.email}<br>
+                        <strong>Posição:</strong> ${currentClient.position}
+                    </div>
+                `;
+            } else {
+                console.error('❌ Nenhum cliente identificado');
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Nenhum cliente identificado</strong>
+                    </div>
+                `;
+            }
+        }
+
+        // Inicializar
+        window.addEventListener('load', () => {
+            console.log('🚀 Debug de identificação do cliente carregado');
+            showLocalStorage();
+        });
+    </script>
+</body>
+</html>

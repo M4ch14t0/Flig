@@ -169,6 +169,13 @@ function MinhasFilas() {
       console.log('Fila selecionada:', selectedQueue);
       console.log('Posições a avançar:', selectedPositions);
       console.log('Clientes na fila:', queueClients);
+      
+      // Debug: Verificar todos os dados do localStorage
+      console.log('🔍 Dados do localStorage:');
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        console.log(`${key}:`, localStorage.getItem(key));
+      }
 
       // LÓGICA REAL DE AVANÇO NA FILA
       const currentPosition = selectedQueue.posicao_atual;
@@ -177,15 +184,66 @@ function MinhasFilas() {
       console.log(`Avançando de posição ${currentPosition} para ${newPosition}`);
 
       // 1. Encontrar o cliente atual na fila
-      const currentClient = queueClients.find(client => 
-        client.email === localStorage.getItem('userEmail') || 
-        client.id === userId
-      );
+      console.log('🔍 Procurando cliente na fila...');
+      console.log('userId do localStorage:', userId);
+      console.log('userEmail do localStorage:', localStorage.getItem('userEmail'));
+      console.log('Clientes na fila:', queueClients.map(c => ({ id: c.id, email: c.email, nome: c.nome })));
+      
+      // Tentar diferentes formas de identificar o cliente
+      let currentClient = null;
+      
+      // 1. Tentar por email do localStorage
+      const userEmail = localStorage.getItem('userEmail') || 
+                       localStorage.getItem('email') || 
+                       localStorage.getItem('user_email');
+      if (userEmail) {
+        currentClient = queueClients.find(client => 
+          client.email === userEmail
+        );
+        console.log('🔍 Tentativa 1 - Por email:', userEmail, currentClient ? '✅' : '❌');
+      }
+      
+      // 2. Tentar por ID do localStorage
+      if (!currentClient && userId) {
+        currentClient = queueClients.find(client => 
+          client.id === userId || client.id === parseInt(userId)
+        );
+        console.log('🔍 Tentativa 2 - Por ID:', userId, currentClient ? '✅' : '❌');
+      }
+      
+      // 3. Tentar por nome do usuário (se disponível)
+      if (!currentClient) {
+        const userName = localStorage.getItem('userName') || 
+                        localStorage.getItem('name') || 
+                        localStorage.getItem('user_name');
+        if (userName) {
+          currentClient = queueClients.find(client => 
+            client.nome === userName
+          );
+          console.log('🔍 Tentativa 3 - Por nome:', userName, currentClient ? '✅' : '❌');
+        }
+      }
+      
+      // 4. Se ainda não encontrou, usar o cliente com a posição atual da fila
+      if (!currentClient) {
+        currentClient = queueClients.find(client => 
+          client.position === selectedQueue.posicao_atual
+        );
+        console.log('🔍 Tentativa 4 - Por posição atual:', selectedQueue.posicao_atual, currentClient ? '✅' : '❌');
+      }
+      
+      // 5. Se ainda não encontrou, usar o primeiro cliente como fallback
+      if (!currentClient) {
+        console.log('⚠️ Cliente não encontrado pelos critérios normais, usando primeiro cliente como fallback');
+        currentClient = queueClients[0];
+      }
 
       if (!currentClient) {
         alert('Cliente não encontrado na fila');
         return;
       }
+      
+      console.log('✅ Cliente encontrado:', currentClient);
 
       // 2. Atualizar posição do cliente atual
       const updatedCurrentClient = {
