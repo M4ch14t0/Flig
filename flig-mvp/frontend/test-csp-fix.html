@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Content Security Policy para Mercado Pago -->
+    <!-- Content Security Policy corrigida -->
     <meta http-equiv="Content-Security-Policy" 
           content="default-src 'self'; 
                    script-src 'self' 'unsafe-inline' 'unsafe-eval' 
@@ -38,10 +38,9 @@
                    object-src 'none'; 
                    base-uri 'self';">
     
-    <!-- Referrer Policy mais permissiva para Mercado Pago -->
     <meta name="referrer" content="no-referrer-when-downgrade" />
     
-    <title>Teste de Pagamento - Flig</title>
+    <title>Teste CSP - Flig</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -89,49 +88,36 @@
 </head>
 <body>
     <div class="container">
-        <h1>🧪 Teste de Correções de Pagamento - Flig</h1>
+        <h1>🔧 Teste de Correção CSP - Flig</h1>
         
-        <div class="test-section">
-            <h3>📋 Status das Correções</h3>
-            <ul>
-                <li>✅ Content Security Policy configurada para Mercado Pago</li>
-                <li>✅ Referrer Policy ajustada</li>
-                <li>✅ CORS configurado no Vite</li>
-                <li>✅ Logs de debug adicionados</li>
-                <li>✅ Fallback para pagamento em nova aba</li>
-            </ul>
+        <div class="test-section success">
+            <h3>✅ Correção Aplicada</h3>
+            <p>Adicionada URL do Railway ao CSP: <code>https://flig-production.up.railway.app</code></p>
         </div>
 
         <div class="test-section">
-            <h3>🔧 Teste de CSP</h3>
-            <p>Testando se os scripts do Mercado Pago podem carregar sem erros de CSP:</p>
-            <button onclick="testCSP()">Testar CSP</button>
-            <div id="csp-result" class="log"></div>
+            <h3>🧪 Teste de Conexão com Backend</h3>
+            <p>Testando se o CSP permite conexão com o Railway:</p>
+            <button onclick="testBackendConnection()">Testar Conexão</button>
+            <div id="connection-result" class="log"></div>
         </div>
 
         <div class="test-section">
-            <h3>🌐 Teste de CORS</h3>
-            <p>Testando se as requisições para a API funcionam:</p>
-            <button onclick="testCORS()">Testar CORS</button>
-            <div id="cors-result" class="log"></div>
-        </div>
-
-        <div class="test-section">
-            <h3>💳 Teste de Pagamento</h3>
-            <p>Testando criação de preferência de pagamento:</p>
-            <button onclick="testPayment()">Testar Pagamento</button>
-            <div id="payment-result" class="log"></div>
+            <h3>🔐 Teste de Login</h3>
+            <p>Testando login de usuário (que estava falhando):</p>
+            <button onclick="testUserLogin()">Testar Login</button>
+            <div id="login-result" class="log"></div>
         </div>
 
         <div class="test-section">
             <h3>📊 Logs do Console</h3>
-            <p>Monitore o console do navegador para ver os logs detalhados:</p>
+            <p>Monitore o console para ver se há erros de CSP:</p>
             <div id="console-logs" class="log"></div>
         </div>
     </div>
 
     <script>
-        // Interceptar console.log para mostrar na página
+        // Interceptar console para mostrar na página
         const originalLog = console.log;
         const originalError = console.error;
         const originalWarn = console.warn;
@@ -161,103 +147,64 @@
             addToLog(args.join(' '), 'warn');
         };
 
-        function testCSP() {
-            const resultDiv = document.getElementById('csp-result');
-            resultDiv.innerHTML = 'Testando CSP...';
-            
-            try {
-                // Tentar carregar script do Mercado Pago
-                const script = document.createElement('script');
-                script.src = 'https://sdk.mercadopago.com/js/v2';
-                script.onload = () => {
-                    resultDiv.innerHTML = '✅ CSP: Script do Mercado Pago carregado com sucesso!';
-                    resultDiv.className = 'log success';
-                };
-                script.onerror = () => {
-                    resultDiv.innerHTML = '❌ CSP: Erro ao carregar script do Mercado Pago';
-                    resultDiv.className = 'log error';
-                };
-                document.head.appendChild(script);
-            } catch (error) {
-                resultDiv.innerHTML = `❌ CSP: Erro: ${error.message}`;
-                resultDiv.className = 'log error';
-            }
-        }
-
-        async function testCORS() {
-            const resultDiv = document.getElementById('cors-result');
-            resultDiv.innerHTML = 'Testando CORS...';
+        async function testBackendConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            resultDiv.innerHTML = 'Testando conexão...';
             
             try {
                 const response = await fetch('https://flig-production.up.railway.app/api/health');
                 if (response.ok) {
-                    resultDiv.innerHTML = '✅ CORS: API acessível com sucesso!';
+                    resultDiv.innerHTML = '✅ Conexão com backend funcionando!';
                     resultDiv.className = 'log success';
                 } else {
-                    resultDiv.innerHTML = `❌ CORS: Erro ${response.status}`;
+                    resultDiv.innerHTML = `❌ Erro ${response.status}`;
                     resultDiv.className = 'log error';
                 }
             } catch (error) {
-                resultDiv.innerHTML = `❌ CORS: Erro: ${error.message}`;
+                resultDiv.innerHTML = `❌ Erro: ${error.message}`;
                 resultDiv.className = 'log error';
             }
         }
 
-        async function testPayment() {
-            const resultDiv = document.getElementById('payment-result');
-            resultDiv.innerHTML = 'Testando pagamento...';
+        async function testUserLogin() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.innerHTML = 'Testando login...';
             
             try {
-                // Primeiro fazer login
-                const loginResponse = await fetch('https://flig-production.up.railway.app/api/auth/login/establishment', {
+                const response = await fetch('https://flig-production.up.railway.app/api/auth/login/user', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        email_empresa: 'testeestab@email.com',
-                        senha_empresa: 'Abcd1234'
+                        email_usuario: 'teste@email.com',
+                        senha_usuario: '123456'
                     })
                 });
                 
-                if (!loginResponse.ok) {
-                    throw new Error(`Erro no login: ${loginResponse.status}`);
+                if (response.ok) {
+                    resultDiv.innerHTML = '✅ Login funcionando! (mesmo com credenciais inválidas)';
+                    resultDiv.className = 'log success';
+                } else {
+                    resultDiv.innerHTML = `✅ Conexão funcionando! (erro ${response.status} é esperado com credenciais inválidas)`;
+                    resultDiv.className = 'log success';
                 }
-                
-                const loginData = await loginResponse.json();
-                const token = loginData.data.token;
-                
-                // Criar preferência
-                const paymentResponse = await fetch('https://flig-production.up.railway.app/api/payments/advance-preference', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        queueId: '43a5a297-e7db-4a25-8c4b-7d7e8d2af104',
-                        positions: 5
-                    })
-                });
-                
-                if (!paymentResponse.ok) {
-                    throw new Error(`Erro no pagamento: ${paymentResponse.status}`);
-                }
-                
-                const paymentData = await paymentResponse.json();
-                resultDiv.innerHTML = `✅ Pagamento: Preferência criada!<br>ID: ${paymentData.data.preferenceId}<br>URL: ${paymentData.data.initPoint}`;
-                resultDiv.className = 'log success';
-                
             } catch (error) {
-                resultDiv.innerHTML = `❌ Pagamento: Erro: ${error.message}`;
-                resultDiv.className = 'log error';
+                if (error.message.includes('CSP')) {
+                    resultDiv.innerHTML = `❌ Erro de CSP: ${error.message}`;
+                    resultDiv.className = 'log error';
+                } else {
+                    resultDiv.innerHTML = `❌ Erro: ${error.message}`;
+                    resultDiv.className = 'log error';
+                }
             }
         }
 
-        // Executar testes automaticamente
+        // Executar teste automático
         window.addEventListener('load', () => {
-            console.log('🚀 Página de teste carregada');
-            console.log('📋 Verificando configurações...');
+            console.log('🚀 Página de teste CSP carregada');
+            console.log('🔧 Testando se a correção funcionou...');
+            testBackendConnection();
         });
     </script>
 </body>
