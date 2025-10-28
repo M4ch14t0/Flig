@@ -246,8 +246,13 @@ function MinhasFilas() {
         // Mostrar mensagem de sucesso
         alert(`🎉 Avanço realizado! Sua nova posição é ${newPosition}ª`);
 
-        // Mostrar botão do Mercado Pago
-        setShowPaymentButton(true);
+        // Redirecionar para página de checkout do Mercado Pago
+        const paymentUrl = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=2915256254-39ae9b33-6e81-4be4-b388-7a079801d4e6`;
+        console.log('🔗 Redirecionando para página de pagamento...');
+        console.log('URL:', paymentUrl);
+        
+        // Abrir em nova aba
+        window.open(paymentUrl, '_blank');
 
         // Fechar popup de avanço
         closeAdvancePopup();
