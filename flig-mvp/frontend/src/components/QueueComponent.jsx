@@ -135,7 +135,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
       console.log('Queue ID:', queueId);
 
       // FLUXO ORIGINAL: Chamar API do backend
-      const response = await api.post(`/queues/${queueId}/advance`, {
+      const response = await api.post(`/api/queues/${queueId}/advance`, {
         clientId: clientPosition.id,
         positions: advanceForm.positions
         // paymentData removido - backend vai pular validação de pagamento

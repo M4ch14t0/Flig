@@ -171,7 +171,7 @@ function MinhasFilas() {
       console.log('userId:', userId);
 
       // FLUXO ORIGINAL: Chamar API do backend
-      const response = await api.post(`/queues/${selectedQueue.id}/advance`, {
+      const response = await api.post(`/api/queues/${selectedQueue.id}/advance`, {
         clientId: userId,
         positions: selectedPositions
         // paymentData removido - backend vai pular validação de pagamento
