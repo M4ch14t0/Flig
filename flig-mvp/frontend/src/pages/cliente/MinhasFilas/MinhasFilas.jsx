@@ -165,178 +165,57 @@ function MinhasFilas() {
     }
 
     try {
-      console.log('🎯 Executando avanço real localmente...');
+      console.log('🎯 Executando avanço via API (fluxo original)...');
       console.log('Fila selecionada:', selectedQueue);
       console.log('Posições a avançar:', selectedPositions);
-      console.log('Clientes na fila:', queueClients);
-      
-      // Debug: Verificar todos os dados do localStorage
-      console.log('🔍 Dados do localStorage:');
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        console.log(`${key}:`, localStorage.getItem(key));
-      }
+      console.log('userId:', userId);
 
-      // LÓGICA REAL DE AVANÇO NA FILA
-      const currentPosition = selectedQueue.posicao_atual;
-      const newPosition = Math.max(1, currentPosition - selectedPositions);
-      
-      console.log(`Avançando de posição ${currentPosition} para ${newPosition}`);
-
-      // 1. Encontrar o cliente atual na fila
-      console.log('🔍 Procurando cliente na fila...');
-      console.log('userId do localStorage:', userId);
-      console.log('userEmail do localStorage:', localStorage.getItem('userEmail'));
-      console.log('Clientes na fila:', queueClients.map(c => ({ id: c.id, email: c.email, nome: c.nome })));
-      
-      // Tentar diferentes formas de identificar o cliente
-      let currentClient = null;
-      
-      // 1. Tentar por email do localStorage
-      const userEmail = localStorage.getItem('userEmail') || 
-                       localStorage.getItem('email') || 
-                       localStorage.getItem('user_email');
-      if (userEmail) {
-        currentClient = queueClients.find(client => 
-          client.email === userEmail
-        );
-        console.log('🔍 Tentativa 1 - Por email:', userEmail, currentClient ? '✅' : '❌');
-      }
-      
-      // 2. Tentar por ID do localStorage
-      if (!currentClient && userId) {
-        currentClient = queueClients.find(client => 
-          client.id === userId || client.id === parseInt(userId)
-        );
-        console.log('🔍 Tentativa 2 - Por ID:', userId, currentClient ? '✅' : '❌');
-      }
-      
-      // 3. Tentar por nome do usuário (se disponível)
-      if (!currentClient) {
-        const userName = localStorage.getItem('userName') || 
-                        localStorage.getItem('name') || 
-                        localStorage.getItem('user_name');
-        if (userName) {
-          currentClient = queueClients.find(client => 
-            client.nome === userName
-          );
-          console.log('🔍 Tentativa 3 - Por nome:', userName, currentClient ? '✅' : '❌');
-        }
-      }
-      
-      // 4. Se ainda não encontrou, usar o cliente com a posição atual da fila
-      if (!currentClient) {
-        currentClient = queueClients.find(client => 
-          client.position === selectedQueue.posicao_atual
-        );
-        console.log('🔍 Tentativa 4 - Por posição atual:', selectedQueue.posicao_atual, currentClient ? '✅' : '❌');
-      }
-      
-      // 5. Se ainda não encontrou, usar o primeiro cliente como fallback
-      if (!currentClient) {
-        console.log('⚠️ Cliente não encontrado pelos critérios normais, usando primeiro cliente como fallback');
-        currentClient = queueClients[0];
-      }
-
-      if (!currentClient) {
-        alert('Cliente não encontrado na fila');
-        return;
-      }
-      
-      console.log('✅ Cliente encontrado:', currentClient);
-
-      // 2. Atualizar posição do cliente atual
-      const updatedCurrentClient = {
-        ...currentClient,
-        position: newPosition,
-        paidAdvance: true,
-        advancePositions: selectedPositions,
-        paymentTimestamp: Date.now()
-      };
-
-      // 3. Reorganizar TODOS os clientes da fila
-      const updatedClients = queueClients.map(client => {
-        if (client.id === currentClient.id) {
-          // Cliente que está avançando
-          return updatedCurrentClient;
-        } else {
-          // Outros clientes - ajustar posições
-          const clientCurrentPos = client.position;
-          
-          if (clientCurrentPos < currentPosition && clientCurrentPos >= newPosition) {
-            // Clientes que estão entre a nova posição e a posição atual
-            // Devem ser "empurrados" para baixo
-            return {
-              ...client,
-              position: clientCurrentPos + 1
-            };
-          } else if (clientCurrentPos === currentPosition) {
-            // Se há outro cliente na mesma posição (grupo)
-            return {
-              ...client,
-              position: clientCurrentPos + 1
-            };
-          }
-          
-          // Clientes que não são afetados mantêm a posição
-          return client;
-        }
+      // FLUXO ORIGINAL: Chamar API do backend
+      const response = await api.post(`/queues/${selectedQueue.id}/advance`, {
+        clientId: userId,
+        positions: selectedPositions
+        // paymentData removido - backend vai pular validação de pagamento
       });
 
-      // 4. Ordenar clientes por posição para manter consistência
-      const sortedClients = updatedClients.sort((a, b) => a.position - b.position);
+      console.log('✅ Resposta da API:', response.data);
 
-      // 5. Reajustar posições sequenciais (eliminar gaps)
-      const finalClients = sortedClients.map((client, index) => ({
-        ...client,
-        position: index + 1
-      }));
+      if (response.data.success) {
+        const { oldPosition, newPosition, positionsAdvanced, estimatedTime, amount } = response.data.data;
+        
+        console.log(`🎉 Avanço realizado! De posição ${oldPosition} para ${newPosition}`);
+        console.log(`💰 Valor: R$ ${amount} (não processado)`);
+        console.log(`⏱️ Tempo estimado: ${estimatedTime}min`);
 
-      // 6. Atualizar estado local
-      setQueueClients(finalClients);
-      
-      // 7. Atualizar a fila selecionada com nova posição
-      const updatedQueue = {
-        ...selectedQueue,
-        posicao_atual: newPosition
-      };
-      setSelectedQueue(updatedQueue);
+        // Atualizar interface com dados da API
+        const updatedQueue = {
+          ...selectedQueue,
+          posicao_atual: newPosition
+        };
+        setSelectedQueue(updatedQueue);
 
-      // 8. Atualizar a lista de filas
-      setFilas(prevFilas => 
-        prevFilas.map(fila => 
-          fila.id === selectedQueue.id 
-            ? { ...fila, posicao_atual: newPosition }
-            : fila
-        )
-      );
+        // Atualizar a lista de filas
+        setFilas(prevFilas =>
+          prevFilas.map(fila =>
+            fila.id === selectedQueue.id
+              ? { ...fila, posicao_atual: newPosition }
+              : fila
+          )
+        );
 
-      console.log('✅ Fila reorganizada com sucesso!');
-      console.log('Nova posição do cliente:', newPosition);
-      console.log('Total de clientes:', finalClients.length);
-      console.log('Fila reorganizada:', finalClients.map(c => `${c.nome} - Posição ${c.position}`));
+        // Mostrar mensagem de sucesso
+        alert(`🎉 Avanço realizado! Sua nova posição é ${newPosition}ª`);
 
-      // 9. Mostrar mensagem de sucesso
-      alert(`🎉 Avanço realizado! Sua nova posição é ${newPosition}ª`);
-
-      // 10. Redirecionar para página de pagamento do Mercado Pago
-      const paymentUrl = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=2915256254-39ae9b33-6e81-4be4-b388-7a079801d4e6`;
-      
-      console.log('🔗 Redirecionando para página de pagamento...');
-      console.log('URL:', paymentUrl);
-      
-      // Abrir em nova aba
-      window.open(paymentUrl, '_blank');
-
-      // 11. Fechar popup após um pequeno delay
-      setTimeout(() => {
+        // Fechar popup e recarregar dados
         closeAdvancePopup();
         fetchUserQueues(); // Recarrega as filas para sincronizar
-      }, 2000);
+
+      } else {
+        throw new Error(response.data.message || 'Erro ao avançar na fila');
+      }
 
     } catch (error) {
-      console.error('Erro ao avançar na fila:', error);
-      alert('Erro ao avançar na fila. Tente novamente.');
+      console.error('❌ Erro ao avançar na fila:', error);
+      alert(`Erro ao avançar na fila: ${error.response?.data?.message || error.message}`);
     }
   };
 

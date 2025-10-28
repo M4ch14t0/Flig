@@ -25,7 +25,6 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   const [advancing, setAdvancing] = useState(false);
   const [clientPosition, setClientPosition] = useState(null);
   const [showAdvanceForm, setShowAdvanceForm] = useState(false);
-  const [localAdvanceMode, setLocalAdvanceMode] = useState(false);
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [groupForm, setGroupForm] = useState({
     nome: '',
@@ -51,13 +50,10 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   useEffect(() => {
     loadQueueData();
     const interval = setInterval(() => {
-      // Só atualiza do servidor se não estivermos em modo de avanço local
-      if (!localAdvanceMode) {
-        loadQueueData();
-      }
+      loadQueueData();
     }, 5000); // Atualiza a cada 5 segundos
     return () => clearInterval(interval);
-  }, [queueId, localAdvanceMode]);
+  }, [queueId]);
 
   const loadQueueData = async () => {
     try {
@@ -131,129 +127,66 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
   const handleAdvanceInQueue = async (e) => {
     e.preventDefault();
     setAdvancing(true);
-    setLocalAdvanceMode(true); // Ativar modo de avanço local
 
     try {
-      console.log('🎯 Executando avanço real na fila localmente...');
+      console.log('🎯 Executando avanço via API (fluxo original)...');
       console.log('Cliente atual:', clientPosition);
       console.log('Posições a avançar:', advanceForm.positions);
-      
-      // LÓGICA REAL DE AVANÇO NA FILA
-      const positionsToAdvance = advanceForm.positions;
-      const currentPosition = clientPosition.position;
-      const newPosition = Math.max(1, currentPosition - positionsToAdvance);
-      
-      console.log(`Avançando de posição ${currentPosition} para ${newPosition}`);
-      
-      // 1. Atualizar posição do cliente atual
-      const updatedClientPosition = {
-        ...clientPosition,
-        position: newPosition,
-        paidAdvance: true,
-        advancePositions: positionsToAdvance
-      };
-      
-      // 2. Reorganizar TODOS os clientes da fila
-      const updatedClients = clients.map(client => {
-        if (client.id === clientPosition.id) {
-          // Cliente que está avançando
-          return updatedClientPosition;
-        } else {
-          // Outros clientes - ajustar posições
-          const clientCurrentPos = client.position;
-          
-          if (clientCurrentPos < currentPosition && clientCurrentPos >= newPosition) {
-            // Clientes que estão entre a nova posição e a posição atual
-            // Devem ser "empurrados" para baixo
-            return {
-              ...client,
-              position: clientCurrentPos + 1
-            };
-          } else if (clientCurrentPos === currentPosition) {
-            // Se há outro cliente na mesma posição (grupo)
-            return {
-              ...client,
-              position: clientCurrentPos + 1
-            };
-          }
-          
-          // Clientes que não são afetados mantêm a posição
-          return client;
-        }
+      console.log('Queue ID:', queueId);
+
+      // FLUXO ORIGINAL: Chamar API do backend
+      const response = await api.post(`/queues/${queueId}/advance`, {
+        clientId: clientPosition.id,
+        positions: advanceForm.positions
+        // paymentData removido - backend vai pular validação de pagamento
       });
-      
-      // 3. Ordenar clientes por posição para manter consistência
-      const sortedClients = updatedClients.sort((a, b) => a.position - b.position);
-      
-      // 4. Reajustar posições sequenciais (eliminar gaps)
-      const finalClients = sortedClients.map((client, index) => ({
-        ...client,
-        position: index + 1
-      }));
-      
-      // 5. Atualizar estados
-      console.log('🔄 Atualizando estados...');
-      console.log('Nova posição do cliente:', updatedClientPosition.position);
-      console.log('Clientes finais:', finalClients.map(c => `${c.nome} - Posição ${c.position}`));
-      
-      setClientPosition(updatedClientPosition);
-      setClients(finalClients);
-      
-      // 6. Recalcular fila bidimensional
-      const newGroupedClients = {};
-      finalClients.forEach(client => {
-        const pos = client.position;
-        if (!newGroupedClients[pos]) {
-          newGroupedClients[pos] = [];
-        }
-        newGroupedClients[pos].push(client);
-      });
-      setGroupedClients(newGroupedClients);
-      
-      console.log('✅ Estados atualizados com sucesso!');
-      
-      console.log('✅ Fila reorganizada com sucesso!');
-      console.log('Nova posição do cliente:', newPosition);
-      console.log('Total de clientes:', finalClients.length);
-      console.log('Fila reorganizada:', finalClients.map(c => `${c.nome} - Posição ${c.position}`));
-      
-      // 7. Fechar formulário
-      setShowAdvanceForm(false);
-      setAdvanceForm({
-        positions: 1,
-        paymentMethod: 'credit_card',
-        cardData: { number: '', cvv: '', expiryMonth: '', expiryYear: '', holderName: '' }
-      });
-      
-      // 8. Mostrar mensagem de sucesso
-      alert(`🎉 Avanço realizado! Sua nova posição é ${newPosition}ª`);
-      
-      // 9. Redirecionar para página de pagamento do Mercado Pago
-      const paymentUrl = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=2915256254-39ae9b33-6e81-4be4-b388-7a079801d4e6`;
-      
-      console.log('🔗 Redirecionando para página de pagamento...');
-      console.log('URL:', paymentUrl);
-      
-      // Abrir em nova aba
-      window.open(paymentUrl, '_blank');
-      
-      // 10. Desativar modo local após 10 segundos (para permitir sincronização)
-      setTimeout(() => {
-        setLocalAdvanceMode(false);
-        console.log('🔄 Modo local desativado - sincronizando com servidor');
-      }, 10000);
-      
-      // 10. Chamar callback de sucesso
-      if (onJoinSuccess) onJoinSuccess({
-        message: 'Avanço realizado com sucesso',
-        newPosition: newPosition,
-        positionsAdvanced: positionsToAdvance,
-        paymentUrl: paymentUrl
-      });
-      
+
+      console.log('✅ Resposta da API:', response.data);
+
+      if (response.data.success) {
+        const { oldPosition, newPosition, positionsAdvanced, estimatedTime, amount } = response.data.data;
+        
+        console.log(`🎉 Avanço realizado! De posição ${oldPosition} para ${newPosition}`);
+        console.log(`💰 Valor: R$ ${amount} (não processado)`);
+        console.log(`⏱️ Tempo estimado: ${estimatedTime}min`);
+
+        // Atualizar posição do cliente localmente
+        const updatedClientPosition = {
+          ...clientPosition,
+          position: newPosition,
+          paidAdvance: true,
+          advancePositions: positionsAdvanced
+        };
+        setClientPosition(updatedClientPosition);
+
+        // Fechar formulário
+        setShowAdvanceForm(false);
+        setAdvanceForm({
+          positions: 1,
+          paymentMethod: 'credit_card',
+          cardData: { number: '', cvv: '', expiryMonth: '', expiryYear: '', holderName: '' }
+        });
+
+        // Mostrar mensagem de sucesso
+        alert(`🎉 Avanço realizado! Sua nova posição é ${newPosition}ª`);
+
+        // Recarregar dados da fila para sincronizar
+        loadQueueData();
+
+        // Chamar callback de sucesso
+        if (onJoinSuccess) onJoinSuccess({
+          message: 'Avanço realizado com sucesso',
+          newPosition: newPosition,
+          positionsAdvanced: positionsAdvanced
+        });
+
+      } else {
+        throw new Error(response.data.message || 'Erro ao avançar na fila');
+      }
+
     } catch (error) {
-      console.error('Erro ao avançar na fila:', error);
-      if (onError) onError('Erro ao avançar na fila');
+      console.error('❌ Erro ao avançar na fila:', error);
+      if (onError) onError(`Erro ao avançar na fila: ${error.response?.data?.message || error.message}`);
     } finally {
       setAdvancing(false);
     }
@@ -357,16 +290,6 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
       {/* Status da Fila */}
       <div className={`${styles.queueStatus} ${styles[queue.status]}`}>
         <span>Status: {queue.status}</span>
-        {localAdvanceMode && (
-          <span style={{ 
-            marginLeft: '10px', 
-            color: '#28a745', 
-            fontWeight: 'bold',
-            fontSize: '12px'
-          }}>
-            🔄 Modo Local Ativo
-          </span>
-        )}
       </div>
 
       {/* Posição do Cliente */}
@@ -409,7 +332,7 @@ export default function QueueComponent({ queueId, establishmentId, onJoinSuccess
             fontSize: '14px',
             color: '#2e7d32'
           }}>
-            <strong>✅ Avanço Local:</strong> O avanço será processado localmente e você será redirecionado para a página de pagamento do Mercado Pago.
+            <strong>✅ Avanço Direto:</strong> O avanço será processado diretamente no servidor (sem validação de pagamento).
           </div>
           <form onSubmit={handleAdvanceInQueue}>
             <div className={styles.formGroup}>

@@ -315,11 +315,11 @@ async function advanceInQueue(req, res) {
     const { queueId } = req.params;
     const { clientId, positions, paymentData } = req.body;
 
-    // Validações obrigatórias
-    if (!clientId || !positions || !paymentData) {
+    // Validações obrigatórias (sem paymentData para pular pagamento)
+    if (!clientId || !positions) {
       return res.status(400).json({
         success: false,
-        message: 'ID do cliente, número de posições e dados de pagamento são obrigatórios'
+        message: 'ID do cliente e número de posições são obrigatórios'
       });
     }
 
@@ -365,25 +365,12 @@ async function advanceInQueue(req, res) {
       });
     }
 
-    // Calcula valor do avanço
+    // PULA PROCESSAMENTO DE PAGAMENTO - AVANÇO DIRETO
+    console.log('🚀 AVANÇO DIRETO - Pulando validação de pagamento');
+    
+    // Calcula valor do avanço (apenas para log)
     const amount = paymentService.calculateAdvancePrice(positions, queue.valor_avancos);
-
-    // Processa pagamento simulado
-    const paymentResult = await paymentService.processPayment({
-      clientId,
-      queueId,
-      positions,
-      amount,
-      ...paymentData
-    });
-
-    if (!paymentResult.success) {
-      return res.status(400).json({
-        success: false,
-        message: paymentResult.message,
-        error: paymentResult.error
-      });
-    }
+    console.log(`💰 Valor calculado: R$ ${amount} (não processado)`);
 
     // Busca o cliente na fila pelo email do usuário (req.user.email)
     // Já que o clientId enviado é o ID do banco, precisamos encontrar o UUID na fila
@@ -410,14 +397,14 @@ async function advanceInQueue(req, res) {
 
     res.json({
       success: true,
-      message: 'Avanço processado com sucesso',
+      message: 'Avanço processado com sucesso (sem pagamento)',
       data: {
-        transactionId: paymentResult.transactionId,
         oldPosition: advanceResult.oldPosition,
         newPosition: advanceResult.newPosition,
         positionsAdvanced: advanceResult.positionsAdvanced,
         estimatedTime: advanceResult.estimatedTime,
-        amount: amount
+        amount: amount,
+        directAdvance: true
       }
     });
 
